@@ -1,6 +1,6 @@
 import { Observable, Subscription } from "rxjs";
 import { filter } from "rxjs/operators";
-import TelegramBot, {Message} from "node-telegram-bot-api";
+import TelegramBot, { Message } from "node-telegram-bot-api";
 
 import { lazyInject } from "inversify.config";
 import { LobbyState } from "data/enum";
@@ -8,12 +8,13 @@ import { LobbyService, SERVICE_TYPES, SubscriptionService, TelegramDataService }
 import { EventType } from "service/event";
 import { PokerResultItemDto } from "service/dto";
 
-import { formatMembers, formatPokerFinishResult, formatPokerResult, fromTelegramUserToMember } from "../utils";
+import { formatMembers, formatPokerFinishResult, formatPokerResult, fromTelegramUserToMember, italic } from "../utils";
 import TelegramBotSubscription from "./TelegramBotSubscription";
 
 export default class MemberEnterSubscription extends TelegramBotSubscription {
 
     private static readonly ENTER_REGEXP = /^\/enter (\w+)$/;
+    private static readonly PARSE_MODE = "MarkdownV2";
 
     @lazyInject(SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
     @lazyInject(SERVICE_TYPES.TelegramDataService) private readonly telegramDataService: TelegramDataService;
@@ -38,9 +39,10 @@ export default class MemberEnterSubscription extends TelegramBotSubscription {
                     this.subscriptionService.subscribe(lobby.id, member.id, async event => {
                         switch (event.type) {
                             case EventType.MembersWasChanged:
-                                await this.bot.editMessageText(formatMembers(event.payload.members), {
+                                await this.bot.editMessageText(formatMembers(event.payload.members, msg.from.id), {
                                     chat_id: msg.chat.id,
                                     message_id: this.telegramDataService.getMembersMessageId(lobby.id, msg.chat.id),
+                                    parse_mode: MemberEnterSubscription.PARSE_MODE,
                                 });
                                 break;
                             case EventType.PokerWasStarted:
@@ -50,10 +52,13 @@ export default class MemberEnterSubscription extends TelegramBotSubscription {
                                 await this.bot.editMessageText(formatPokerResult(event.payload.result, msg.from.id), {
                                     chat_id: msg.chat.id,
                                     message_id: this.telegramDataService.getResultMessageId(lobby.id, msg.chat.id),
+                                    parse_mode: MemberEnterSubscription.PARSE_MODE,
                                 });
                                 break;
                             case EventType.PokerWasFinished:
-                                await this.bot.sendMessage(msg.chat.id, formatPokerFinishResult(event.payload.result));
+                                await this.bot.sendMessage(msg.chat.id, formatPokerFinishResult(event.payload.result, msg.from.id), {
+                                    parse_mode: MemberEnterSubscription.PARSE_MODE,
+                                });
                                 this.telegramDataService.deleteAllResultMessageKeys(lobby.id);
                                 break;
                             default:
@@ -61,10 +66,14 @@ export default class MemberEnterSubscription extends TelegramBotSubscription {
                         }
                     });
 
-                    await this.bot.sendMessage(msg.chat.id, `Lobby: ${lobbyName}`);
+                    await this.bot.sendMessage(msg.chat.id, `Lobby: ${italic(lobbyName)}`, {
+                        parse_mode: MemberEnterSubscription.PARSE_MODE,
+                    });
 
                     const members = this.lobbyService.getMembers(lobby.id);
-                    const membersMsg = await this.bot.sendMessage(msg.chat.id, formatMembers(members));
+                    const membersMsg = await this.bot.sendMessage(msg.chat.id, formatMembers(members, msg.from.id), {
+                        parse_mode: MemberEnterSubscription.PARSE_MODE,
+                    });
                     this.telegramDataService.addMembersMessageKey(lobby.id, {
                         chatId: membersMsg.chat.id,
                         messageId: membersMsg.message_id,
@@ -85,8 +94,12 @@ export default class MemberEnterSubscription extends TelegramBotSubscription {
                                          lobbyId: number,
                                          theme: string,
                                          pokerResult: PokerResultItemDto[]) {
-        await this.bot.sendMessage(chatId, `Poker's theme: ${theme}`);
-        const pokerResultMsg = await this.bot.sendMessage(chatId, formatPokerResult(pokerResult, telegramUserId));
+        await this.bot.sendMessage(chatId, `Poker's theme: ${italic(theme)}`, {
+            parse_mode: MemberEnterSubscription.PARSE_MODE,
+        });
+        const pokerResultMsg = await this.bot.sendMessage(chatId, formatPokerResult(pokerResult, telegramUserId), {
+            parse_mode: MemberEnterSubscription.PARSE_MODE,
+        });
         this.telegramDataService.addResultMessageKey(lobbyId, {
             chatId: pokerResultMsg.chat.id,
             messageId: pokerResultMsg.message_id,
