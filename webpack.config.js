@@ -21,7 +21,7 @@ module.exports = {
     entry: {
         "telegram-bot": [
             "./src/telegram-bot/index.ts",
-            resolveDataImplPath(appConfig["db-type"]),
+            resolveDataImplPath(appConfig[ "db-type" ]),
             "./src/service/impl/index.ts",
         ],
     },
@@ -49,7 +49,8 @@ module.exports = {
     externals: [ nodeExternals() ],
     plugins: [
         new webpack.DefinePlugin({
-            TELEGRAM_BOT_API_TOKEN: JSON.stringify(appConfig["telegram-bot-api-token"]),
+            TELEGRAM_BOT_API_TOKEN: JSON.stringify(appConfig[ "telegram-bot-api-token" ]),
+            LOBBY_LIFETIME_MS: JSON.stringify(appConfig[ "lobby-lifetime" ]),
         }),
     ],
 };

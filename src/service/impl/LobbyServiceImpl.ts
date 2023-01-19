@@ -20,8 +20,6 @@ import { EventType } from "../event";
 @injectable()
 export default class LobbyServiceImpl implements LobbyService {
 
-    private static readonly ONE_HOUR_AS_MS = 3600000;
-
     @inject(DAO_TYPES.LobbyDAO) private readonly lobbyDAO: LobbyDAO;
     @inject(DAO_TYPES.MemberDAO) private readonly memberDAO: MemberDAO;
     @inject(DAO_TYPES.MemberLobbyXrefDAO) private readonly memberLobbyXrefDAO: MemberLobbyXrefDAO;
@@ -245,7 +243,7 @@ export default class LobbyServiceImpl implements LobbyService {
                 payload: { lobby: this.lobbyDAO.getById(lobbyId) },
             });
             this.subscriptionService.unregister(lobbyId);
-        }, LobbyServiceImpl.ONE_HOUR_AS_MS);
+        }, LOBBY_LIFETIME_MS);
         this.lobbyDestroyTimeouts.set(lobbyId, destroyTimeout);
     }
 
