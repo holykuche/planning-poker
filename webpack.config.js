@@ -3,12 +3,12 @@ const nodeExternals = require("webpack-node-externals");
 const path = require("path");
 const appConfig = require("./app.config.json");
 
-const resolveDataImplPath = () => {
-    switch (appConfig["db-type"]) {
+const resolveDataImplPath = dbType => {
+    switch (dbType) {
         case "mongo":
         case "postgres":
         case "oracle":
-            throw new Error(`DB "${appConfig["db-type"]}" doesn't support`);
+            throw new Error(`DB "${dbType}" doesn't support`);
         case "in-memory":
         default:
             return "./src/data/in-memory-impl/index.ts";
@@ -19,7 +19,11 @@ module.exports = {
     mode: "development",
     target: "node",
     entry: {
-        "telegram-bot": [ "./src/telegram-bot/index.ts", resolveDataImplPath(), "./src/service/impl/index.ts" ],
+        "telegram-bot": [
+            "./src/telegram-bot/index.ts",
+            resolveDataImplPath(appConfig["db-type"]),
+            "./src/service/impl/index.ts",
+        ],
     },
     devtool: 'inline-source-map',
     module: {
