@@ -1,10 +1,10 @@
-import { Member } from "data/entity";
+import { MemberDto } from "service/dto";
 
 import membersComparatorFactory from "./membersComparatorFactory";
 import bold from "./bold";
 import italic from "./italic";
 
-export default function(members: Member[], telegramUserId: number): string {
+export default function(members: MemberDto[], telegramUserId: number): string {
     const membersComparator = membersComparatorFactory(telegramUserId);
     const membersStr = members
         .sort(membersComparator)

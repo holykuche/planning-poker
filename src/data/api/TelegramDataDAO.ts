@@ -10,4 +10,10 @@ export default interface TelegramDataDAO {
     addResultMessageKey: (lobbyId: number, messageKey: TelegramMessageKey) => void;
     deleteResultMessageKey: (lobbyId: number, messageKey: TelegramMessageKey) => void;
     deleteAllResultMessageKeys: (lobbyId: number) => void;
+
+    getMemberIdByTelegramUserId: (telegramUserId: number) => number;
+    getTelegramUserIdByMemberId: (memberId: number) => number;
+    bindTelegramUserWithMember: (telegramUserId: number, memberId: number) => void;
+    unbindTelegramUserFromMember: (telegramUserId: number) => void;
+    unbindMemberFromTelegramUser: (memberId: number) => void;
 }

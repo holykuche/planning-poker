@@ -11,7 +11,6 @@ import {
     MemberIsAlreadyInLobbyError,
     MemberIsNotInLobbyError,
     PokerIsAlreadyStartedError,
-    UnknownMemberError
 } from "../error";
 import { LobbyService, SERVICE_TYPES, SubscriptionService } from "../api";
 import { CardDto, LobbyDto, PokerResultItemDto } from "../dto";
@@ -49,23 +48,16 @@ export default class LobbyServiceImpl implements LobbyService {
         return this.memberDAO.getByIds(memberIds);
     }
 
-    enterMember(member: Member, lobbyName: string): { member: Member, lobby: LobbyDto } {
-        if (!member.id) {
-            if (member.telegramUserId) {
-                member = this.memberDAO.getByTelegramUserId(member.telegramUserId) || this.memberDAO.save(member);
-            } else {
-                throw new UnknownMemberError();
-            }
-        }
-
-        if (this.memberLobbyXrefDAO.isMemberBound(member.id)) {
-            const membersLobbyId = this.memberLobbyXrefDAO.getMembersBinding(member.id);
+    enterMember(memberId: number, lobbyName: string): LobbyDto {
+        if (this.memberLobbyXrefDAO.isMemberBound(memberId)) {
+            const membersLobbyId = this.memberLobbyXrefDAO.getMembersBinding(memberId);
             const membersLobby = this.lobbyDAO.getById(membersLobbyId);
+            const member = this.memberDAO.getById(memberId);
             throw new MemberIsAlreadyInLobbyError(member, membersLobby);
         }
 
         const lobby = this.getByName(lobbyName) || this.createLobby(lobbyName);
-        this.memberLobbyXrefDAO.bindMember(member.id, lobby.id);
+        this.memberLobbyXrefDAO.bindMember(memberId, lobby.id);
 
         this.subscriptionService.dispatch(lobby.id, {
             type: EventType.MembersWasChanged,
@@ -76,7 +68,7 @@ export default class LobbyServiceImpl implements LobbyService {
 
         this.refreshLobbyDestroyTimeout(lobby.id);
 
-        return { member, lobby };
+        return lobby;
     }
 
     leaveMember(memberId: number): void {

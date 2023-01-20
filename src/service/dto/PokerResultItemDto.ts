@@ -1,7 +1,7 @@
-import { Member } from "data/entity";
 import CardDto from "./CardDto";
+import MemberDto from "./MemberDto";
 
 export default interface PokerResultItemDto {
-    member: Member,
+    member: MemberDto,
     card: CardDto,
 }

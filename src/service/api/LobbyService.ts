@@ -8,7 +8,7 @@ export default interface LobbyService {
     delete: (id: number) => void;
     isExists: (name: string) => boolean;
     getMembers: (lobbyId: number) => Member[];
-    enterMember: (member: Member, lobbyName: string) => { member: Member, lobby: LobbyDto };
+    enterMember: (memberId: number, lobbyName: string) => LobbyDto;
     leaveMember: (memberId: number) => void;
     startPoker: (lobbyId: number, theme: string) => void;
     finishPoker: (lobbyId: number) => void;

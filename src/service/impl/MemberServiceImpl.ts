@@ -28,16 +28,6 @@ export default class MemberServiceImpl implements MemberService {
         return member;
     }
 
-    getByTelegramUserId(telegramUserId: number): Member {
-        const member = this.memberDAO.getByTelegramUserId(telegramUserId);
-
-        if (!member) {
-            throw new UnknownMemberError();
-        }
-
-        return member;
-    }
-
     getMembersLobbyId(memberId: number): number {
         const lobbyId = this.memberLobbyXrefDAO.getMembersBinding(memberId);
 

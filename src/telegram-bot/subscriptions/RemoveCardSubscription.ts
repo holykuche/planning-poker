@@ -3,7 +3,7 @@ import { filter } from "rxjs/operators";
 import TelegramBot, { Message } from "node-telegram-bot-api";
 
 import { lazyInject } from "inversify.config";
-import { MemberService, SERVICE_TYPES } from "service/api";
+import { MemberService, SERVICE_TYPES, TelegramDataService } from "service/api";
 
 import TelegramBotSubscription from "./TelegramBotSubscription";
 
@@ -12,6 +12,7 @@ export default class RemoveCardSubscription extends TelegramBotSubscription {
     private static readonly REMOVE_CARD_MSG_TEXT = "/rm_card";
 
     @lazyInject(SERVICE_TYPES.MemberService) private readonly memberService: MemberService;
+    @lazyInject(SERVICE_TYPES.TelegramDataService) private readonly telegramDataService: TelegramDataService;
 
     constructor(messages$: Observable<Message>, bot: TelegramBot) {
         const removeCardMessages$ = messages$
@@ -25,7 +26,7 @@ export default class RemoveCardSubscription extends TelegramBotSubscription {
         return this.messages$
             .subscribe(msg => {
                 try {
-                    const member = this.memberService.getByTelegramUserId(msg.from.id);
+                    const member = this.telegramDataService.getMemberByTelegramUserId(msg.from.id);
                     this.memberService.removeCard(member.id);
                 } catch (error) {
                     console.log(error);
