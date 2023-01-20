@@ -86,15 +86,23 @@ export default class LobbyServiceImpl implements LobbyService {
         this.memberLobbyXrefDAO.unbindMember(memberId);
         this.memberCardXrefDAO.removeByMemberId(memberId);
 
+        const members = this.getMembers(lobbyId);
+
         this.subscriptionService.unsubscribe(memberId);
         this.subscriptionService.dispatch(lobbyId, {
             type: EventType.MembersWasChanged,
-            payload: { members: this.getMembers(lobbyId) },
+            payload: { members },
         });
 
         this.checkPokerResult(lobbyId);
 
-        this.refreshLobbyDestroyTimeout(lobbyId);
+        if (members.length) {
+            this.refreshLobbyDestroyTimeout(lobbyId);
+        } else {
+            clearTimeout(this.lobbyDestroyTimeouts.get(lobbyId));
+            this.lobbyDAO.delete(lobbyId);
+        }
+
     }
 
     startPoker(lobbyId: number, theme: string): void {
@@ -227,7 +235,10 @@ export default class LobbyServiceImpl implements LobbyService {
     private refreshLobbyDestroyTimeout(lobbyId: number): void {
         clearTimeout(this.lobbyDestroyTimeouts.get(lobbyId));
         const destroyTimeout = setTimeout(() => {
+            const memberIds = this.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId);
+
             this.memberLobbyXrefDAO.unbindMembers(lobbyId);
+            this.memberDAO.deleteByIds(memberIds);
             this.lobbyDAO.delete(lobbyId);
 
             this.subscriptionService.dispatch(lobbyId, {
