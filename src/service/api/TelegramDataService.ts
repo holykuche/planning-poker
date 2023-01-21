@@ -12,7 +12,7 @@ export default interface TelegramDataService {
     deleteAllMessageKeysFromChat(lobbyId: number, chatId: number): void;
 
     getMemberByTelegramUserId(telegramUserId: number): MemberDto;
-    saveMember(member: MemberDto): MemberDto;
+    createMember(member: MemberDto): MemberDto;
     deleteMemberByMemberId(memberId: number): void;
     deleteMemberByTelegramUserId(telegramUserId: number): void;
 }

@@ -35,7 +35,7 @@ export default class MemberEnterSubscription extends TelegramBotSubscription<Mes
                 const lobbyName = msg.text.match(MemberEnterSubscription.ENTER_REGEXP)[ 1 ];
 
                 try {
-                    const member = this.telegramDataService.saveMember(fromTelegramUserToMember(msg.from));
+                    const member = this.telegramDataService.createMember(fromTelegramUserToMember(msg.from));
                     const lobby = this.lobbyService.enterMember(member.id, lobbyName);
 
                     this.subscriptionService.subscribe(lobby.id, member.id, async event => {

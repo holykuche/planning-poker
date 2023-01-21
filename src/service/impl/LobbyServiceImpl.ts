@@ -50,10 +50,8 @@ export default class LobbyServiceImpl implements LobbyService {
 
     enterMember(memberId: number, lobbyName: string): LobbyDto {
         if (this.memberLobbyXrefDAO.isMemberBound(memberId)) {
-            const membersLobbyId = this.memberLobbyXrefDAO.getMembersBinding(memberId);
-            const membersLobby = this.lobbyDAO.getById(membersLobbyId);
             const member = this.memberDAO.getById(memberId);
-            throw new MemberIsAlreadyInLobbyError(member, membersLobby);
+            throw new MemberIsAlreadyInLobbyError(member);
         }
 
         const lobby = this.getByName(lobbyName) || this.createLobby(lobbyName);

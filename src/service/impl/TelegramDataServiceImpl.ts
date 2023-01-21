@@ -5,7 +5,7 @@ import { DAO_TYPES, LobbyDAO, TelegramMessageDAO, MemberDAO, TelegramUserDAO } f
 import { TelegramMessageType } from "data/enum";
 
 import { TelegramDataService } from "../api";
-import { UnknownMemberError } from "../error";
+import { UnknownMemberError, MemberIsAlreadyInLobbyError } from "../error";
 import { MemberDto } from "../dto";
 
 @injectable()
@@ -58,7 +58,13 @@ export default class TelegramDataServiceImpl implements TelegramDataService {
         return { ...member, telegramUserId };
     }
 
-    saveMember(member: MemberDto): MemberDto {
+    createMember(member: MemberDto): MemberDto {
+        const existedMemberId = this.telegramUserDAO.getMemberIdByTelegramUserId(member.telegramUserId);
+        if (existedMemberId) {
+            const existedMember = this.memberDAO.getById(existedMemberId);
+            throw new MemberIsAlreadyInLobbyError(existedMember);
+        }
+
         const storedMember = { ...this.memberDAO.save(member), telegramUserId: member.telegramUserId };
         this.telegramUserDAO.bindTelegramUserWithMember(storedMember.telegramUserId, storedMember.id);
 

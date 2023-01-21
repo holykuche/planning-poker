@@ -27,6 +27,11 @@ export default class MemberDAOImpl implements MemberDAO {
     }
 
     save(member: Member): Member {
+        if (member.id && this.MEMBERS_BY_ID.has(member.id)) {
+            const existedMember = this.MEMBERS_BY_ID.get(member.id);
+            this.MEMBERS_BY_NAME.delete(existedMember.name);
+        }
+
         const storedMember = { ...member, id: member.id || this.NEXT_MEMBER_ID++ };
         this.MEMBERS_BY_ID.set(storedMember.id, storedMember);
         this.MEMBERS_BY_NAME.set(storedMember.name, storedMember);
