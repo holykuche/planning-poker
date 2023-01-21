@@ -36,9 +36,6 @@ export default class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     unregister(lobbyId: number): void {
-        this.LOBBY_SUBSCRIPTIONS.get(lobbyId)?.unsubscribe();
-        this.LOBBY_SUBSCRIPTIONS.delete(lobbyId);
-
         this.LOBBY_OBSERVABLES$.get(lobbyId).complete();
         this.LOBBY_OBSERVABLES$.delete(lobbyId);
     }

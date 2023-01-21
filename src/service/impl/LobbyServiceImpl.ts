@@ -218,6 +218,7 @@ export default class LobbyServiceImpl implements LobbyService {
         this.memberDAO.deleteByIds(memberIds);
         this.lobbyDAO.delete(lobbyId);
 
+        this.subscriptionService.lobbyUnsubscribe(lobbyId);
         this.subscriptionService.unregister(lobbyId);
     }
 
