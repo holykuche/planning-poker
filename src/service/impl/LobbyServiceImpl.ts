@@ -238,7 +238,7 @@ export default class LobbyServiceImpl implements LobbyService {
 
         const memberIds = this.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobby.id);
         const members = this.memberDAO.getByIds(memberIds);
-        const cards = new Map<number, CardDto<CardCode>>(
+        const cards = new Map<number, CardDto>(
             this.memberCardXrefDAO.getByMemberIds(memberIds)
                 .map(([ memberId, cardCode ]) => [ memberId, CardDto.fromCode(cardCode) ]));
 
