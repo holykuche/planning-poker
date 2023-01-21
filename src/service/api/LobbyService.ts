@@ -12,7 +12,6 @@ export default interface LobbyService {
     leaveMember(memberId: number): void;
     startPoker(lobbyId: number, theme: string): void;
     finishPoker(lobbyId: number): void;
-    checkPokerFinishing(lobbyId: number): void;
     getPokerResult(lobbyId: number): PokerResultItemDto[];
     getPokerFinishResult(lobbyId: number): PokerResultItemDto[];
 }

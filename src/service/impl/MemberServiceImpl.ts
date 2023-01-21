@@ -53,8 +53,6 @@ export default class MemberServiceImpl implements MemberService {
             type: EventType.PokerResultWasChanged,
             payload: { result: this.lobbyService.getPokerResult(lobbyId) },
         });
-
-        this.lobbyService.checkPokerFinishing(lobbyId);
     }
 
     removeCard(memberId: number): void {
