@@ -1,69 +1,49 @@
 import { inject, injectable } from "inversify";
 
 import { TelegramMessageKey } from "data/entity";
-import { DAO_TYPES, LobbyDAO, TelegramDataDAO, MemberDAO } from "data/api";
+import { DAO_TYPES, LobbyDAO, TelegramMessageDAO, MemberDAO, TelegramUserDAO } from "data/api";
+import { TelegramMessageType } from "data/enum";
 
 import { TelegramDataService } from "../api";
-import { MessageDoesNotExistError, UnknownMemberError } from "../error";
+import { UnknownMemberError } from "../error";
 import { MemberDto } from "../dto";
 
 @injectable()
 export default class TelegramDataServiceImpl implements TelegramDataService {
 
-    @inject(DAO_TYPES.TelegramDataDAO) private readonly telegramDataDAO: TelegramDataDAO;
+    @inject(DAO_TYPES.TelegramMessageDAO) private readonly telegramMessageDAO: TelegramMessageDAO;
+    @inject(DAO_TYPES.TelegramUserDAO) private readonly telegramUserDAO: TelegramUserDAO;
     @inject(DAO_TYPES.LobbyDAO) private readonly lobbyDAO: LobbyDAO;
     @inject(DAO_TYPES.MemberDAO) private readonly memberDAO: MemberDAO;
 
-    getMembersMessageId(lobbyId: number, chatId: number): number {
-        const messageKey = this.telegramDataDAO.getMembersMessageKeys(lobbyId)
-            .find(key => key.chatId === chatId);
-
-        if (!messageKey) {
-            const lobby = this.lobbyDAO.getById(lobbyId);
-            throw new MessageDoesNotExistError("Members", lobby, chatId);
-        }
-
-        return messageKey.messageId;
+    getMessageId(lobbyId: number, chatId: number, messageType: TelegramMessageType): number {
+        return this.telegramMessageDAO.getMessageKeys(lobbyId, messageType)
+            .find(key => key.chatId === chatId)
+            ?.messageId;
     }
 
-    addMembersMessageKey(lobbyId: number, messageKey: TelegramMessageKey): void {
-        this.telegramDataDAO.addMembersMessageKey(lobbyId, messageKey);
+    addMessageKey(lobbyId: number, messageType: TelegramMessageType, messageKey: TelegramMessageKey): void {
+        this.telegramMessageDAO.addMessageKey(lobbyId, messageType, messageKey);
     }
 
-    deleteMembersMessageKey(lobbyId: number, messageKey: TelegramMessageKey): void {
-        this.telegramDataDAO.deleteMembersMessageKey(lobbyId, messageKey);
+    deleteMessageKey(lobbyId: number, messageType: TelegramMessageType, messageKey: TelegramMessageKey): void {
+        this.telegramMessageDAO.deleteMessageKey(lobbyId, messageType, messageKey);
     }
 
-    deleteAllMembersMessageKeys(lobbyId: number): void {
-        this.telegramDataDAO.deleteAllMembersMessageKeys(lobbyId);
+    deleteMessageKeys(lobbyId: number, messageType: TelegramMessageType): void {
+        this.telegramMessageDAO.deleteMessageKeys(lobbyId, messageType);
     }
 
-    getResultMessageId(lobbyId: number, chatId: number): number {
-        const messageKey = this.telegramDataDAO.getResultMessageKeys(lobbyId)
-            .find(key => key.chatId === chatId);
-
-        if (!messageKey) {
-            const lobby = this.lobbyDAO.getById(lobbyId);
-            throw new MessageDoesNotExistError("Result", lobby, chatId);
-        }
-
-        return messageKey.messageId;
+    deleteAllMessageKeys(lobbyId: number): void {
+        this.telegramMessageDAO.deleteAllMessageKeys(lobbyId);
     }
 
-    addResultMessageKey(lobbyId: number, messageKey: TelegramMessageKey): void {
-        this.telegramDataDAO.addResultMessageKey(lobbyId, messageKey);
-    }
-
-    deleteResultMessageKey(lobbyId: number, messageKey: TelegramMessageKey): void {
-        this.telegramDataDAO.deleteResultMessageKey(lobbyId, messageKey);
-    }
-
-    deleteAllResultMessageKeys(lobbyId: number): void {
-        this.telegramDataDAO.deleteAllResultMessageKeys(lobbyId);
+    deleteAllMessageKeysFromChat(lobbyId: number, chatId: number): void {
+        this.telegramMessageDAO.deleteAllMessageKeysFromChat(lobbyId, chatId);
     }
 
     getMemberByTelegramUserId(telegramUserId: number): MemberDto {
-        const memberId = this.telegramDataDAO.getMemberIdByTelegramUserId(telegramUserId);
+        const memberId = this.telegramUserDAO.getMemberIdByTelegramUserId(telegramUserId);
 
         if (!memberId) {
             throw new UnknownMemberError();
@@ -80,19 +60,19 @@ export default class TelegramDataServiceImpl implements TelegramDataService {
 
     saveMember(member: MemberDto): MemberDto {
         const storedMember = { ...this.memberDAO.save(member), telegramUserId: member.telegramUserId };
-        this.telegramDataDAO.bindTelegramUserWithMember(storedMember.telegramUserId, storedMember.id);
+        this.telegramUserDAO.bindTelegramUserWithMember(storedMember.telegramUserId, storedMember.id);
 
         return storedMember;
     }
 
     deleteMemberByMemberId(memberId: number): void {
-        this.telegramDataDAO.unbindMemberFromTelegramUser(memberId);
+        this.telegramUserDAO.unbindMemberFromTelegramUser(memberId);
         this.memberDAO.deleteById(memberId);
     }
 
     deleteMemberByTelegramUserId(telegramUserId: number): void {
-        const memberId = this.telegramDataDAO.getMemberIdByTelegramUserId(telegramUserId);
-        this.telegramDataDAO.unbindTelegramUserFromMember(telegramUserId);
+        const memberId = this.telegramUserDAO.getMemberIdByTelegramUserId(telegramUserId);
+        this.telegramUserDAO.unbindTelegramUserFromMember(telegramUserId);
         this.memberDAO.deleteById(memberId);
     }
 

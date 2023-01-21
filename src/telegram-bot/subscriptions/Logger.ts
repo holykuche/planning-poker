@@ -5,14 +5,14 @@ import { Message } from "node-telegram-bot-api";
 import { formatTelegramUserName } from "../utils";
 import TelegramBotSubscription from "./TelegramBotSubscription";
 
-export default class Logger extends TelegramBotSubscription {
+export default class Logger extends TelegramBotSubscription<Message> {
 
     constructor(messages$: Observable<Message>) {
         super(messages$);
     }
 
     subscribe(): Subscription {
-        return this.messages$
+        return this.observable$
             .pipe(
                 map(Logger.formatMsg)
             )

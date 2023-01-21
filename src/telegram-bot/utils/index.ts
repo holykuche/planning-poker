@@ -5,3 +5,4 @@ export { default as formatPokerFinishResult } from "./formatPokerFinishResult";
 export { default as formatMembers } from "./formatMembers";
 export { default as bold } from "./bold";
 export { default as italic } from "./italic";
+export { default as inlineKeyboardButtonFactory } from "./inlineKeyboardButtonFactory";

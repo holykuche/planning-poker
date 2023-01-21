@@ -3,5 +3,6 @@ export default {
     MemberDAO: Symbol.for("MemberDAO"),
     MemberCardXrefDAO: Symbol.for("MemberCardXrefDAO"),
     MemberLobbyXrefDAO: Symbol.for("MemberLobbyXrefDAO"),
-    TelegramDataDAO: Symbol.for("TelegramDataDAO"),
+    TelegramMessageDAO: Symbol.for("TelegramMessageDAO"),
+    TelegramUserDAO: Symbol.for("TelegramUserDAO"),
 };

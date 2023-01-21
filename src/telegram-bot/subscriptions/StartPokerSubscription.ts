@@ -7,7 +7,7 @@ import { LobbyService, MemberService, SERVICE_TYPES, TelegramDataService } from 
 
 import TelegramBotSubscription from "./TelegramBotSubscription";
 
-export default class StartPokerSubscription extends TelegramBotSubscription {
+export default class StartPokerSubscription extends TelegramBotSubscription<Message> {
 
     private static readonly START_POKER_REGEXP = /^(?!\/)(.+)$/;
 
@@ -24,7 +24,7 @@ export default class StartPokerSubscription extends TelegramBotSubscription {
     }
 
     subscribe(): Subscription {
-        return this.messages$
+        return this.observable$
             .subscribe(async msg => {
                 const theme = msg.text.match(StartPokerSubscription.START_POKER_REGEXP)[ 1 ];
 

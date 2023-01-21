@@ -1,3 +1,5 @@
+import { Message, CallbackQuery } from "node-telegram-bot-api";
+
 import { TelegramBotSubscriptionConstructor } from "./TelegramBotSubscription";
 import Logger from "./Logger";
 import MemberEnterSubscription from "./MemberEnterSubscription";
@@ -7,12 +9,15 @@ import PutCardSubscription from "./PutCardSubscription";
 import RemoveCardSubscription from "./RemoveCardSubscription";
 import DeleteMessageSubscription from "./DeleteMessageSubscription";
 
-export default [
+export const messagesSubscriptionConstructors: TelegramBotSubscriptionConstructor<Message>[] = [
     Logger,
     DeleteMessageSubscription,
     MemberEnterSubscription,
-    MemberLeaveSubscription,
     StartPokerSubscription,
+];
+
+export const callbacksSubscriptionConstructors: TelegramBotSubscriptionConstructor<CallbackQuery>[] = [
+    MemberLeaveSubscription,
     PutCardSubscription,
     RemoveCardSubscription,
-] as TelegramBotSubscriptionConstructor[];
+];

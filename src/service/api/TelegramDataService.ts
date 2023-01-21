@@ -1,19 +1,18 @@
 import { TelegramMessageKey } from "data/entity";
+import { TelegramMessageType } from "data/enum";
+
 import { MemberDto } from "../dto";
 
 export default interface TelegramDataService {
-    getMembersMessageId: (lobbyId: number, chatId: number) => number;
-    addMembersMessageKey: (lobbyId: number, messageKey: TelegramMessageKey) => void;
-    deleteMembersMessageKey: (lobbyId: number, messageKey: TelegramMessageKey) => void;
-    deleteAllMembersMessageKeys: (lobbyId: number) => void;
+    getMessageId(lobbyId: number, chatId: number, messageType: TelegramMessageType): number;
+    addMessageKey(lobbyId: number, messageType: TelegramMessageType, messageKey: TelegramMessageKey): void;
+    deleteMessageKey(lobbyId: number, messageType: TelegramMessageType, messageKey: TelegramMessageKey): void;
+    deleteMessageKeys(lobbyId: number, messageType: TelegramMessageType): void;
+    deleteAllMessageKeys(lobbyId: number): void;
+    deleteAllMessageKeysFromChat(lobbyId: number, chatId: number): void;
 
-    getResultMessageId: (lobbyId: number, chatId: number) => number;
-    addResultMessageKey: (lobbyId: number, messageKey: TelegramMessageKey) => void;
-    deleteResultMessageKey: (lobbyId: number, messageKey: TelegramMessageKey) => void;
-    deleteAllResultMessageKeys: (lobbyId: number) => void;
-
-    getMemberByTelegramUserId: (telegramUserId: number) => MemberDto;
-    saveMember: (member: MemberDto) => MemberDto;
-    deleteMemberByMemberId: (memberId: number) => void;
-    deleteMemberByTelegramUserId: (telegramUserId: number) => void;
+    getMemberByTelegramUserId(telegramUserId: number): MemberDto;
+    saveMember(member: MemberDto): MemberDto;
+    deleteMemberByMemberId(memberId: number): void;
+    deleteMemberByTelegramUserId(telegramUserId: number): void;
 }
