@@ -1,7 +1,6 @@
 enum TelegramMessageType {
     Lobby = "Lobby",
-    Members = "Members",
-    Result = "Result",
+    Poker = "Poker",
 }
 
 export default TelegramMessageType;

@@ -62,8 +62,6 @@ export default class LobbyServiceImpl implements LobbyService {
             payload: { members: this.getMembers(lobby.id) },
         });
 
-        this.checkPokerResult(lobby.id);
-
         this.refreshLobbyDestroyTimeout(lobby.id);
 
         return lobby;
@@ -92,13 +90,16 @@ export default class LobbyServiceImpl implements LobbyService {
             payload: { members },
         });
 
-        this.checkPokerResult(lobbyId);
+        const lobby = this.lobbyDAO.getById(lobbyId);
+        if (lobby.state === LobbyState.Playing) {
+            this.checkPoker(lobbyId);
+        }
 
         if (members.length) {
             this.refreshLobbyDestroyTimeout(lobbyId);
         } else {
             clearTimeout(this.lobbyDestroyTimeouts.get(lobbyId));
-            this.lobbyDAO.delete(lobbyId);
+            this.destroyLobby(lobbyId);
         }
 
     }
@@ -120,6 +121,19 @@ export default class LobbyServiceImpl implements LobbyService {
         });
     }
 
+    checkPoker(lobbyId: number): void {
+        const result = this.getPokerResult(lobbyId);
+
+        if (result.every(item => !!item.card)) {
+            this.finishPoker(lobbyId);
+        } else {
+            this.subscriptionService.dispatch(lobbyId, {
+                type: EventType.PokerResultWasChanged,
+                payload: { result },
+            });
+        }
+    }
+
     finishPoker(lobbyId: number): void {
         const lobby = this.lobbyDAO.getById(lobbyId);
         this.lobbyDAO.save({ ...lobby, currentTheme: null, state: LobbyState.Waiting });
@@ -128,7 +142,7 @@ export default class LobbyServiceImpl implements LobbyService {
 
         this.subscriptionService.dispatch(lobbyId, {
             type: EventType.PokerWasFinished,
-            payload: { result: this.getPokerFinishResult(lobbyId) },
+            payload: { theme: lobby.currentTheme, ...this.getPokerFinishResult(lobbyId) },
         });
 
         const memberIds = this.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId);
@@ -147,7 +161,7 @@ export default class LobbyServiceImpl implements LobbyService {
         return members.map(member => ({ member, card: cards[ member.id ] }));
     }
 
-    getPokerFinishResult(lobbyId: number): PokerResultItemDto[] {
+    getPokerFinishResult(lobbyId: number): { result: PokerResultItemDto[], totalScore: CardDto } {
         const pokerResult = this.getPokerResult(lobbyId);
         const cards = pokerResult.map(resultItem => resultItem.card);
 
@@ -159,15 +173,18 @@ export default class LobbyServiceImpl implements LobbyService {
         const maxCard = sortedCards[ sortedCards.length - 1 ];
         const notComparableCards = cards.filter(card => !card.isComparable());
 
-        let minMaxResult;
-        let specialResult;
+        let minMaxResult: PokerResultItemDto[];
+        let specialResult: PokerResultItemDto[];
+        let totalScore: CardDto;
 
         if (minCard !== maxCard) {
             const minResult = pokerResult.filter(resultItem => resultItem.card === minCard);
             const maxResult = pokerResult.filter(resultItem => resultItem.card === maxCard);
             minMaxResult = minResult.concat(maxResult);
+            totalScore = null;
         } else {
             minMaxResult = [];
+            totalScore = minCard;
         }
 
         if (notComparableCards.length) {
@@ -176,7 +193,7 @@ export default class LobbyServiceImpl implements LobbyService {
             specialResult = [];
         }
 
-        return minMaxResult.concat(specialResult);
+        return { result: minMaxResult.concat(specialResult), totalScore };
     }
 
     private createLobby(lobbyName: string): LobbyDto {
@@ -189,14 +206,6 @@ export default class LobbyServiceImpl implements LobbyService {
 
         this.refreshLobbyDestroyTimeout(createdLobby.id);
         this.subscriptionService.register(createdLobby.id);
-
-        this.subscriptionService.lobbySubscribe(createdLobby.id, event => {
-            if (event.type === EventType.PokerResultWasChanged) {
-                if (event.payload.result.every(item => !!item.card)) {
-                    this.finishPoker(createdLobby.id);
-                }
-            }
-        });
 
         return {
             ...createdLobby,
@@ -218,18 +227,7 @@ export default class LobbyServiceImpl implements LobbyService {
         this.memberDAO.deleteByIds(memberIds);
         this.lobbyDAO.delete(lobbyId);
 
-        this.subscriptionService.lobbyUnsubscribe(lobbyId);
         this.subscriptionService.unregister(lobbyId);
-    }
-
-    private checkPokerResult(lobbyId: number): void {
-        const lobby = this.lobbyDAO.getById(lobbyId);
-        if (lobby.state === LobbyState.Playing) {
-            this.subscriptionService.dispatch(lobbyId, {
-                type: EventType.PokerResultWasChanged,
-                payload: { result: this.getPokerResult(lobbyId) },
-            });
-        }
     }
 
     private fromEntityToDto(lobby: Lobby): LobbyDto {

@@ -36,7 +36,7 @@ export default class MemberLeaveSubscription extends TelegramBotSubscription<Cal
                         message_id: lobbyMessageId,
                     });
 
-                    const resultMessageId = this.telegramDataService.getMessageId(lobbyId, callback.message.chat.id, TelegramMessageType.Result);
+                    const resultMessageId = this.telegramDataService.getMessageId(lobbyId, callback.message.chat.id, TelegramMessageType.Poker);
                     if (resultMessageId) {
                         await this.bot.editMessageReplyMarkup(null, {
                             chat_id: callback.message.chat.id,

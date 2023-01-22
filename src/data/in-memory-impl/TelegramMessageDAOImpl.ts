@@ -9,8 +9,7 @@ export default class TelegramMessageDAOImpl implements TelegramMessageDAO {
 
     private MESSAGE_KEYS_BY_LOBBY_ID: Record<TelegramMessageType, Map<number, TelegramMessageKey[]>> = {
         [ TelegramMessageType.Lobby ]: new Map<number, TelegramMessageKey[]>(),
-        [ TelegramMessageType.Members ]: new Map<number, TelegramMessageKey[]>(),
-        [ TelegramMessageType.Result ]: new Map<number, TelegramMessageKey[]>(),
+        [ TelegramMessageType.Poker ]: new Map<number, TelegramMessageKey[]>(),
     };
 
     getMessageKeys(lobbyId: number, messageType: TelegramMessageType): TelegramMessageKey[] {

@@ -6,7 +6,6 @@ import { DAO_TYPES, LobbyDAO, MemberCardXrefDAO, MemberDAO, MemberLobbyXrefDAO }
 
 import { LobbyService, MemberService, SERVICE_TYPES, SubscriptionService } from "../api";
 import { PokerIsNotStartedError, MemberIsNotInLobbyError, UnknownMemberError } from "../error";
-import { EventType } from "../event";
 
 @injectable()
 export default class MemberServiceImpl implements MemberService {
@@ -48,11 +47,7 @@ export default class MemberServiceImpl implements MemberService {
         }
 
         this.memberCardXrefDAO.put(memberId, cardCode);
-
-        this.subscriptionService.dispatch(lobbyId, {
-            type: EventType.PokerResultWasChanged,
-            payload: { result: this.lobbyService.getPokerResult(lobbyId) },
-        });
+        this.lobbyService.checkPoker(lobbyId);
     }
 
     removeCard(memberId: number): void {
@@ -65,11 +60,7 @@ export default class MemberServiceImpl implements MemberService {
         }
 
         this.memberCardXrefDAO.removeByMemberId(memberId);
-
-        this.subscriptionService.dispatch(lobbyId, {
-            type: EventType.PokerResultWasChanged,
-            payload: { result: this.lobbyService.getPokerResult(lobbyId) },
-        });
+        this.lobbyService.checkPoker(lobbyId);
     }
 
 }
