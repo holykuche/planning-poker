@@ -1,4 +1,4 @@
-##Project building
+## Project building
 Before you build project you should create `app.config.json` in project's root catalog:
 ```json
 {
