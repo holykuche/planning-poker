@@ -4,9 +4,10 @@ import TelegramBot, { Message } from "node-telegram-bot-api";
 
 import { lazyInject } from "inversify.config";
 import { LobbyState, TelegramMessageType } from "data/enum";
+import { Member } from "data/entity";
 import { LobbyService, SERVICE_TYPES, SubscriptionService, TelegramDataService } from "service/api";
 import { EventType } from "service/event";
-import { PokerResultItemDto } from "service/dto";
+import { PokerResultItemDto, CardDto } from "service/dto";
 
 import { ButtonCommand } from "../enum";
 import { formatLobby, formatPoker, formatResult, formatDestroyedLobby, fromTelegramUserToMember } from "../utils";
@@ -34,112 +35,80 @@ export default class MemberEnterSubscription extends TelegramBotSubscription<Mes
                 const lobbyName = msg.text.match(MemberEnterSubscription.ENTER_REGEXP)[ 1 ];
 
                 try {
-                    const member = this.telegramDataService.createMember(fromTelegramUserToMember(msg.from));
-                    const lobby = this.lobbyService.enterMember(member.id, lobbyName);
+                    const { id: memberId } = this.telegramDataService.createMember(fromTelegramUserToMember(msg.from));
+                    const { id: lobbyId, state: lobbyState, currentTheme: lobbyCurrentTheme } = this.lobbyService.enterMember(memberId, lobbyName);
 
-                    this.subscriptionService.subscribe(lobby.id, member.id, async event => {
+                    await this.initLobbyMessage(msg.chat.id, msg.from.id, lobbyId, lobbyName);
+
+                    if (lobbyState === LobbyState.Playing) {
+                        const pokerResult = this.lobbyService.getPokerResult(lobbyId);
+                        await this.initPokerMessage(msg.chat.id, msg.from.id, lobbyId, lobbyCurrentTheme, pokerResult);
+                    }
+
+                    this.subscriptionService.subscribe(lobbyId, memberId, async event => {
                         switch (event.type) {
                             case EventType.MembersWasChanged:
-                                await this.bot.editMessageText(formatLobby(lobbyName, event.payload.members, msg.from.id), {
-                                    chat_id: msg.chat.id,
-                                    message_id: this.telegramDataService.getMessageId(lobby.id, msg.chat.id, TelegramMessageType.Lobby),
-                                    parse_mode: MemberEnterSubscription.PARSE_MODE,
-                                    reply_markup: {
-                                        inline_keyboard: MemberEnterSubscription.INLINE_KEYBOARD[ButtonCommand.Leave],
-                                    },
-                                });
+                                await this.updateLobbyMessage(msg.chat.id, msg.from.id, lobbyId, lobbyName, event.payload.members);
                                 break;
                             case EventType.PokerWasStarted:
-                                await this.initStartPokerMessages(msg.chat.id, msg.from.id, lobby.id, event.payload.theme, event.payload.result);
+                                await this.initPokerMessage(msg.chat.id, msg.from.id, lobbyId, event.payload.theme, event.payload.result);
                                 break;
                             case EventType.PokerResultWasChanged:
-                                const card = event.payload.result
-                                    .find(resultItem => resultItem.member.id === member.id)
-                                    .card;
-                                await this.bot.editMessageText(formatPoker(
-                                    this.lobbyService.getById(lobby.id).currentTheme,
-                                    event.payload.result,
-                                    msg.from.id),
-                                    {
-                                        chat_id: msg.chat.id,
-                                        message_id: this.telegramDataService.getMessageId(lobby.id, msg.chat.id, TelegramMessageType.Poker),
-                                        parse_mode: MemberEnterSubscription.PARSE_MODE,
-                                        reply_markup: {
-                                            inline_keyboard: card
-                                                ? MemberEnterSubscription.INLINE_KEYBOARD[ ButtonCommand.RemoveCard ]
-                                                : MemberEnterSubscription.INLINE_KEYBOARD[ ButtonCommand.PutCard ],
-                                        },
-                                    });
+                                await this.updatePokerMessage(msg.chat.id, msg.from.id, lobbyId, memberId, event.payload.result);
                                 break;
                             case EventType.PokerWasFinished:
-                                const pokerMessageId = this.telegramDataService.getMessageId(lobby.id, msg.chat.id, TelegramMessageType.Poker);
-                                await this.bot.deleteMessage(msg.chat.id, String(pokerMessageId));
-                                this.telegramDataService.deleteMessageKey(lobby.id, TelegramMessageType.Poker, {
-                                    chatId: msg.chat.id,
-                                    messageId: pokerMessageId,
-                                });
-
-                                await this.bot.sendMessage(msg.chat.id, formatResult(
-                                    event.payload.theme,
-                                    event.payload.result,
-                                    event.payload.totalScore,
-                                    msg.from.id),
-                                    {
-                                        parse_mode: MemberEnterSubscription.PARSE_MODE,
-                                    });
-
+                                await this.initFinishMessage(msg.chat.id, msg.from.id, lobbyId, event.payload.theme, event.payload.result, event.payload.totalScore);
                                 break;
                             case EventType.LobbyWasDestroyed:
-                                const lobbyMessageId = this.telegramDataService.getMessageId(event.payload.lobby.id, msg.chat.id, TelegramMessageType.Lobby);
-                                await this.bot.editMessageReplyMarkup(null, {
-                                    chat_id: msg.chat.id,
-                                    message_id: lobbyMessageId,
-                                });
-
-                                const resultMessageId = this.telegramDataService.getMessageId(event.payload.lobby.id, msg.chat.id, TelegramMessageType.Poker);
-                                if (resultMessageId) {
-                                    await this.bot.deleteMessage(msg.chat.id, String(resultMessageId));
-                                }
-
-                                this.telegramDataService.deleteAllMessageKeysFromChat(event.payload.lobby.id, msg.chat.id);
-                                this.telegramDataService.deleteMemberByMemberId(member.id);
-
-                                await this.bot.sendMessage(msg.chat.id, formatDestroyedLobby(event.payload.lobby.name), {
-                                    parse_mode: MemberEnterSubscription.PARSE_MODE,
-                                });
+                                await this.initDestroyedLobbyMessage(msg.chat.id, lobbyId, lobbyName, memberId);
                                 break;
                             default:
                         }
                     });
-
-                    const members = this.lobbyService.getMembers(lobby.id);
-
-                    const lobbyMsg = await this.bot.sendMessage(msg.chat.id, formatLobby(lobbyName, members, msg.from.id), {
-                        parse_mode: MemberEnterSubscription.PARSE_MODE,
-                        reply_markup: {
-                            inline_keyboard: MemberEnterSubscription.INLINE_KEYBOARD[ ButtonCommand.Leave ],
-                        },
-                    });
-                    this.telegramDataService.addMessageKey(lobby.id, TelegramMessageType.Lobby, {
-                        chatId: lobbyMsg.chat.id,
-                        messageId: lobbyMsg.message_id,
-                    });
-
-                    if (lobby.state === LobbyState.Playing) {
-                        const pokerResult = this.lobbyService.getPokerResult(lobby.id);
-                        await this.initStartPokerMessages(msg.chat.id, msg.from.id, lobby.id, lobby.currentTheme, pokerResult);
-                    }
                 } catch (error) {
                     await this.handleError(msg.chat.id, error);
                 }
             });
     }
 
-    private async initStartPokerMessages(chatId: number,
-                                         telegramUserId: number,
-                                         lobbyId: number,
-                                         theme: string,
-                                         pokerResult: PokerResultItemDto[]) {
+    private async initLobbyMessage(chatId: number,
+                                   telegramUserId: number,
+                                   lobbyId: number,
+                                   lobbyName: string): Promise<void> {
+        const members = this.lobbyService.getMembers(lobbyId);
+
+        const lobbyMsg = await this.bot.sendMessage(chatId, formatLobby(lobbyName, members, telegramUserId), {
+            parse_mode: MemberEnterSubscription.PARSE_MODE,
+            reply_markup: {
+                inline_keyboard: MemberEnterSubscription.INLINE_KEYBOARD[ ButtonCommand.Leave ],
+            },
+        });
+        this.telegramDataService.addMessageKey(lobbyId, TelegramMessageType.Lobby, {
+            chatId: lobbyMsg.chat.id,
+            messageId: lobbyMsg.message_id,
+        });
+    }
+
+    private async updateLobbyMessage(chatId: number,
+                                     telegramUserId: number,
+                                     lobbyId: number,
+                                     lobbyName: string,
+                                     members: Member[]): Promise<void> {
+        await this.bot.editMessageText(formatLobby(lobbyName, members, telegramUserId), {
+            chat_id: chatId,
+            message_id: this.telegramDataService.getMessageId(lobbyId, chatId, TelegramMessageType.Lobby),
+            parse_mode: MemberEnterSubscription.PARSE_MODE,
+            reply_markup: {
+                inline_keyboard: MemberEnterSubscription.INLINE_KEYBOARD[ ButtonCommand.Leave ],
+            },
+        });
+    }
+
+    private async initPokerMessage(chatId: number,
+                                   telegramUserId: number,
+                                   lobbyId: number,
+                                   theme: string,
+                                   pokerResult: PokerResultItemDto[]): Promise<void> {
         const pokerResultMsg = await this.bot.sendMessage(chatId, formatPoker(theme, pokerResult, telegramUserId), {
             parse_mode: MemberEnterSubscription.PARSE_MODE,
             reply_markup: {
@@ -149,6 +118,69 @@ export default class MemberEnterSubscription extends TelegramBotSubscription<Mes
         this.telegramDataService.addMessageKey(lobbyId, TelegramMessageType.Poker, {
             chatId: pokerResultMsg.chat.id,
             messageId: pokerResultMsg.message_id,
+        });
+    }
+
+    private async updatePokerMessage(chatId: number,
+                                     telegramUserId: number,
+                                     lobbyId: number,
+                                     memberId: number,
+                                     result: PokerResultItemDto[]): Promise<void> {
+        const card = result
+            .find(resultItem => resultItem.member.id === memberId)
+            .card;
+        const { currentTheme } = this.lobbyService.getById(lobbyId);
+
+        await this.bot.editMessageText(formatPoker(currentTheme, result, telegramUserId), {
+            chat_id: chatId,
+            message_id: this.telegramDataService.getMessageId(lobbyId, chatId, TelegramMessageType.Poker),
+            parse_mode: MemberEnterSubscription.PARSE_MODE,
+            reply_markup: {
+                inline_keyboard: card
+                    ? MemberEnterSubscription.INLINE_KEYBOARD[ ButtonCommand.RemoveCard ]
+                    : MemberEnterSubscription.INLINE_KEYBOARD[ ButtonCommand.PutCard ],
+            },
+        });
+    }
+
+    private async initFinishMessage(chatId: number,
+                                    telegramUserId: number,
+                                    lobbyId: number,
+                                    pokerTheme: string,
+                                    result: PokerResultItemDto[],
+                                    totalScore: CardDto): Promise<void> {
+        const pokerMessageId = this.telegramDataService.getMessageId(lobbyId, chatId, TelegramMessageType.Poker);
+        await this.bot.deleteMessage(chatId, String(pokerMessageId));
+        this.telegramDataService.deleteMessageKey(lobbyId, TelegramMessageType.Poker, {
+            chatId: chatId,
+            messageId: pokerMessageId,
+        });
+
+        await this.bot.sendMessage(chatId, formatResult(pokerTheme, result, totalScore, telegramUserId), {
+            parse_mode: MemberEnterSubscription.PARSE_MODE,
+        });
+    }
+
+    private async initDestroyedLobbyMessage(chatId: number,
+                                            lobbyId: number,
+                                            lobbyName: string,
+                                            memberId): Promise<void> {
+        const lobbyMessageId = this.telegramDataService.getMessageId(lobbyId, chatId, TelegramMessageType.Lobby);
+        await this.bot.editMessageReplyMarkup(null, {
+            chat_id: chatId,
+            message_id: lobbyMessageId,
+        });
+
+        const resultMessageId = this.telegramDataService.getMessageId(lobbyId, chatId, TelegramMessageType.Poker);
+        if (resultMessageId) {
+            await this.bot.deleteMessage(chatId, String(resultMessageId));
+        }
+
+        this.telegramDataService.deleteAllMessageKeysFromChat(lobbyId, chatId);
+        this.telegramDataService.deleteMemberByMemberId(memberId);
+
+        await this.bot.sendMessage(chatId, formatDestroyedLobby(lobbyName), {
+            parse_mode: MemberEnterSubscription.PARSE_MODE,
         });
     }
 }

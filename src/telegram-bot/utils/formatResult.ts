@@ -13,7 +13,7 @@ export default function(theme: string, items: PokerResultItemDto[], totalScore: 
     }
 
     if (totalScore) {
-        result += `\nTotal score: ${italic(totalScore.label)}`;
+        result += `\n\nTotal score: ${italic(totalScore.label)}`;
     }
 
     return result;

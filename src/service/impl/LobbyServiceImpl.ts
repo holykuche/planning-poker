@@ -217,7 +217,6 @@ export default class LobbyServiceImpl implements LobbyService {
 
         this.subscriptionService.dispatch(lobbyId, {
             type: EventType.LobbyWasDestroyed,
-            payload: { lobby: this.lobbyDAO.getById(lobbyId) },
         });
 
         this.memberCardXrefDAO.removeByMemberIds(memberIds);
