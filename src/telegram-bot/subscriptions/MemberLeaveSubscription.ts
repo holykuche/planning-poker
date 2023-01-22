@@ -38,10 +38,7 @@ export default class MemberLeaveSubscription extends TelegramBotSubscription<Cal
 
                     const resultMessageId = this.telegramDataService.getMessageId(lobbyId, callback.message.chat.id, TelegramMessageType.Poker);
                     if (resultMessageId) {
-                        await this.bot.editMessageReplyMarkup(null, {
-                            chat_id: callback.message.chat.id,
-                            message_id: resultMessageId,
-                        });
+                        await this.bot.deleteMessage(callback.message.chat.id, String(resultMessageId));
                     }
 
                     this.telegramDataService.deleteAllMessageKeysFromChat(lobbyId, callback.message.chat.id);
