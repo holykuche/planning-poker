@@ -1,7 +1,6 @@
 import { inject, injectable } from "inversify";
 
 import { DAO_TYPES, LobbyDAO, MemberCardXrefDAO, MemberDAO, MemberLobbyXrefDAO } from "data/api";
-import { CardCode } from "data/enum";
 import { Lobby, Member } from "data/entity";
 import { LobbyState } from "data/enum";
 
@@ -210,11 +209,11 @@ export default class LobbyServiceImpl implements LobbyService {
         return {
             ...createdLobby,
             members: [],
-            cards: new Map<number, CardDto<CardCode>>(),
+            cards: new Map<number, CardDto>(),
         };
     }
 
-    private destroyLobby(lobbyId: number) {
+    private destroyLobby(lobbyId: number): void {
         const memberIds = this.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId);
 
         this.subscriptionService.dispatch(lobbyId, {

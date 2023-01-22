@@ -37,8 +37,11 @@ export default class MemberLobbyXrefDAOImpl implements MemberLobbyXrefDAO {
     }
 
     unbindMembers(lobbyId: number): void {
-        this.LOBBY_MEMBER_XREF.get(lobbyId).forEach(mId => this.MEMBER_LOBBY_XREF.delete(mId));
-        this.LOBBY_MEMBER_XREF.delete(lobbyId);
+        const memberIds = this.LOBBY_MEMBER_XREF.has(lobbyId);
+        if (memberIds) {
+            this.LOBBY_MEMBER_XREF.get(lobbyId).forEach(mId => this.MEMBER_LOBBY_XREF.delete(mId));
+            this.LOBBY_MEMBER_XREF.delete(lobbyId);
+        }
     }
 
 }
