@@ -2,12 +2,14 @@ import { Observable, Subscription } from "rxjs";
 import TelegramBot, { Message, CallbackQuery, InlineKeyboardButton } from "node-telegram-bot-api";
 
 import { CardCode } from "data/enum";
+import { ServiceError } from "service/error";
 
 import { ButtonCommand } from "../enum";
-import { inlineKeyboardButtonFactory } from "../utils";
+import { inlineKeyboardButtonFactory, formatWarning } from "../utils";
 
 export default abstract class TelegramBotSubscription<T extends Message | CallbackQuery> {
 
+    protected static readonly PARSE_MODE = "MarkdownV2";
     protected static readonly INLINE_KEYBOARD: Record<ButtonCommand, InlineKeyboardButton[][]> = {
         [ ButtonCommand.Leave ]: [ [ inlineKeyboardButtonFactory(ButtonCommand.Leave) ] ],
         [ ButtonCommand.PutCard ]: [
@@ -39,6 +41,18 @@ export default abstract class TelegramBotSubscription<T extends Message | Callba
                           protected readonly bot?: TelegramBot) {}
 
     abstract subscribe(): Subscription;
+
+    protected async handleError(chatId: number, error: any): Promise<void> {
+        if (error instanceof ServiceError) {
+            const warningMessage = await this.bot.sendMessage(chatId, formatWarning(error.getUserMessage()), {
+                parse_mode: TelegramBotSubscription.PARSE_MODE,
+            });
+            setTimeout(async () => await this.bot.deleteMessage(chatId, String(warningMessage.message_id)), 5000);
+        }
+        if (error instanceof Error) {
+            console.log(`[ERROR]: ${error.message}`);
+        }
+    }
 }
 
 export interface TelegramBotSubscriptionConstructor<T extends Message | CallbackQuery> {

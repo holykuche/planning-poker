@@ -28,7 +28,7 @@ export default class RemoveCardSubscription extends TelegramBotSubscription<Call
                     const member = this.telegramDataService.getMemberByTelegramUserId(callback.from.id);
                     this.memberService.removeCard(member.id);
                 } catch (error) {
-                    console.log(error);
+                    await this.handleError(callback.message.chat.id, error);
                 }
             });
     }

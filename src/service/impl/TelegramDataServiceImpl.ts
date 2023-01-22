@@ -62,7 +62,7 @@ export default class TelegramDataServiceImpl implements TelegramDataService {
         const existedMemberId = this.telegramUserDAO.getMemberIdByTelegramUserId(member.telegramUserId);
         if (existedMemberId) {
             const existedMember = this.memberDAO.getById(existedMemberId);
-            throw new MemberIsAlreadyInLobbyError(existedMember);
+            throw new MemberIsAlreadyInLobbyError(existedMember.name);
         }
 
         const storedMember = { ...this.memberDAO.save(member), telegramUserId: member.telegramUserId };

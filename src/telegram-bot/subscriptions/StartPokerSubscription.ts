@@ -34,7 +34,7 @@ export default class StartPokerSubscription extends TelegramBotSubscription<Mess
 
                     this.lobbyService.startPoker(lobbyId, theme);
                 } catch (error) {
-                    console.log(error);
+                    await this.handleError(msg.chat.id, error);
                 }
             });
     }

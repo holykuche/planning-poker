@@ -15,7 +15,6 @@ import TelegramBotSubscription from "./TelegramBotSubscription";
 export default class MemberEnterSubscription extends TelegramBotSubscription<Message> {
 
     private static readonly ENTER_REGEXP = /^\/enter (\w+)$/;
-    private static readonly PARSE_MODE = "MarkdownV2";
 
     @lazyInject(SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
     @lazyInject(SERVICE_TYPES.TelegramDataService) private readonly telegramDataService: TelegramDataService;
@@ -110,7 +109,7 @@ export default class MemberEnterSubscription extends TelegramBotSubscription<Mes
                         await this.initStartPokerMessages(msg.chat.id, msg.from.id, lobby.id, lobby.currentTheme, pokerResult);
                     }
                 } catch (error) {
-                    console.log(error);
+                    await this.handleError(msg.chat.id, error);
                 }
             });
     }

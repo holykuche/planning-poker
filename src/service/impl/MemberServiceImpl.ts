@@ -31,7 +31,7 @@ export default class MemberServiceImpl implements MemberService {
         const lobbyId = this.memberLobbyXrefDAO.getMembersBinding(memberId);
 
         if (!lobbyId) {
-            throw new MemberIsNotInLobbyError(this.getById(memberId));
+            throw new MemberIsNotInLobbyError(this.getById(memberId).name);
         }
 
         return lobbyId;

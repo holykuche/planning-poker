@@ -6,7 +6,7 @@ import { LobbyState } from "data/enum";
 
 import {
     LobbyAlreadyExistsError,
-    MemberDoesntExist,
+    UnknownMemberError,
     MemberIsAlreadyInLobbyError,
     MemberIsNotInLobbyError,
     PokerIsAlreadyStartedError,
@@ -50,7 +50,7 @@ export default class LobbyServiceImpl implements LobbyService {
     enterMember(memberId: number, lobbyName: string): LobbyDto {
         if (this.memberLobbyXrefDAO.isMemberBound(memberId)) {
             const member = this.memberDAO.getById(memberId);
-            throw new MemberIsAlreadyInLobbyError(member);
+            throw new MemberIsAlreadyInLobbyError(member.name);
         }
 
         const lobby = this.getByName(lobbyName) || this.createLobby(lobbyName);
@@ -70,11 +70,11 @@ export default class LobbyServiceImpl implements LobbyService {
         const member = this.memberDAO.getById(memberId);
 
         if (!member) {
-            throw new MemberDoesntExist();
+            throw new UnknownMemberError();
         }
 
         if (!this.memberLobbyXrefDAO.isMemberBound(memberId)) {
-            throw new MemberIsNotInLobbyError(member);
+            throw new MemberIsNotInLobbyError(member.name);
         }
 
         const lobbyId = this.memberLobbyXrefDAO.getMembersBinding(memberId);
@@ -197,8 +197,7 @@ export default class LobbyServiceImpl implements LobbyService {
 
     private createLobby(lobbyName: string): LobbyDto {
         if (this.lobbyDAO.isExists(lobbyName)) {
-            const existedLobby = this.lobbyDAO.getByName(lobbyName);
-            throw new LobbyAlreadyExistsError(existedLobby);
+            throw new LobbyAlreadyExistsError(lobbyName);
         }
 
         const createdLobby = this.lobbyDAO.save({ name: lobbyName, state: LobbyState.Waiting });

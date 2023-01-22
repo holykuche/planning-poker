@@ -47,7 +47,7 @@ export default class MemberLeaveSubscription extends TelegramBotSubscription<Cal
 
                     await this.bot.sendMessage(callback.message.chat.id, "You've gone");
                 } catch (error) {
-                    console.log(error);
+                    await this.handleError(callback.message.chat.id, error);
                 }
             });
     }

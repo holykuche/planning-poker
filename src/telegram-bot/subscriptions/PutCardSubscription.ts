@@ -32,7 +32,7 @@ export default class PutCardSubscription extends TelegramBotSubscription<Callbac
                     const member = this.telegramDataService.getMemberByTelegramUserId(callback.from.id);
                     this.memberService.putCard(member.id, cardCode);
                 } catch (error) {
-                    console.log(error);
+                    await this.handleError(callback.message.chat.id, error);
                 }
             });
     }

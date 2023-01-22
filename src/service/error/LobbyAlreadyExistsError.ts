@@ -1,7 +1,13 @@
-import Lobby from "data/entity/Lobby";
+import ServiceError from "./ServiceError";
 
-export default class LobbyAlreadyExistsError extends Error {
-    constructor(lobby: Lobby) {
-        super(`Lobby with name "${lobby.name}" already exists`);
+export default class LobbyAlreadyExistsError extends ServiceError {
+
+    constructor(lobbyName: string) {
+        super(`Lobby with name "${lobbyName}" already exists`);
+        Object.setPrototypeOf(this, LobbyAlreadyExistsError.prototype);
+    }
+
+    getUserMessage(): string {
+        return this.message;
     }
 }
