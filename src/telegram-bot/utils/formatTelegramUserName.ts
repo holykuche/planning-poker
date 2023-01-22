@@ -1,6 +1,6 @@
 import { User } from "node-telegram-bot-api";
 
-export default function(user: User) {
+export default function(user: User): string {
     let nameArray = [];
 
     if (user.first_name) {

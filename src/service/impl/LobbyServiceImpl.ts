@@ -226,6 +226,7 @@ export default class LobbyServiceImpl implements LobbyService {
         this.lobbyDAO.delete(lobbyId);
 
         this.subscriptionService.unregister(lobbyId);
+        this.lobbyDestroyTimeouts.delete(lobbyId);
     }
 
     private fromEntityToDto(lobby: Lobby): LobbyDto {

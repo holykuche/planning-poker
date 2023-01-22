@@ -9,7 +9,7 @@ import { EventType } from "service/event";
 import { PokerResultItemDto } from "service/dto";
 
 import { ButtonCommand } from "../enum";
-import { formatLobby, formatPoker, formatResult, fromTelegramUserToMember } from "../utils";
+import { formatLobby, formatPoker, formatResult, formatDestroyedLobby, fromTelegramUserToMember } from "../utils";
 import TelegramBotSubscription from "./TelegramBotSubscription";
 
 export default class MemberEnterSubscription extends TelegramBotSubscription<Message> {
@@ -74,7 +74,10 @@ export default class MemberEnterSubscription extends TelegramBotSubscription<Mes
                             case EventType.PokerWasFinished:
                                 const pokerMessageId = this.telegramDataService.getMessageId(lobby.id, msg.chat.id, TelegramMessageType.Poker);
                                 await this.bot.deleteMessage(msg.chat.id, String(pokerMessageId));
-                                this.telegramDataService.deleteMessageKey(lobby.id, TelegramMessageType.Poker, { chatId: msg.chat.id, messageId: pokerMessageId });
+                                this.telegramDataService.deleteMessageKey(lobby.id, TelegramMessageType.Poker, {
+                                    chatId: msg.chat.id,
+                                    messageId: pokerMessageId,
+                                });
 
                                 await this.bot.sendMessage(msg.chat.id, formatResult(
                                     event.payload.theme,
@@ -86,8 +89,26 @@ export default class MemberEnterSubscription extends TelegramBotSubscription<Mes
                                     });
 
                                 break;
+                            case EventType.LobbyWasDestroyed:
+                                const lobbyMessageId = this.telegramDataService.getMessageId(event.payload.lobby.id, msg.chat.id, TelegramMessageType.Lobby);
+                                await this.bot.editMessageReplyMarkup(null, {
+                                    chat_id: msg.chat.id,
+                                    message_id: lobbyMessageId,
+                                });
+
+                                const resultMessageId = this.telegramDataService.getMessageId(event.payload.lobby.id, msg.chat.id, TelegramMessageType.Poker);
+                                if (resultMessageId) {
+                                    await this.bot.deleteMessage(msg.chat.id, String(resultMessageId));
+                                }
+
+                                this.telegramDataService.deleteAllMessageKeysFromChat(event.payload.lobby.id, msg.chat.id);
+                                this.telegramDataService.deleteMemberByMemberId(member.id);
+
+                                await this.bot.sendMessage(msg.chat.id, formatDestroyedLobby(event.payload.lobby.name), {
+                                    parse_mode: MemberEnterSubscription.PARSE_MODE,
+                                });
+                                break;
                             default:
-                                throw new Error(`Unexpectable event type "${event.type}"`);
                         }
                     });
 
