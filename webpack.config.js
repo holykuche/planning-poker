@@ -50,7 +50,7 @@ module.exports = {
     plugins: [
         new webpack.DefinePlugin({
             TELEGRAM_BOT_API_TOKEN: JSON.stringify(appConfig[ "telegram-bot-api-token" ]),
-            LOBBY_LIFETIME_MS: JSON.stringify(appConfig[ "lobby-lifetime" ]),
+            LOBBY_LIFETIME_MS: JSON.stringify(appConfig[ "lobby-lifetime-minutes" ] * 60000),
         }),
     ],
 };
