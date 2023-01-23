@@ -29,8 +29,8 @@ export default abstract class TelegramBotSubscription<T extends Message | Callba
                 inlineKeyboardButtonFactory(ButtonCommand.PutCard, CardCode.Score40),
             ],
             [
-                inlineKeyboardButtonFactory(ButtonCommand.PutCard, CardCode.Score100),
                 inlineKeyboardButtonFactory(ButtonCommand.PutCard, CardCode.DontKnow),
+                inlineKeyboardButtonFactory(ButtonCommand.PutCard, CardCode.Score100),
                 inlineKeyboardButtonFactory(ButtonCommand.PutCard, CardCode.Skip),
             ],
         ],
