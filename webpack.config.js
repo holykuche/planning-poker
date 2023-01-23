@@ -1,7 +1,10 @@
 const webpack = require("webpack");
-const nodeExternals = require("webpack-node-externals");
+const { merge } = require("webpack-merge");
 const path = require("path");
-const appConfig = require("./app.config.json");
+
+const appConfig = require("./app.config");
+const webpackDevConfig = require("./webpack.dev.config");
+const webpackProdConfig = require("./webpack.prod.config");
 
 const resolveDataImplPath = dbType => {
     switch (dbType) {
@@ -15,8 +18,7 @@ const resolveDataImplPath = dbType => {
     }
 };
 
-module.exports = {
-    mode: "development",
+const baseConfig = {
     target: "node",
     entry: {
         "telegram-bot": [
@@ -25,7 +27,6 @@ module.exports = {
             "./src/service/impl/index.ts",
         ],
     },
-    devtool: 'inline-source-map',
     module: {
         rules: [
             {
@@ -40,17 +41,26 @@ module.exports = {
             path.resolve(__dirname, "src/"),
             path.resolve(__dirname, "node_modules/"),
         ],
-        extensions: [ ".ts" ]
+        extensions: [ '.js', ".ts" ]
     },
     output: {
         path: path.resolve(__dirname, "dist/"),
-        filename: "[name].js",
     },
-    externals: [ nodeExternals() ],
     plugins: [
         new webpack.DefinePlugin({
             TELEGRAM_BOT_API_TOKEN: JSON.stringify(appConfig[ "telegram-bot-api-token" ]),
             LOBBY_LIFETIME_MS: JSON.stringify(appConfig[ "lobby-lifetime-minutes" ] * 60000),
         }),
     ],
+};
+
+module.exports = (env, args) => {
+    switch (args.mode) {
+        case "development":
+            return merge(baseConfig, webpackDevConfig);
+        case "production":
+            return merge(baseConfig, webpackProdConfig);
+        default:
+            throw new Error(`Build for ${args.mode} mode is not specified`);
+    }
 };
