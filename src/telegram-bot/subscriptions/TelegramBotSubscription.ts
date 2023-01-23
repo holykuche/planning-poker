@@ -9,6 +9,7 @@ import { inlineKeyboardButtonFactory, formatWarning } from "../utils";
 
 export default abstract class TelegramBotSubscription<T extends Message | CallbackQuery> {
 
+    protected static readonly PLAIN_TEXT_REGEXP = /^(?!\/)(.+)$/;
     protected static readonly PARSE_MODE = "MarkdownV2";
     protected static readonly INLINE_KEYBOARD: Record<ButtonCommand, InlineKeyboardButton[][]> = {
         [ ButtonCommand.Leave ]: [ [ inlineKeyboardButtonFactory(ButtonCommand.Leave) ] ],

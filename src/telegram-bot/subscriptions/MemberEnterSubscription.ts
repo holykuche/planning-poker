@@ -22,6 +22,7 @@ export default class MemberEnterSubscription extends TelegramBotSubscription<Mes
     constructor(messages$: Observable<Message>, bot: TelegramBot) {
         const memberEnterMessages$ = messages$
             .pipe(
+                filter(msg => MemberEnterSubscription.PLAIN_TEXT_REGEXP.test(msg.text)),
                 filter(msg => !this.telegramDataService.isMemberExisted(msg.from.id))
             );
         super(memberEnterMessages$, bot);

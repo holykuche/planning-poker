@@ -16,6 +16,7 @@ export default class StartPokerSubscription extends TelegramBotSubscription<Mess
     constructor(messages$: Observable<Message>, bot: TelegramBot) {
         const startPokerMessages$ = messages$
             .pipe(
+                filter(msg => StartPokerSubscription.PLAIN_TEXT_REGEXP.test(msg.text)),
                 filter(msg => this.telegramDataService.isMemberExisted(msg.from.id))
             );
         super(startPokerMessages$, bot);
