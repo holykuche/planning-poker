@@ -9,8 +9,6 @@ import TelegramBotSubscription from "./TelegramBotSubscription";
 
 export default class StartPokerSubscription extends TelegramBotSubscription<Message> {
 
-    private static readonly START_POKER_REGEXP = /^(?!\/)(.+)$/;
-
     @lazyInject(SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
     @lazyInject(SERVICE_TYPES.MemberService) private readonly memberService: MemberService;
     @lazyInject(SERVICE_TYPES.TelegramDataService) private readonly telegramDataService: TelegramDataService;
@@ -18,7 +16,7 @@ export default class StartPokerSubscription extends TelegramBotSubscription<Mess
     constructor(messages$: Observable<Message>, bot: TelegramBot) {
         const startPokerMessages$ = messages$
             .pipe(
-                filter(msg => StartPokerSubscription.START_POKER_REGEXP.test(msg.text))
+                filter(msg => this.telegramDataService.isMemberExisted(msg.from.id))
             );
         super(startPokerMessages$, bot);
     }
@@ -26,7 +24,7 @@ export default class StartPokerSubscription extends TelegramBotSubscription<Mess
     subscribe(): Subscription {
         return this.observable$
             .subscribe(async msg => {
-                const theme = msg.text.match(StartPokerSubscription.START_POKER_REGEXP)[ 1 ];
+                const theme = msg.text.trim();
 
                 try {
                     const member = this.telegramDataService.getMemberByTelegramUserId(msg.from.id);

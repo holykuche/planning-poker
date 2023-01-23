@@ -15,8 +15,6 @@ import TelegramBotSubscription from "./TelegramBotSubscription";
 
 export default class MemberEnterSubscription extends TelegramBotSubscription<Message> {
 
-    private static readonly ENTER_REGEXP = /^\/enter (\w+)$/;
-
     @lazyInject(SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
     @lazyInject(SERVICE_TYPES.TelegramDataService) private readonly telegramDataService: TelegramDataService;
     @lazyInject(SERVICE_TYPES.SubscriptionService) private readonly subscriptionService: SubscriptionService;
@@ -24,7 +22,7 @@ export default class MemberEnterSubscription extends TelegramBotSubscription<Mes
     constructor(messages$: Observable<Message>, bot: TelegramBot) {
         const memberEnterMessages$ = messages$
             .pipe(
-                filter(msg => MemberEnterSubscription.ENTER_REGEXP.test(msg.text))
+                filter(msg => !this.telegramDataService.isMemberExisted(msg.from.id))
             );
         super(memberEnterMessages$, bot);
     }
@@ -32,7 +30,7 @@ export default class MemberEnterSubscription extends TelegramBotSubscription<Mes
     subscribe(): Subscription {
         return this.observable$
             .subscribe(async msg => {
-                const lobbyName = msg.text.match(MemberEnterSubscription.ENTER_REGEXP)[ 1 ];
+                const lobbyName = msg.text.trim();
 
                 try {
                     const { id: memberId } = this.telegramDataService.createMember(fromTelegramUserToMember(msg.from));

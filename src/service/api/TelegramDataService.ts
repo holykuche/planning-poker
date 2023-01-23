@@ -13,6 +13,7 @@ export default interface TelegramDataService {
 
     getMemberByTelegramUserId(telegramUserId: number): MemberDto;
     createMember(member: MemberDto): MemberDto;
+    isMemberExisted(telegramUserId: number): boolean;
     deleteMemberByMemberId(memberId: number): void;
     deleteMemberByTelegramUserId(telegramUserId: number): void;
 }

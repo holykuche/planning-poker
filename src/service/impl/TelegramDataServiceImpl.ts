@@ -71,6 +71,10 @@ export default class TelegramDataServiceImpl implements TelegramDataService {
         return storedMember;
     }
 
+    isMemberExisted(telegramUserId: number): boolean {
+        return this.telegramUserDAO.isMemberExisted(telegramUserId);
+    }
+
     deleteMemberByMemberId(memberId: number): void {
         this.telegramUserDAO.unbindMemberFromTelegramUser(memberId);
         this.memberDAO.deleteById(memberId);

@@ -16,7 +16,7 @@ export default class TelegramUserDAOImpl implements TelegramUserDAO {
         return this.MEMBER_TELEGRAM_USER_XREF.get(memberId);
     }
 
-    isMemberExist(telegramUserId: number): boolean {
+    isMemberExisted(telegramUserId: number): boolean {
         return this.TELEGRAM_USER_MEMBER_XREF.has(telegramUserId);
     }
 

@@ -13,8 +13,8 @@ import DeleteMessageSubscription from "./DeleteMessageSubscription";
 export const messagesSubscriptionConstructors: TelegramBotSubscriptionConstructor<Message>[] = [
     MessageLogger,
     DeleteMessageSubscription,
-    MemberEnterSubscription,
     StartPokerSubscription,
+    MemberEnterSubscription,
 ];
 
 export const callbacksSubscriptionConstructors: TelegramBotSubscriptionConstructor<CallbackQuery>[] = [
