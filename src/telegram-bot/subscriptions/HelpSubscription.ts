@@ -7,8 +7,11 @@ export default class HelpSubscription extends TelegramBotSubscription<Message> {
 
     private static readonly HELP_COMMAND_REGEXP = /^\/(help)|(start)$/;
     private static readonly HELP_MESSAGE =
-        "If you are *not in a lobby* yet, just type *a lobby name* for become a member of that lobby\\.\n"
-        + "If you are already *in a lobby*, just type *a poker theme* for start poker\\. Any member of a lobby can do that\\.\n"
+        "_1\\. Enter to lobby_\n"
+        + "If you are *not in a lobby* yet, just type *a lobby name* for become a member of that lobby\\.\n\n"
+        + "_2\\. Start poker_\n"
+        + "If you are already *in a lobby*, just type *a poker theme* for start poker\\. Any member of a lobby can do that\\.\n\n"
+        + "_3\\. Leave from lobby_\n"
         + "If you want to *leave from a current lobby*, push button *\"Leave\"* below lobby info message\\.";
 
     constructor(messages$: Observable<Message>, bot?: TelegramBot) {
