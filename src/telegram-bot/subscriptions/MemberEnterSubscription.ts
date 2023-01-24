@@ -31,7 +31,7 @@ export default class MemberEnterSubscription extends TelegramBotSubscription<Mes
     subscribe(): Subscription {
         return this.observable$
             .subscribe(async msg => {
-                const lobbyName = msg.text.trim();
+                const lobbyName = msg.text.trim().toUpperCase();
 
                 try {
                     const { id: memberId } = this.telegramDataService.createMember(fromTelegramUserToMember(msg.from));
