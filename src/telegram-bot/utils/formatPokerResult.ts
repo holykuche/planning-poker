@@ -3,6 +3,7 @@ import { PokerResultItemDto } from "service/dto";
 import { Emoji } from "../enum";
 import bold from "./bold";
 import italic from "./italic";
+import escape from "./escape";
 import membersComparatorFactory from "./membersComparatorFactory";
 
 export default function(items: PokerResultItemDto[], telegramUserId: number): string {
@@ -21,8 +22,8 @@ export default function(items: PokerResultItemDto[], telegramUserId: number): st
             }
 
             const memberName = member.telegramUserId === telegramUserId
-                ? bold(italic(member.name))
-                : italic(member.name);
+                ? bold(italic(escape(member.name)))
+                : italic(escape(member.name));
 
             return `${ memberName }: ${italic(cardLabel)}`;
         })
