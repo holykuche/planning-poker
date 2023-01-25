@@ -1,13 +1,13 @@
-import { Observable, Subscription } from "rxjs";
+import { Observable } from "rxjs";
 import { filter } from "rxjs/operators";
 import TelegramBot, { Message } from "node-telegram-bot-api";
 
 import { lazyInject } from "inversify.config";
 import { LobbyService, MemberService, SERVICE_TYPES, TelegramDataService } from "service/api";
 
-import TelegramBotSubscription from "./TelegramBotSubscription";
+import AbstractTelegramBotMessageSubscription from "./AbstractTelegramBotMessageSubscription";
 
-export default class StartPokerSubscription extends TelegramBotSubscription<Message> {
+export default class StartPokerSubscription extends AbstractTelegramBotMessageSubscription {
 
     @lazyInject(SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
     @lazyInject(SERVICE_TYPES.MemberService) private readonly memberService: MemberService;
@@ -22,20 +22,11 @@ export default class StartPokerSubscription extends TelegramBotSubscription<Mess
         super(startPokerMessages$, bot);
     }
 
-    subscribe(): Subscription {
-        return this.observable$
-            .subscribe(async msg => {
-                const theme = msg.text.trim();
+    protected async handle(msg: Message): Promise<void> {
+        const theme = msg.text.trim();
+        const member = this.telegramDataService.getMemberByTelegramUserId(msg.from.id);
+        const lobbyId = this.memberService.getMembersLobbyId(member.id);
 
-                try {
-                    const member = this.telegramDataService.getMemberByTelegramUserId(msg.from.id);
-                    const lobbyId = this.memberService.getMembersLobbyId(member.id);
-
-                    this.lobbyService.startPoker(lobbyId, theme);
-                } catch (error) {
-                    await this.handleError(msg.chat.id, error);
-                }
-            });
+        this.lobbyService.startPoker(lobbyId, theme);
     }
-
 }

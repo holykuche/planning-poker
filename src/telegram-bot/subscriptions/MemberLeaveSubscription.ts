@@ -1,4 +1,4 @@
-import { Observable, Subscription } from "rxjs";
+import { Observable } from "rxjs";
 import { filter } from "rxjs/operators";
 import TelegramBot, { CallbackQuery } from "node-telegram-bot-api";
 
@@ -7,48 +7,41 @@ import { TelegramMessageType } from "data/enum";
 import { LobbyService, MemberService, SERVICE_TYPES, TelegramDataService } from "service/api";
 
 import { ButtonCommand } from "../enum";
-import TelegramBotSubscription from "./TelegramBotSubscription";
+import AbstractTelegramBotCallbackQuerySubscription from "./AbstractTelegramBotCallbackQuerySubscription";
 
-export default class MemberLeaveSubscription extends TelegramBotSubscription<CallbackQuery> {
+export default class MemberLeaveSubscription extends AbstractTelegramBotCallbackQuerySubscription {
 
     @lazyInject(SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
     @lazyInject(SERVICE_TYPES.MemberService) private readonly memberService: MemberService;
     @lazyInject(SERVICE_TYPES.TelegramDataService) private readonly telegramDataService: TelegramDataService;
 
-    constructor(callbacks$: Observable<CallbackQuery>, bot: TelegramBot) {
-        const leaveTelegramUserIds$ = callbacks$
+    constructor(callbackQueries$: Observable<CallbackQuery>, bot: TelegramBot) {
+        const leaveTelegramUserIds$ = callbackQueries$
             .pipe(
                 filter(callback => callback.data === ButtonCommand.Leave)
             );
         super(leaveTelegramUserIds$, bot);
     }
 
-    subscribe(): Subscription {
-        return this.observable$
-            .subscribe(async callback => {
-                try {
-                    const member = this.telegramDataService.getMemberByTelegramUserId(callback.from.id);
-                    const lobbyId = this.memberService.getMembersLobbyId(member.id);
+    protected async handle(callbackQuery: CallbackQuery): Promise<void> {
+        const member = this.telegramDataService.getMemberByTelegramUserId(callbackQuery.from.id);
+        const lobbyId = this.memberService.getMembersLobbyId(member.id);
 
-                    const lobbyMessageId = this.telegramDataService.getMessageId(lobbyId, callback.message.chat.id, TelegramMessageType.Lobby);
-                    await this.bot.editMessageReplyMarkup(null, {
-                        chat_id: callback.message.chat.id,
-                        message_id: lobbyMessageId,
-                    });
+        const lobbyMessageId = this.telegramDataService.getMessageId(lobbyId, callbackQuery.message.chat.id, TelegramMessageType.Lobby);
+        await this.bot.editMessageReplyMarkup(null, {
+            chat_id: callbackQuery.message.chat.id,
+            message_id: lobbyMessageId,
+        });
 
-                    const resultMessageId = this.telegramDataService.getMessageId(lobbyId, callback.message.chat.id, TelegramMessageType.Poker);
-                    if (resultMessageId) {
-                        await this.bot.deleteMessage(callback.message.chat.id, String(resultMessageId));
-                    }
+        const resultMessageId = this.telegramDataService.getMessageId(lobbyId, callbackQuery.message.chat.id, TelegramMessageType.Poker);
+        if (resultMessageId) {
+            await this.bot.deleteMessage(callbackQuery.message.chat.id, String(resultMessageId));
+        }
 
-                    this.telegramDataService.deleteAllMessageKeysFromChat(lobbyId, callback.message.chat.id);
-                    this.lobbyService.leaveMember(member.id);
-                    this.telegramDataService.deleteMemberByMemberId(member.id);
+        this.telegramDataService.deleteAllMessageKeysFromChat(lobbyId, callbackQuery.message.chat.id);
+        this.lobbyService.leaveMember(member.id);
+        this.telegramDataService.deleteMemberByMemberId(member.id);
 
-                    await this.bot.sendMessage(callback.message.chat.id, "You've gone");
-                } catch (error) {
-                    await this.handleError(callback.message.chat.id, error);
-                }
-            });
+        await this.bot.sendMessage(callbackQuery.message.chat.id, "You've gone");
     }
 }

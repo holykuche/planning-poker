@@ -1,6 +1,6 @@
 import { Message, CallbackQuery } from "node-telegram-bot-api";
 
-import { TelegramBotSubscriptionConstructor } from "./TelegramBotSubscription";
+import { TelegramBotSubscriptionConstructor } from "./AbstractTelegramBotSubscription";
 import MessageLogger from "./MessageLogger";
 import CommandLogger from "./CommandLogger";
 import MemberEnterSubscription from "./MemberEnterSubscription";

@@ -1,24 +1,21 @@
-import { Observable, Subscription } from "rxjs";
-import { map } from "rxjs/operators";
+import { Observable } from "rxjs";
 import { CallbackQuery } from "node-telegram-bot-api";
 
 import { formatTelegramUserName } from "../utils";
-import TelegramBotSubscription from "./TelegramBotSubscription";
+import AbstractTelegramBotCallbackQuerySubscription from "./AbstractTelegramBotCallbackQuerySubscription";
 
-export default class CommandLogger extends TelegramBotSubscription<CallbackQuery> {
-    constructor(callbacks$: Observable<CallbackQuery>) {
-        super(callbacks$);
+export default class CommandLogger extends AbstractTelegramBotCallbackQuerySubscription {
+
+    constructor(callbackQueries$: Observable<CallbackQuery>) {
+        super(callbackQueries$);
     }
 
-    subscribe(): Subscription {
-        return this.observable$
-            .pipe(
-                map(CommandLogger.formatCallback)
-            )
-            .subscribe(console.log);
+    protected handle(callbackQuery: CallbackQuery): Promise<void> {
+        console.log(CommandLogger.format(callbackQuery));
+        return Promise.resolve();
     }
 
-    private static formatCallback(callback: CallbackQuery): string {
-        return `[INFO] ${formatTelegramUserName(callback.from)} [ ${callback.from.id} ]: ${callback.data}`;
+    private static format(callbackQuery: CallbackQuery): string {
+        return `[INFO] ${formatTelegramUserName(callbackQuery.from)} [ ${callbackQuery.from.id} ]: ${callbackQuery.data}`;
     }
 }

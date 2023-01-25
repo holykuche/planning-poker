@@ -1,5 +1,5 @@
 import { Observable, Subscription } from "rxjs";
-import TelegramBot, { Message, CallbackQuery, InlineKeyboardButton } from "node-telegram-bot-api";
+import TelegramBot, { InlineKeyboardButton } from "node-telegram-bot-api";
 
 import { CardCode } from "data/enum";
 import { ServiceError } from "service/error";
@@ -7,7 +7,7 @@ import { ServiceError } from "service/error";
 import { ButtonCommand } from "../enum";
 import { inlineKeyboardButtonFactory, formatWarning } from "../utils";
 
-export default abstract class TelegramBotSubscription<T extends Message | CallbackQuery> {
+export default abstract class AbstractTelegramBotSubscription<T> {
 
     protected static readonly PLAIN_TEXT_REGEXP = /^(?!\/)(.+)$/;
     protected static readonly PARSE_MODE = "MarkdownV2";
@@ -43,12 +43,16 @@ export default abstract class TelegramBotSubscription<T extends Message | Callba
 
     abstract subscribe(): Subscription;
 
-    protected async handleError(chatId: number, error: any): Promise<void> {
+    protected abstract handle(item: T): Promise<void>;
+
+    protected abstract getChatId(item: T): number;
+
+    protected async handleError(item: T, error: any): Promise<void> {
         if (error instanceof ServiceError) {
-            const warningMessage = await this.bot.sendMessage(chatId, formatWarning(error.getUserMessage()), {
-                parse_mode: TelegramBotSubscription.PARSE_MODE,
+            const warningMessage = await this.bot.sendMessage(this.getChatId(item), formatWarning(error.getUserMessage()), {
+                parse_mode: AbstractTelegramBotSubscription.PARSE_MODE,
             });
-            setTimeout(async () => await this.bot.deleteMessage(chatId, String(warningMessage.message_id)), 5000);
+            setTimeout(async () => await this.bot.deleteMessage(this.getChatId(item), String(warningMessage.message_id)), 5000);
         }
         if (error instanceof Error) {
             console.log(`[ERROR]: ${error.message}`);
@@ -56,6 +60,6 @@ export default abstract class TelegramBotSubscription<T extends Message | Callba
     }
 }
 
-export interface TelegramBotSubscriptionConstructor<T extends Message | CallbackQuery> {
-    new(observable$: Observable<T>, bot: TelegramBot): TelegramBotSubscription<T>;
+export interface TelegramBotSubscriptionConstructor<T> {
+    new(observable$: Observable<T>, bot: TelegramBot): AbstractTelegramBotSubscription<T>;
 }

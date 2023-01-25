@@ -1,13 +1,13 @@
-import { Observable, Subscription } from "rxjs";
+import { Observable } from "rxjs";
 import { filter } from "rxjs/operators";
 import TelegramBot, { Message } from "node-telegram-bot-api";
 
 import { lazyInject } from "inversify.config";
 import { LobbyService, MemberService, SERVICE_TYPES, TelegramDataService } from "service/api";
 
-import TelegramBotSubscription from "./TelegramBotSubscription";
+import AbstractTelegramBotMessageSubscription from "./AbstractTelegramBotMessageSubscription";
 
-export default class ResetUserSubscription extends TelegramBotSubscription<Message> {
+export default class ResetUserSubscription extends AbstractTelegramBotMessageSubscription {
 
     @lazyInject(SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
     @lazyInject(SERVICE_TYPES.MemberService) private readonly memberService: MemberService;
@@ -23,27 +23,19 @@ export default class ResetUserSubscription extends TelegramBotSubscription<Messa
         super(helpMessages$, bot);
     }
 
-    subscribe(): Subscription {
-        return this.observable$
-            .subscribe(async msg => {
-                try {
-                    if (!this.telegramDataService.isMemberExisted(msg.from.id)) {
-                        return;
-                    }
+    protected async handle(msg: TelegramBot.Message): Promise<void> {
+        if (!this.telegramDataService.isMemberExisted(msg.from.id)) {
+            return;
+        }
 
-                    const member = this.telegramDataService.getMemberByTelegramUserId(msg.from.id);
+        const member = this.telegramDataService.getMemberByTelegramUserId(msg.from.id);
 
-                    if (this.memberService.isMemberInLobby(member.id)) {
-                        const lobbyId = this.memberService.getMembersLobbyId(member.id);
-                        this.lobbyService.leaveMember(member.id);
-                        this.telegramDataService.deleteAllMessageKeysFromChat(lobbyId, msg.chat.id);
-                    }
+        if (this.memberService.isMemberInLobby(member.id)) {
+            const lobbyId = this.memberService.getMembersLobbyId(member.id);
+            this.lobbyService.leaveMember(member.id);
+            this.telegramDataService.deleteAllMessageKeysFromChat(lobbyId, msg.chat.id);
+        }
 
-                    this.telegramDataService.deleteMemberByMemberId(member.id);
-                } catch (error) {
-                    await this.handleError(msg.chat.id, error);
-                }
-            });
+        this.telegramDataService.deleteMemberByMemberId(member.id);
     }
-
 }

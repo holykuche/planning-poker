@@ -1,4 +1,4 @@
-import { Observable, Subscription } from "rxjs";
+import { Observable } from "rxjs";
 import { filter } from "rxjs/operators";
 import TelegramBot, { Message } from "node-telegram-bot-api";
 
@@ -11,9 +11,9 @@ import { PokerResultItemDto, CardDto } from "service/dto";
 
 import { ButtonCommand } from "../enum";
 import { formatLobby, formatPoker, formatResult, formatDestroyedLobby, fromTelegramUserToMember } from "../utils";
-import TelegramBotSubscription from "./TelegramBotSubscription";
+import AbstractTelegramBotMessageSubscription from "./AbstractTelegramBotMessageSubscription";
 
-export default class MemberEnterSubscription extends TelegramBotSubscription<Message> {
+export default class MemberEnterSubscription extends AbstractTelegramBotMessageSubscription {
 
     @lazyInject(SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
     @lazyInject(SERVICE_TYPES.TelegramDataService) private readonly telegramDataService: TelegramDataService;
@@ -28,46 +28,38 @@ export default class MemberEnterSubscription extends TelegramBotSubscription<Mes
         super(memberEnterMessages$, bot);
     }
 
-    subscribe(): Subscription {
-        return this.observable$
-            .subscribe(async msg => {
-                const lobbyName = msg.text.trim().toUpperCase();
+    protected async handle(msg: TelegramBot.Message): Promise<void> {
+        const lobbyName = msg.text.trim().toUpperCase();
+        const { id: memberId } = this.telegramDataService.createMember(fromTelegramUserToMember(msg.from));
+        const { id: lobbyId, state: lobbyState, currentTheme: lobbyCurrentTheme } = this.lobbyService.enterMember(memberId, lobbyName);
 
-                try {
-                    const { id: memberId } = this.telegramDataService.createMember(fromTelegramUserToMember(msg.from));
-                    const { id: lobbyId, state: lobbyState, currentTheme: lobbyCurrentTheme } = this.lobbyService.enterMember(memberId, lobbyName);
+        await this.initLobbyMessage(msg.chat.id, msg.from.id, lobbyId, lobbyName);
 
-                    await this.initLobbyMessage(msg.chat.id, msg.from.id, lobbyId, lobbyName);
+        if (lobbyState === LobbyState.Playing) {
+            const pokerResult = this.lobbyService.getPokerResult(lobbyId);
+            await this.initPokerMessage(msg.chat.id, msg.from.id, lobbyId, lobbyCurrentTheme, pokerResult);
+        }
 
-                    if (lobbyState === LobbyState.Playing) {
-                        const pokerResult = this.lobbyService.getPokerResult(lobbyId);
-                        await this.initPokerMessage(msg.chat.id, msg.from.id, lobbyId, lobbyCurrentTheme, pokerResult);
-                    }
-
-                    this.subscriptionService.subscribe(lobbyId, memberId, async event => {
-                        switch (event.type) {
-                            case EventType.MembersWasChanged:
-                                await this.updateLobbyMessage(msg.chat.id, msg.from.id, lobbyId, lobbyName, event.payload.members);
-                                break;
-                            case EventType.PokerWasStarted:
-                                await this.initPokerMessage(msg.chat.id, msg.from.id, lobbyId, event.payload.theme, event.payload.result);
-                                break;
-                            case EventType.PokerResultWasChanged:
-                                await this.updatePokerMessage(msg.chat.id, msg.from.id, lobbyId, memberId, event.payload.result);
-                                break;
-                            case EventType.PokerWasFinished:
-                                await this.initFinishMessage(msg.chat.id, msg.from.id, lobbyId, event.payload.theme, event.payload.result, event.payload.totalScore);
-                                break;
-                            case EventType.LobbyWasDestroyed:
-                                await this.initDestroyedLobbyMessage(msg.chat.id, lobbyId, lobbyName, memberId);
-                                break;
-                            default:
-                        }
-                    });
-                } catch (error) {
-                    await this.handleError(msg.chat.id, error);
-                }
-            });
+        this.subscriptionService.subscribe(lobbyId, memberId, async event => {
+            switch (event.type) {
+                case EventType.MembersWasChanged:
+                    await this.updateLobbyMessage(msg.chat.id, msg.from.id, lobbyId, lobbyName, event.payload.members);
+                    break;
+                case EventType.PokerWasStarted:
+                    await this.initPokerMessage(msg.chat.id, msg.from.id, lobbyId, event.payload.theme, event.payload.result);
+                    break;
+                case EventType.PokerResultWasChanged:
+                    await this.updatePokerMessage(msg.chat.id, msg.from.id, lobbyId, memberId, event.payload.result);
+                    break;
+                case EventType.PokerWasFinished:
+                    await this.initFinishMessage(msg.chat.id, msg.from.id, lobbyId, event.payload.theme, event.payload.result, event.payload.totalScore);
+                    break;
+                case EventType.LobbyWasDestroyed:
+                    await this.initDestroyedLobbyMessage(msg.chat.id, lobbyId, lobbyName, memberId);
+                    break;
+                default:
+            }
+        });
     }
 
     private async initLobbyMessage(chatId: number,

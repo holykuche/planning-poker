@@ -1,25 +1,21 @@
-import { Observable, Subscription } from "rxjs";
-import { map } from "rxjs/operators";
+import { Observable } from "rxjs";
 import { Message } from "node-telegram-bot-api";
 
 import { formatTelegramUserName } from "../utils";
-import TelegramBotSubscription from "./TelegramBotSubscription";
+import AbstractTelegramBotMessageSubscription from "./AbstractTelegramBotMessageSubscription";
 
-export default class MessageLogger extends TelegramBotSubscription<Message> {
+export default class MessageLogger extends AbstractTelegramBotMessageSubscription {
 
     constructor(messages$: Observable<Message>) {
         super(messages$);
     }
 
-    subscribe(): Subscription {
-        return this.observable$
-            .pipe(
-                map(MessageLogger.formatMsg)
-            )
-            .subscribe(console.log);
+    protected handle(msg: Message): Promise<void> {
+        console.log(MessageLogger.format(msg));
+        return Promise.resolve();
     }
 
-    private static formatMsg(msg: Message): string {
+    private static format(msg: Message): string {
         return `[INFO] ${formatTelegramUserName(msg.from)} [ ${msg.from.id} ]: ${msg.text}`;
     }
 }

@@ -1,10 +1,10 @@
-import { Observable, Subscription } from "rxjs";
+import { Observable } from "rxjs";
 import { filter } from "rxjs/operators";
 import TelegramBot, { Message } from "node-telegram-bot-api";
 
-import TelegramBotSubscription from "./TelegramBotSubscription";
+import AbstractTelegramBotMessageSubscription from "./AbstractTelegramBotMessageSubscription";
 
-export default class HelpSubscription extends TelegramBotSubscription<Message> {
+export default class HelpSubscription extends AbstractTelegramBotMessageSubscription {
 
     private static readonly HELP_COMMAND_REGEXP = /^\/(help)|(start)$/;
     private static readonly HELP_MESSAGE =
@@ -23,13 +23,9 @@ export default class HelpSubscription extends TelegramBotSubscription<Message> {
         super(helpMessages$, bot);
     }
 
-    subscribe(): Subscription {
-        return this.observable$
-            .subscribe(async msg => {
-                await this.bot.sendMessage(msg.chat.id, HelpSubscription.HELP_MESSAGE, {
-                    parse_mode: HelpSubscription.PARSE_MODE,
-                })
-            });
+    protected async handle(msg: TelegramBot.Message): Promise<void> {
+        await this.bot.sendMessage(msg.chat.id, HelpSubscription.HELP_MESSAGE, {
+            parse_mode: HelpSubscription.PARSE_MODE,
+        });
     }
-
 }
