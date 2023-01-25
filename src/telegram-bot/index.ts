@@ -5,7 +5,10 @@ import TelegramBot, { Message, CallbackQuery } from "node-telegram-bot-api";
 import { messagesSubscriptionConstructors, callbacksSubscriptionConstructors } from "./subscriptions";
 
 const bot = new TelegramBot(TELEGRAM_BOT_API_TOKEN, { polling: true });
-bot.setMyCommands([ { command: "/help", description: "Show help message" } ])
+bot.setMyCommands([
+    { command: "/help", description: "Show help message" },
+    { command: "/reset", description: "Reset user state" },
+])
     .catch(console.log);
 
 const messages$ = new Observable<Message>(subscriber => {

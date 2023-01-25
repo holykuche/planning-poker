@@ -37,6 +37,10 @@ export default class MemberServiceImpl implements MemberService {
         return lobbyId;
     }
 
+    isMemberInLobby(memberId: number): boolean {
+        return this.memberLobbyXrefDAO.isMemberBound(memberId);
+    }
+
     putCard(memberId: number, cardCode: CardCode): void {
         const lobbyId = this.getMembersLobbyId(memberId);
 

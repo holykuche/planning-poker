@@ -10,6 +10,7 @@ import PutCardSubscription from "./PutCardSubscription";
 import RemoveCardSubscription from "./RemoveCardSubscription";
 import DeleteMessageSubscription from "./DeleteMessageSubscription";
 import HelpSubscription from "./HelpSubscription";
+import ResetUserSubscription from "./ResetUserSubscription";
 
 export const messagesSubscriptionConstructors: TelegramBotSubscriptionConstructor<Message>[] = [
     MessageLogger,
@@ -17,6 +18,7 @@ export const messagesSubscriptionConstructors: TelegramBotSubscriptionConstructo
     StartPokerSubscription,
     MemberEnterSubscription,
     HelpSubscription,
+    ResetUserSubscription,
 ];
 
 export const callbacksSubscriptionConstructors: TelegramBotSubscriptionConstructor<CallbackQuery>[] = [
