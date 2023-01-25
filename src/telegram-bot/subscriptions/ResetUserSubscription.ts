@@ -15,7 +15,7 @@ export default class ResetUserSubscription extends AbstractTelegramBotMessageSub
 
     private static readonly RESET_COMMAND = "/reset";
 
-    constructor(messages$: Observable<Message>, bot?: TelegramBot) {
+    constructor(messages$: Observable<Message>, bot: TelegramBot) {
         const helpMessages$ = messages$
             .pipe(
                 filter(msg => msg.text === ResetUserSubscription.RESET_COMMAND)
@@ -24,10 +24,6 @@ export default class ResetUserSubscription extends AbstractTelegramBotMessageSub
     }
 
     protected async handle(msg: TelegramBot.Message): Promise<void> {
-        if (!this.telegramDataService.isMemberExisted(msg.from.id)) {
-            return;
-        }
-
         const member = this.telegramDataService.getMemberByTelegramUserId(msg.from.id);
 
         if (this.memberService.isMemberInLobby(member.id)) {
@@ -37,5 +33,7 @@ export default class ResetUserSubscription extends AbstractTelegramBotMessageSub
         }
 
         this.telegramDataService.deleteMemberByMemberId(member.id);
+
+        await this.bot.sendMessage(msg.chat.id, "Your user was successfully reset");
     }
 }
