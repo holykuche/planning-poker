@@ -16,3 +16,6 @@ If not specified, `"in-memory"` will be used by default.
  
  `lobby-lifetime-minutes` is the time in minutes after which a lobby along with all its data will be destroyed.
  Destroying timer is reset when any member of a lobby make some activity in that lobby.
+ 
+ ## Demo
+ You may try [the working telegram bot](https://t.me/ScrumPokerByHolyKucheBot).
