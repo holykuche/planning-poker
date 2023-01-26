@@ -4,7 +4,7 @@
   "description": "Planning Poker by Holy Kuche",
   "scripts": {
     "start": "webpack --mode development && node ./dist/telegram-bot.dev.js",
-    "build": "webpack --mode production",
+    "build": "jest && webpack --mode production",
     "test": "jest"
   },
   "author": "Nikita Temnikov",
