@@ -15,9 +15,9 @@ describe("MemberServiceImpl", () => {
     let memberDAOMock: MockProxy<MemberDAO>;
     let memberCardXrefDAOMock: MockProxy<MemberCardXrefDAO>;
     let memberLobbyXrefDAOMock: MockProxy<MemberLobbyXrefDAO>;
-    let lobbyDAOMock: LobbyDAO;
-    let subscriptionServiceMock: SubscriptionService;
-    let lobbyServiceMock: LobbyService;
+    let lobbyDAOMock: MockProxy<LobbyDAO>;
+    let subscriptionServiceMock: MockProxy<SubscriptionService>;
+    let lobbyServiceMock: MockProxy<LobbyService>;
 
     beforeAll(() => {
         const container = new Container({ defaultScope: BindingScopeEnum.Singleton });
