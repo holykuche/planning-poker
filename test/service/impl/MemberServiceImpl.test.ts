@@ -4,7 +4,7 @@ import { mock, mockReset, anyNumber, MockProxy } from "jest-mock-extended";
 
 import { MemberDAO, MemberCardXrefDAO, MemberLobbyXrefDAO, LobbyDAO, DAO_TYPES } from "data/api";
 import { MemberService, SubscriptionService, LobbyService, SERVICE_TYPES } from "service/api";
-import { UnknownMemberError } from "service/error";
+import { MemberIsNotInLobbyError, UnknownMemberError } from "service/error";
 
 import MemberServiceImpl from "service/impl/MemberServiceImpl";
 
@@ -64,5 +64,20 @@ describe("MemberServiceImpl", () => {
         memberDAOMock.getById.calledWith(anyNumber()).mockReturnValue(null);
 
         expect(() => memberService.getById(1)).toThrowError(UnknownMemberError);
+    });
+
+    it("should return a lobby ID if getMembersLobbyId was called with member ID who involve into a lobby", () => {
+        const memberId = 1;
+        const membersLobbyId = 2;
+        memberLobbyXrefDAOMock.getMembersBinding.calledWith(memberId).mockReturnValue(membersLobbyId);
+
+        expect(memberService.getMembersLobbyId(memberId)).toBe(membersLobbyId);
+    });
+
+    it("should throw an error if getMembersLobbyId was called with member ID who don't involve into any lobby", () => {
+        memberDAOMock.getById.calledWith(anyNumber()).mockReturnValue({ id: 1, name: "dummy" });
+        memberLobbyXrefDAOMock.getMembersBinding.calledWith(anyNumber()).mockReturnValue(null);
+
+        expect(() => memberService.getMembersLobbyId(1)).toThrowError(MemberIsNotInLobbyError);
     });
 });
