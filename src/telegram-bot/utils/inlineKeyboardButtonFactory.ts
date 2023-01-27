@@ -12,7 +12,7 @@ function inlineKeyboardButtonFactory(buttonCommand: ButtonCommand.RemoveCard): I
 function inlineKeyboardButtonFactory(buttonCommand: ButtonCommand, option?: any): InlineKeyboardButton {
     switch (buttonCommand) {
         case ButtonCommand.Leave:
-            return { text: "Leave", callback_data: ButtonCommand.Leave, switch_inline_query: option };
+            return { text: "Leave", callback_data: ButtonCommand.Leave };
         case ButtonCommand.PutCard:
             return { text: CardDto.fromCode(option).label, callback_data: `${ButtonCommand.PutCard} ${option}` };
         case ButtonCommand.RemoveCard:
