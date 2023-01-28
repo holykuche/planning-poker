@@ -1,24 +1,27 @@
+import { injectable, inject } from "inversify";
 import { Observable } from "rxjs";
 import { filter } from "rxjs/operators";
-import TelegramBot, { CallbackQuery } from "node-telegram-bot-api";
+import { CallbackQuery } from "node-telegram-bot-api";
 
-import { lazyInject } from "inversify.config";
 import { MemberService, SERVICE_TYPES, TelegramDataService } from "service/api";
 
 import { ButtonCommand } from "../enum";
+import { TELEGRAM_BOT_TYPES } from "../bot";
+
 import AbstractTelegramBotCallbackQuerySubscription from "./AbstractTelegramBotCallbackQuerySubscription";
 
+@injectable()
 export default class RemoveCardSubscription extends AbstractTelegramBotCallbackQuerySubscription {
 
-    @lazyInject(SERVICE_TYPES.MemberService) private readonly memberService: MemberService;
-    @lazyInject(SERVICE_TYPES.TelegramDataService) private readonly telegramDataService: TelegramDataService;
+    @inject(SERVICE_TYPES.MemberService) private readonly memberService: MemberService;
+    @inject(SERVICE_TYPES.TelegramDataService) private readonly telegramDataService: TelegramDataService;
 
-    constructor(callbackQueries$: Observable<CallbackQuery>, bot: TelegramBot) {
-        const removeCardMessages$ = callbackQueries$
+    constructor(@inject(TELEGRAM_BOT_TYPES.CallbackQueries$) callbackQueries$: Observable<CallbackQuery>) {
+        const removeCardCallbackQueries$ = callbackQueries$
             .pipe(
                 filter(callback => callback.data === ButtonCommand.RemoveCard)
             );
-        super(removeCardMessages$, bot);
+        super(removeCardCallbackQueries$);
     }
 
     protected handle(callbackQuery: CallbackQuery): Promise<void> {

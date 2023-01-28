@@ -1,3 +1,4 @@
+import { injectable, inject } from "inversify";
 import { Observable, Subscription } from "rxjs";
 import TelegramBot, { InlineKeyboardButton } from "node-telegram-bot-api";
 
@@ -6,10 +7,11 @@ import { ServiceError } from "service/error";
 
 import { ButtonCommand } from "../enum";
 import { inlineKeyboardButtonFactory, formatWarning } from "../utils";
+import { TELEGRAM_BOT_TYPES } from "../bot";
 
+@injectable()
 export default abstract class AbstractTelegramBotSubscription<T> {
 
-    protected static readonly PLAIN_TEXT_REGEXP = /^(?!\/)(.+)$/;
     protected static readonly PARSE_MODE = "MarkdownV2";
     protected static readonly INLINE_KEYBOARD: Record<ButtonCommand, InlineKeyboardButton[][]> = {
         [ ButtonCommand.Leave ]: [ [ inlineKeyboardButtonFactory(ButtonCommand.Leave) ] ],
@@ -38,8 +40,12 @@ export default abstract class AbstractTelegramBotSubscription<T> {
         [ ButtonCommand.RemoveCard ]: [ [ inlineKeyboardButtonFactory(ButtonCommand.RemoveCard) ] ],
     };
 
-    protected constructor(protected readonly observable$: Observable<T>,
-                          protected readonly bot?: TelegramBot) {}
+    @inject(TELEGRAM_BOT_TYPES.TelegramBot) protected readonly bot: TelegramBot;
+    protected readonly observable$: Observable<T>;
+
+    constructor(observable$: Observable<T>) {
+        this.observable$ = observable$;
+    }
 
     abstract subscribe(): Subscription;
 
@@ -58,8 +64,4 @@ export default abstract class AbstractTelegramBotSubscription<T> {
             console.log(`[ERROR]: ${error.message}`);
         }
     }
-}
-
-export interface TelegramBotSubscriptionConstructor<T> {
-    new(observable$: Observable<T>, bot: TelegramBot): AbstractTelegramBotSubscription<T>;
 }

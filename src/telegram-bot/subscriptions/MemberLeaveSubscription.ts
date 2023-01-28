@@ -1,26 +1,29 @@
+import { injectable, inject } from "inversify";
 import { Observable } from "rxjs";
 import { filter } from "rxjs/operators";
-import TelegramBot, { CallbackQuery } from "node-telegram-bot-api";
+import { CallbackQuery } from "node-telegram-bot-api";
 
-import { lazyInject } from "inversify.config";
 import { TelegramMessageType } from "data/enum";
 import { LobbyService, MemberService, SERVICE_TYPES, TelegramDataService } from "service/api";
 
 import { ButtonCommand } from "../enum";
+import { TELEGRAM_BOT_TYPES } from "../bot";
+
 import AbstractTelegramBotCallbackQuerySubscription from "./AbstractTelegramBotCallbackQuerySubscription";
 
+@injectable()
 export default class MemberLeaveSubscription extends AbstractTelegramBotCallbackQuerySubscription {
 
-    @lazyInject(SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
-    @lazyInject(SERVICE_TYPES.MemberService) private readonly memberService: MemberService;
-    @lazyInject(SERVICE_TYPES.TelegramDataService) private readonly telegramDataService: TelegramDataService;
+    @inject(SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
+    @inject(SERVICE_TYPES.MemberService) private readonly memberService: MemberService;
+    @inject(SERVICE_TYPES.TelegramDataService) private readonly telegramDataService: TelegramDataService;
 
-    constructor(callbackQueries$: Observable<CallbackQuery>, bot: TelegramBot) {
-        const leaveTelegramUserIds$ = callbackQueries$
+    constructor(@inject(TELEGRAM_BOT_TYPES.CallbackQueries$) callbackQueries$: Observable<CallbackQuery>) {
+        const leaveCallbackQueries$ = callbackQueries$
             .pipe(
                 filter(callback => callback.data === ButtonCommand.Leave)
             );
-        super(leaveTelegramUserIds$, bot);
+        super(leaveCallbackQueries$);
     }
 
     protected async handle(callbackQuery: CallbackQuery): Promise<void> {

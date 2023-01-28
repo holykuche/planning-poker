@@ -1,29 +1,32 @@
+import { injectable, inject } from "inversify";
 import { Observable } from "rxjs";
 import { filter } from "rxjs/operators";
-import TelegramBot, { Message } from "node-telegram-bot-api";
+import { Message } from "node-telegram-bot-api";
 
-import { lazyInject } from "inversify.config";
 import { LobbyService, MemberService, SERVICE_TYPES, TelegramDataService } from "service/api";
+
+import { TELEGRAM_BOT_TYPES } from "../bot";
 
 import AbstractTelegramBotMessageSubscription from "./AbstractTelegramBotMessageSubscription";
 
+@injectable()
 export default class ResetUserSubscription extends AbstractTelegramBotMessageSubscription {
 
-    @lazyInject(SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
-    @lazyInject(SERVICE_TYPES.MemberService) private readonly memberService: MemberService;
-    @lazyInject(SERVICE_TYPES.TelegramDataService) private readonly telegramDataService: TelegramDataService;
+    @inject(SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
+    @inject(SERVICE_TYPES.MemberService) private readonly memberService: MemberService;
+    @inject(SERVICE_TYPES.TelegramDataService) private readonly telegramDataService: TelegramDataService;
 
     private static readonly RESET_COMMAND = "/reset";
 
-    constructor(messages$: Observable<Message>, bot: TelegramBot) {
-        const helpMessages$ = messages$
+    constructor(@inject(TELEGRAM_BOT_TYPES.Commands$) commands$: Observable<Message>) {
+        const helpMessages$ = commands$
             .pipe(
                 filter(msg => msg.text === ResetUserSubscription.RESET_COMMAND)
             );
-        super(helpMessages$, bot);
+        super(helpMessages$);
     }
 
-    protected async handle(msg: TelegramBot.Message): Promise<void> {
+    protected async handle(msg: Message): Promise<void> {
         const member = this.telegramDataService.getMemberByTelegramUserId(msg.from.id);
 
         if (this.memberService.isMemberInLobby(member.id)) {

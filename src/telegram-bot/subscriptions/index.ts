@@ -1,8 +1,12 @@
-import { Message, CallbackQuery } from "node-telegram-bot-api";
+import { container } from "inversify.config";
 
-import { TelegramBotSubscriptionConstructor } from "./AbstractTelegramBotSubscription";
-import MessageLogger from "./MessageLogger";
+import SUBSCRIPTION_TYPES from "./types";
+import AbstractTelegramBotSubscription from "./AbstractTelegramBotSubscription";
+import AbstractTelegramBotMessageSubscription from "./AbstractTelegramBotMessageSubscription";
+import AbstractTelegramBotCallbackQuerySubscription from "./AbstractTelegramBotCallbackQuerySubscription";
+import PlainTextLogger from "./PlainTextLogger";
 import CommandLogger from "./CommandLogger";
+import CallbackQueryLogger from "./CallbackQueryLogger";
 import MemberEnterSubscription from "./MemberEnterSubscription";
 import MemberLeaveSubscription from "./MemberLeaveSubscription";
 import StartPokerSubscription from "./StartPokerSubscription";
@@ -12,18 +16,19 @@ import DeleteMessageSubscription from "./DeleteMessageSubscription";
 import HelpSubscription from "./HelpSubscription";
 import ResetUserSubscription from "./ResetUserSubscription";
 
-export const messagesSubscriptionConstructors: TelegramBotSubscriptionConstructor<Message>[] = [
-    MessageLogger,
-    DeleteMessageSubscription,
-    StartPokerSubscription,
-    MemberEnterSubscription,
-    HelpSubscription,
-    ResetUserSubscription,
-];
+container.bind<AbstractTelegramBotMessageSubscription>(SUBSCRIPTION_TYPES.MessageSubscription).to(DeleteMessageSubscription);
 
-export const callbacksSubscriptionConstructors: TelegramBotSubscriptionConstructor<CallbackQuery>[] = [
-    CommandLogger,
-    MemberLeaveSubscription,
-    PutCardSubscription,
-    RemoveCardSubscription,
-];
+container.bind<AbstractTelegramBotMessageSubscription>(SUBSCRIPTION_TYPES.PlainTextSubscription).to(PlainTextLogger);
+container.bind<AbstractTelegramBotMessageSubscription>(SUBSCRIPTION_TYPES.PlainTextSubscription).to(StartPokerSubscription);
+container.bind<AbstractTelegramBotMessageSubscription>(SUBSCRIPTION_TYPES.PlainTextSubscription).to(MemberEnterSubscription);
+
+container.bind<AbstractTelegramBotMessageSubscription>(SUBSCRIPTION_TYPES.CommandSubscription).to(CommandLogger);
+container.bind<AbstractTelegramBotMessageSubscription>(SUBSCRIPTION_TYPES.CommandSubscription).to(HelpSubscription);
+container.bind<AbstractTelegramBotMessageSubscription>(SUBSCRIPTION_TYPES.CommandSubscription).to(ResetUserSubscription);
+
+container.bind<AbstractTelegramBotCallbackQuerySubscription>(SUBSCRIPTION_TYPES.CallbackQuerySubscription).to(CallbackQueryLogger);
+container.bind<AbstractTelegramBotCallbackQuerySubscription>(SUBSCRIPTION_TYPES.CallbackQuerySubscription).to(MemberLeaveSubscription);
+container.bind<AbstractTelegramBotCallbackQuerySubscription>(SUBSCRIPTION_TYPES.CallbackQuerySubscription).to(PutCardSubscription);
+container.bind<AbstractTelegramBotCallbackQuerySubscription>(SUBSCRIPTION_TYPES.CallbackQuerySubscription).to(RemoveCardSubscription);
+
+export { SUBSCRIPTION_TYPES, AbstractTelegramBotSubscription };

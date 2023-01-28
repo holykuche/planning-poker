@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { container } from "inversify.config";
 
 import { SERVICE_TYPES, LobbyService, MemberService, SubscriptionService, TelegramDataService } from "../api";

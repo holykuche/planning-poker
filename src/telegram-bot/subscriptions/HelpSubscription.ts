@@ -1,9 +1,13 @@
+import { injectable, inject } from "inversify";
 import { Observable } from "rxjs";
 import { filter } from "rxjs/operators";
-import TelegramBot, { Message } from "node-telegram-bot-api";
+import { Message } from "node-telegram-bot-api";
+
+import { TELEGRAM_BOT_TYPES } from "../bot";
 
 import AbstractTelegramBotMessageSubscription from "./AbstractTelegramBotMessageSubscription";
 
+@injectable()
 export default class HelpSubscription extends AbstractTelegramBotMessageSubscription {
 
     private static readonly HELP_COMMAND_REGEXP = /^\/(help)|(start)$/;
@@ -15,15 +19,15 @@ export default class HelpSubscription extends AbstractTelegramBotMessageSubscrip
         + "_3\\. Leave from lobby_\n"
         + "If you want to *leave from a current lobby*, push button *\"Leave\"* below lobby info message\\.";
 
-    constructor(messages$: Observable<Message>, bot?: TelegramBot) {
-        const helpMessages$ = messages$
+    constructor(@inject(TELEGRAM_BOT_TYPES.Commands$) commands$: Observable<Message>) {
+        const helpCommands$ = commands$
             .pipe(
                 filter(msg => HelpSubscription.HELP_COMMAND_REGEXP.test(msg.text))
             );
-        super(helpMessages$, bot);
+        super(helpCommands$);
     }
 
-    protected async handle(msg: TelegramBot.Message): Promise<void> {
+    protected async handle(msg: Message): Promise<void> {
         await this.bot.sendMessage(msg.chat.id, HelpSubscription.HELP_MESSAGE, {
             parse_mode: HelpSubscription.PARSE_MODE,
         });

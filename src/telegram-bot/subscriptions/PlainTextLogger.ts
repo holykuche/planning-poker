@@ -8,18 +8,18 @@ import { TELEGRAM_BOT_TYPES } from "../bot";
 import AbstractTelegramBotMessageSubscription from "./AbstractTelegramBotMessageSubscription";
 
 @injectable()
-export default class CommandLogger extends AbstractTelegramBotMessageSubscription {
+export default class PlainTextLogger extends AbstractTelegramBotMessageSubscription {
 
-    constructor(@inject(TELEGRAM_BOT_TYPES.Commands$) commands$: Observable<Message>) {
-        super(commands$);
+    constructor(@inject(TELEGRAM_BOT_TYPES.PlaintTexts$) plainTexts$: Observable<Message>) {
+        super(plainTexts$);
     }
 
     protected handle(msg: Message): Promise<void> {
-        console.log(CommandLogger.format(msg));
+        console.log(PlainTextLogger.format(msg));
         return Promise.resolve();
     }
 
     private static format(msg: Message): string {
-        return `[INFO][COMMAND] ${formatTelegramUserName(msg.from)} [ ${msg.from.id} ]: ${msg.text}`;
+        return `[INFO][PLAIN TEXT] ${formatTelegramUserName(msg.from)} [ ${msg.from.id} ]: ${msg.text}`;
     }
 }

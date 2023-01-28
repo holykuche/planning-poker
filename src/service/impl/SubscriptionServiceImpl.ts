@@ -7,11 +7,11 @@ import { LobbyEvent } from "../event";
 @injectable()
 export default class SubscriptionServiceImpl implements SubscriptionService {
 
-    private lobbyObservables$ = new Map<number, Subject<LobbyEvent>>();
+    private lobbies$ = new Map<number, Subject<LobbyEvent>>();
     private memberSubscriptions = new Map<number, Subscription>();
 
     subscribe(lobbyId: number, memberId: number, next: (event: LobbyEvent) => void): void {
-        const subscription = this.lobbyObservables$.get(lobbyId).subscribe(next);
+        const subscription = this.lobbies$.get(lobbyId).subscribe(next);
         this.memberSubscriptions.set(memberId, subscription);
     }
 
@@ -21,16 +21,16 @@ export default class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     register(lobbyId: number): void {
-        this.lobbyObservables$.set(lobbyId, new Subject<LobbyEvent>());
+        this.lobbies$.set(lobbyId, new Subject<LobbyEvent>());
     }
 
     unregister(lobbyId: number): void {
-        this.lobbyObservables$.get(lobbyId).complete();
-        this.lobbyObservables$.delete(lobbyId);
+        this.lobbies$.get(lobbyId).complete();
+        this.lobbies$.delete(lobbyId);
     }
 
     dispatch(lobbyId: number, event: LobbyEvent): void {
-        this.lobbyObservables$.get(lobbyId).next(event);
+        this.lobbies$.get(lobbyId).next(event);
     }
 
 }

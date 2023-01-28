@@ -1,8 +1,8 @@
+import { injectable, inject } from "inversify";
 import { Observable } from "rxjs";
 import { filter } from "rxjs/operators";
-import TelegramBot, { Message } from "node-telegram-bot-api";
+import { Message } from "node-telegram-bot-api";
 
-import { lazyInject } from "inversify.config";
 import { LobbyState, TelegramMessageType } from "data/enum";
 import { Member } from "data/entity";
 import { LobbyService, SERVICE_TYPES, SubscriptionService, TelegramDataService } from "service/api";
@@ -11,24 +11,26 @@ import { PokerResultItemDto, CardDto } from "service/dto";
 
 import { ButtonCommand } from "../enum";
 import { formatLobby, formatPoker, formatResult, formatDestroyedLobby, fromTelegramUserToMember } from "../utils";
+import { TELEGRAM_BOT_TYPES } from "../bot";
+
 import AbstractTelegramBotMessageSubscription from "./AbstractTelegramBotMessageSubscription";
 
+@injectable()
 export default class MemberEnterSubscription extends AbstractTelegramBotMessageSubscription {
 
-    @lazyInject(SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
-    @lazyInject(SERVICE_TYPES.TelegramDataService) private readonly telegramDataService: TelegramDataService;
-    @lazyInject(SERVICE_TYPES.SubscriptionService) private readonly subscriptionService: SubscriptionService;
+    @inject(SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
+    @inject(SERVICE_TYPES.TelegramDataService) private readonly telegramDataService: TelegramDataService;
+    @inject(SERVICE_TYPES.SubscriptionService) private readonly subscriptionService: SubscriptionService;
 
-    constructor(messages$: Observable<Message>, bot: TelegramBot) {
+    constructor(@inject(TELEGRAM_BOT_TYPES.PlaintTexts$) messages$: Observable<Message>) {
         const memberEnterMessages$ = messages$
             .pipe(
-                filter(msg => MemberEnterSubscription.PLAIN_TEXT_REGEXP.test(msg.text)),
                 filter(msg => !this.telegramDataService.isMemberExisted(msg.from.id))
             );
-        super(memberEnterMessages$, bot);
+        super(memberEnterMessages$);
     }
 
-    protected async handle(msg: TelegramBot.Message): Promise<void> {
+    protected async handle(msg: Message): Promise<void> {
         const lobbyName = msg.text.trim().toUpperCase();
         const { id: memberId } = this.telegramDataService.createMember(fromTelegramUserToMember(msg.from));
         const { id: lobbyId, state: lobbyState, currentTheme: lobbyCurrentTheme } = this.lobbyService.enterMember(memberId, lobbyName);

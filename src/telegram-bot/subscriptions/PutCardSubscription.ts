@@ -1,26 +1,29 @@
+import { injectable, inject } from "inversify";
 import { Observable } from "rxjs";
 import { filter } from "rxjs/operators";
-import TelegramBot, { CallbackQuery } from "node-telegram-bot-api";
+import { CallbackQuery } from "node-telegram-bot-api";
 
-import { lazyInject } from "inversify.config";
 import { CardCode } from "data/enum";
 import { MemberService, SERVICE_TYPES, TelegramDataService } from "service/api";
 
+import { TELEGRAM_BOT_TYPES } from "../bot";
+
 import AbstractTelegramBotCallbackQuerySubscription from "./AbstractTelegramBotCallbackQuerySubscription";
 
+@injectable()
 export default class PutCardSubscription extends AbstractTelegramBotCallbackQuerySubscription {
 
     private static readonly PUT_CARD_COMMAND_REGEXP = /^\/put_card (Score(0|1|2|3|5|8|13|20|40|100)|DontKnow|Skip)$/;
 
-    @lazyInject(SERVICE_TYPES.MemberService) private readonly memberService: MemberService;
-    @lazyInject(SERVICE_TYPES.TelegramDataService) private readonly telegramDataService: TelegramDataService;
+    @inject(SERVICE_TYPES.MemberService) private readonly memberService: MemberService;
+    @inject(SERVICE_TYPES.TelegramDataService) private readonly telegramDataService: TelegramDataService;
 
-    constructor(callbackQueries$: Observable<CallbackQuery>, bot: TelegramBot) {
-        const putCardMessages$ = callbackQueries$
+    constructor(@inject(TELEGRAM_BOT_TYPES.CallbackQueries$) callbackQueries$: Observable<CallbackQuery>) {
+        const putCardCallbackQueries$ = callbackQueries$
             .pipe(
                 filter(callback => PutCardSubscription.PUT_CARD_COMMAND_REGEXP.test(callback.data))
             );
-        super(putCardMessages$, bot);
+        super(putCardCallbackQueries$);
     }
 
     protected handle(callbackQuery: CallbackQuery): Promise<void> {

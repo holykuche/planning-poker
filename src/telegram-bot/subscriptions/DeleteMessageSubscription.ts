@@ -1,11 +1,16 @@
+import { injectable, inject } from "inversify";
 import { Observable } from "rxjs";
-import TelegramBot, { Message } from "node-telegram-bot-api";
+import { Message } from "node-telegram-bot-api";
+
+import { TELEGRAM_BOT_TYPES } from "../bot";
+
 import AbstractTelegramBotMessageSubscription from "./AbstractTelegramBotMessageSubscription";
 
+@injectable()
 export default class DeleteMessageSubscription extends AbstractTelegramBotMessageSubscription {
 
-    constructor(messages$: Observable<Message>, bot?: TelegramBot) {
-        super(messages$, bot);
+    constructor(@inject(TELEGRAM_BOT_TYPES.Messages$) messages$: Observable<Message>) {
+        super(messages$);
     }
 
     protected async handle(msg: Message): Promise<void> {

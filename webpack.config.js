@@ -22,9 +22,9 @@ const baseConfig = {
     target: "node",
     entry: {
         "telegram-bot": [
-            "./src/telegram-bot/index.ts",
             resolveDataImplPath(appConfig[ "db-type" ]),
             "./src/service/impl/index.ts",
+            "./src/telegram-bot/index.ts",
         ],
     },
     module: {
