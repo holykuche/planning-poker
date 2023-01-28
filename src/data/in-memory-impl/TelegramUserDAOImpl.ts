@@ -5,35 +5,35 @@ import { TelegramUserDAO } from "../api";
 @injectable()
 export default class TelegramUserDAOImpl implements TelegramUserDAO {
 
-    private TELEGRAM_USER_MEMBER_XREF = new Map<number, number>();
-    private MEMBER_TELEGRAM_USER_XREF = new Map<number, number>();
+    private telegramUserMemberXref = new Map<number, number>();
+    private memberTelegramUserXref = new Map<number, number>();
 
     getMemberIdByTelegramUserId(telegramUserId: number): number {
-        return this.TELEGRAM_USER_MEMBER_XREF.get(telegramUserId);
+        return this.telegramUserMemberXref.get(telegramUserId);
     }
 
     getTelegramUserIdByMemberId(memberId: number): number {
-        return this.MEMBER_TELEGRAM_USER_XREF.get(memberId);
+        return this.memberTelegramUserXref.get(memberId);
     }
 
     isMemberExisted(telegramUserId: number): boolean {
-        return this.TELEGRAM_USER_MEMBER_XREF.has(telegramUserId);
+        return this.telegramUserMemberXref.has(telegramUserId);
     }
 
     bindTelegramUserWithMember(telegramUserId: number, memberId: number): void {
-        this.TELEGRAM_USER_MEMBER_XREF.set(telegramUserId, memberId);
-        this.MEMBER_TELEGRAM_USER_XREF.set(memberId, telegramUserId);
+        this.telegramUserMemberXref.set(telegramUserId, memberId);
+        this.memberTelegramUserXref.set(memberId, telegramUserId);
     }
 
     unbindTelegramUserFromMember(telegramUserId: number): void {
-        const memberId = this.TELEGRAM_USER_MEMBER_XREF.get(telegramUserId);
-        this.TELEGRAM_USER_MEMBER_XREF.delete(telegramUserId);
-        this.MEMBER_TELEGRAM_USER_XREF.delete(memberId);
+        const memberId = this.telegramUserMemberXref.get(telegramUserId);
+        this.telegramUserMemberXref.delete(telegramUserId);
+        this.memberTelegramUserXref.delete(memberId);
     }
 
     unbindMemberFromTelegramUser(memberId: number): void {
-        const telegramUserId = this.MEMBER_TELEGRAM_USER_XREF.get(memberId);
-        this.MEMBER_TELEGRAM_USER_XREF.delete(memberId);
-        this.TELEGRAM_USER_MEMBER_XREF.delete(telegramUserId);
+        const telegramUserId = this.memberTelegramUserXref.get(memberId);
+        this.memberTelegramUserXref.delete(memberId);
+        this.telegramUserMemberXref.delete(telegramUserId);
     }
 }

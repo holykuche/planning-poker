@@ -6,42 +6,42 @@ import { Member } from "../entity";
 @injectable()
 export default class MemberDAOImpl implements MemberDAO {
 
-    private NEXT_MEMBER_ID = 1;
-    private MEMBERS_BY_ID = new Map<number, Member>();
-    private MEMBERS_BY_NAME = new Map<string, Member>();
+    private nextMemberId = 1;
+    private membersById = new Map<number, Member>();
+    private membersByName = new Map<string, Member>();
 
     getById(id: number): Member {
-        const member = this.MEMBERS_BY_ID.get(id);
+        const member = this.membersById.get(id);
         return member && { ...member };
     }
 
     getByIds(ids: number[]): Member[] {
         return ids
-            .filter(id => this.MEMBERS_BY_ID.has(id))
-            .map(id => ({ ...this.MEMBERS_BY_ID.get(id) }));
+            .filter(id => this.membersById.has(id))
+            .map(id => ({ ...this.membersById.get(id) }));
     }
 
     getByName(name: string): Member {
-        const lobby = this.MEMBERS_BY_NAME.get(name);
+        const lobby = this.membersByName.get(name);
         return lobby && { ...lobby };
     }
 
     save(member: Member): Member {
-        if (member.id && this.MEMBERS_BY_ID.has(member.id)) {
-            const existedMember = this.MEMBERS_BY_ID.get(member.id);
-            this.MEMBERS_BY_NAME.delete(existedMember.name);
+        if (member.id && this.membersById.has(member.id)) {
+            const existedMember = this.membersById.get(member.id);
+            this.membersByName.delete(existedMember.name);
         }
 
-        const storedMember = { ...member, id: member.id || this.NEXT_MEMBER_ID++ };
-        this.MEMBERS_BY_ID.set(storedMember.id, storedMember);
-        this.MEMBERS_BY_NAME.set(storedMember.name, storedMember);
+        const storedMember = { ...member, id: member.id || this.nextMemberId++ };
+        this.membersById.set(storedMember.id, storedMember);
+        this.membersByName.set(storedMember.name, storedMember);
         return { ...storedMember };
     }
 
     deleteById(id: number): void {
-        const member = this.MEMBERS_BY_ID.get(id);
-        this.MEMBERS_BY_ID.delete(id);
-        this.MEMBERS_BY_NAME.delete(member?.name);
+        const member = this.membersById.get(id);
+        this.membersById.delete(id);
+        this.membersByName.delete(member?.name);
     }
 
     deleteByIds(ids: number[]): void {
