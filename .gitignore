@@ -4,4 +4,6 @@
 /coverage
 /package-lock.json
 /app.config.json
+/app.config.dev.json
+/app.config.prod.json
 *.iml

@@ -2,7 +2,6 @@ const webpack = require("webpack");
 const { merge } = require("webpack-merge");
 const path = require("path");
 
-const appConfig = require("./app.config");
 const webpackDevConfig = require("./webpack.dev.config");
 const webpackProdConfig = require("./webpack.prod.config");
 
@@ -18,7 +17,22 @@ const resolveDataImplPath = dbType => {
     }
 };
 
-const baseConfig = {
+const resolveAppConfig = mode => {
+    try {
+        switch (mode) {
+            case "development":
+                return require("./app.config.dev");
+            case "production":
+                return require("./app.config.prod");
+            default:
+                return require("./app.config");
+        }
+    } catch (error) {
+        return require("./app.config");
+    }
+};
+
+const baseConfig = appConfig => ({
     target: "node",
     entry: {
         "telegram-bot": [
@@ -52,14 +66,15 @@ const baseConfig = {
             LOBBY_LIFETIME_MS: JSON.stringify(appConfig[ "lobby-lifetime-minutes" ] * 60000),
         }),
     ],
-};
+});
 
 module.exports = (env, args) => {
+    const appConfig = resolveAppConfig(args.mode);
     switch (args.mode) {
         case "development":
-            return merge(baseConfig, webpackDevConfig);
+            return merge(baseConfig(appConfig), webpackDevConfig);
         case "production":
-            return merge(baseConfig, webpackProdConfig);
+            return merge(baseConfig(appConfig), webpackProdConfig);
         default:
             throw new Error(`Build for ${args.mode} mode is not specified`);
     }
