@@ -20,6 +20,6 @@ export default class CallbackQueryLogger extends AbstractTelegramBotCallbackQuer
     }
 
     private static format(callbackQuery: CallbackQuery): string {
-        return `[INFO][CALLBACK QUERY] ${formatTelegramUserName(callbackQuery.from)} [ ${callbackQuery.from.id} ]: ${callbackQuery.data}`;
+        return `[INFO] ${formatTelegramUserName(callbackQuery.from)} [ ${callbackQuery.from.id} ] have pushed button '${callbackQuery.data}'`;
     }
 }

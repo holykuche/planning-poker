@@ -20,6 +20,6 @@ export default class CommandLogger extends AbstractTelegramBotMessageSubscriptio
     }
 
     private static format(msg: Message): string {
-        return `[INFO][COMMAND] ${formatTelegramUserName(msg.from)} [ ${msg.from.id} ]: ${msg.text}`;
+        return `[INFO] ${formatTelegramUserName(msg.from)} [ ${msg.from.id} ] have typed command '${msg.text}'`;
     }
 }
