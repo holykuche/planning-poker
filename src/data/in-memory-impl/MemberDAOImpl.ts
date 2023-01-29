@@ -22,7 +22,9 @@ export default class MemberDAOImpl extends AbstractInMemoryDAOImpl<Member, "id">
     }
 
     getByIds(ids: number[]): Member[] {
-        return ids.map(id => this.getById(id));
+        return ids
+            .map(id => this.getById(id))
+            .filter(m => !!m);
     }
 
     getByName(name: string): Member {

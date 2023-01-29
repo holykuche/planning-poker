@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "alwaysStrict": true,
-    "keyofStringsOnly": true,
     "esModuleInterop": true,
     "sourceMap": true,
     "baseUrl": "./src/",
