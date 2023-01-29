@@ -165,9 +165,9 @@ export default class MemberEnterSubscription extends AbstractTelegramBotMessageS
             message_id: lobbyMessage.messageId,
         });
 
-        const resultMessageId = this.telegramDataService.getMessage(lobbyId, chatId, TelegramMessageType.Poker);
-        if (resultMessageId) {
-            await this.bot.deleteMessage(chatId, String(resultMessageId));
+        const resultMessage = this.telegramDataService.getMessage(lobbyId, chatId, TelegramMessageType.Poker);
+        if (resultMessage) {
+            await this.bot.deleteMessage(chatId, String(resultMessage.messageId));
         }
 
         this.telegramDataService.deleteAllMessagesFromChat(lobbyId, chatId);

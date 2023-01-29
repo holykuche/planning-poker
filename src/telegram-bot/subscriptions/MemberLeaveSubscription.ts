@@ -36,9 +36,9 @@ export default class MemberLeaveSubscription extends AbstractTelegramBotCallback
             message_id: lobbyMessage.messageId,
         });
 
-        const resultMessageId = this.telegramDataService.getMessage(lobbyId, callbackQuery.message.chat.id, TelegramMessageType.Poker);
-        if (resultMessageId) {
-            await this.bot.deleteMessage(callbackQuery.message.chat.id, String(resultMessageId));
+        const resultMessage = this.telegramDataService.getMessage(lobbyId, callbackQuery.message.chat.id, TelegramMessageType.Poker);
+        if (resultMessage) {
+            await this.bot.deleteMessage(callbackQuery.message.chat.id, String(resultMessage.messageId));
         }
 
         this.telegramDataService.deleteAllMessagesFromChat(lobbyId, callbackQuery.message.chat.id);
