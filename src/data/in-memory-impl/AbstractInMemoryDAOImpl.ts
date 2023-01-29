@@ -135,7 +135,8 @@ export default abstract class AbstractInMemoryDAOImpl<E extends Entity, PK exten
     }
 
     private getFreeIndex(): number {
-        return this.freeIndexes.pop() || this.data.length;
+        const freeIndex = this.freeIndexes.pop();
+        return typeof freeIndex === "number" ? freeIndex : this.data.length;
     }
 
     private getPrimaryKeyValue(): Value<E, PK> {
