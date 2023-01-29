@@ -89,7 +89,7 @@ describe("data/in-memory-impl/LobbyDAOImpl", () => {
         expect(lobbyDAO.isExists(storedLobby.name)).toBeTruthy();
     });
 
-    it("isExists should return true for stored lobby", () => {
+    it("isExists should return false for not stored lobby", () => {
         const notStoredLobbyName = "dummy name";
 
         expect(lobbyDAO.isExists(notStoredLobbyName)).toBeFalsy();
