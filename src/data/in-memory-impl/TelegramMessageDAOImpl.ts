@@ -1,68 +1,56 @@
 import { injectable } from "inversify";
 
 import { TelegramMessageDAO } from "../api";
-import { TelegramMessageKey } from "../entity";
+import { TelegramMessage } from "../entity";
 import { TelegramMessageType } from "../enum";
 
+import AbstractInMemoryDAOImpl from "./AbstractInMemoryDAOImpl";
+
 @injectable()
-export default class TelegramMessageDAOImpl implements TelegramMessageDAO {
+export default class TelegramMessageDAOImpl extends AbstractInMemoryDAOImpl<TelegramMessage, "id"> implements TelegramMessageDAO {
 
-    private messageKeysByLobbyId: Record<TelegramMessageType, Map<number, TelegramMessageKey[]>> = {
-        [ TelegramMessageType.Lobby ]: new Map<number, TelegramMessageKey[]>(),
-        [ TelegramMessageType.Poker ]: new Map<number, TelegramMessageKey[]>(),
-    };
-
-    getMessageKeys(lobbyId: number, messageType: TelegramMessageType): TelegramMessageKey[] {
-        return (this.messageKeysByLobbyId[ messageType ].get(lobbyId) || []).map(key => ({ ...key }));
+    constructor() {
+        super({
+            primaryKey: "id",
+            indexBy: [ "lobbyId" ],
+            initialPrimaryKeyValue: 1,
+            getNextPrimaryKeyValue: current => current + 1,
+        });
     }
 
-    getAllMessageKeys(lobbyId: number): TelegramMessageKey[] {
-        return Object.values(this.messageKeysByLobbyId)
-            .map(messageKeys => messageKeys.get(lobbyId))
-            .flat();
+    getMessage(lobbyId: number, chatId: number, messageType: TelegramMessageType): TelegramMessage {
+        return this.findMany("lobbyId", lobbyId)
+            .find(message => message.chatId === chatId && message.messageType === messageType);
     }
 
-    addMessageKey(lobbyId: number, messageType: TelegramMessageType, messageKey: TelegramMessageKey): void {
-        const messageKeys = this.getMessageKeys(lobbyId, messageType);
-        this.messageKeysByLobbyId[ messageType ].set(lobbyId, messageKeys.concat([{ ...messageKey } ]));
+    getAllMessages(lobbyId: number): TelegramMessage[] {
+        return this.findMany("lobbyId", lobbyId);
     }
 
-    deleteMessageKey(lobbyId: number, messageType: TelegramMessageType, messageKey: TelegramMessageKey): void {
-        const messageKeys = this.getMessageKeys(lobbyId, messageType)
-            .filter(key => !TelegramMessageDAOImpl.isMessageKeysEquals(key, messageKey));
-
-        if (messageKeys.length) {
-            this.messageKeysByLobbyId[ messageType ].set(lobbyId, messageKeys);
-        } else {
-            this.messageKeysByLobbyId[ messageType ].delete(lobbyId);
-        }
+    addMessage(message: TelegramMessage): void {
+        this.save(message);
     }
 
-    deleteMessageKeys(lobbyId: number, messageType: TelegramMessageType): void {
-        this.messageKeysByLobbyId[ messageType ].delete(lobbyId);
+    deleteMessageById(id: number): void {
+        this.delete("id", id);
     }
 
-    deleteAllMessageKeys(lobbyId: number): void {
-        Object.values(this.messageKeysByLobbyId)
-            .forEach(messageKeys => messageKeys.delete(lobbyId));
+    deleteMessage(lobbyId: number, messageType: TelegramMessageType): void {
+        this.findMany("lobbyId", lobbyId)
+            .filter(message => message.messageType === messageType)
+            .map(message => message.id)
+            .forEach(id => this.delete("id", id));
     }
 
-    deleteAllMessageKeysFromChat(lobbyId: number, chatId: number): void {
-        Object.entries(this.messageKeysByLobbyId)
-            .filter(([ , msgKeys ]) => msgKeys.has(lobbyId))
-            .map(([ msgType, msgKeys ]) => [ msgType, msgKeys.get(lobbyId) ] as [ TelegramMessageType, TelegramMessageKey[] ])
-            .forEach(([ msgType, msgKeys ]) => {
-                const newMessageKeys = msgKeys.filter(mk => mk.chatId !== chatId);
-                if (newMessageKeys.length) {
-                    this.messageKeysByLobbyId[ msgType ].set(lobbyId, newMessageKeys);
-                } else {
-                    this.messageKeysByLobbyId[ msgType ].delete(lobbyId);
-                }
-            });
+    deleteAllMessages(lobbyId: number): void {
+        this.delete("lobbyId", lobbyId);
     }
 
-    private static isMessageKeysEquals(left: TelegramMessageKey, right: TelegramMessageKey): boolean {
-        return left.chatId === right.chatId && left.messageId === right.messageId;
+    deleteAllMessagesFromChat(lobbyId: number, chatId: number): void {
+        this.findMany("lobbyId", lobbyId)
+            .filter(message => message.chatId === chatId)
+            .map(message => message.id)
+            .forEach(id => this.delete("id", id));
     }
 
 }

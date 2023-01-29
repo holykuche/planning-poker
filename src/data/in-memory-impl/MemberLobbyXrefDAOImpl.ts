@@ -1,47 +1,42 @@
 import { injectable } from "inversify";
+
 import { MemberLobbyXrefDAO } from "../api";
+import { MemberLobbyXref } from "../entity";
+
+import AbstractInMemoryDAOImpl from "./AbstractInMemoryDAOImpl";
 
 @injectable()
-export default class MemberLobbyXrefDAOImpl implements MemberLobbyXrefDAO {
+export default class MemberLobbyXrefDAOImpl extends AbstractInMemoryDAOImpl<MemberLobbyXref> implements MemberLobbyXrefDAO {
 
-    private memberLobbyXref = new Map<number, number>();
-    private lobbyMemberXref = new Map<number, number[]>();
+    constructor() {
+        super({
+            indexBy: [ "memberId", "lobbyId" ],
+        });
+    }
 
     getMembersBinding(memberId: number): number {
-        return this.memberLobbyXref.get(memberId);
+        return this.find("memberId", memberId)?.lobbyId;
     }
 
     getMemberIdsByLobbyId(lobbyId: number): number[] {
-        return this.lobbyMemberXref.get(lobbyId) || [];
+        return this.findMany("lobbyId", lobbyId)
+            .map(xref => xref.memberId);
     }
 
     bindMember(memberId: number, lobbyId: number): void {
-        this.memberLobbyXref.set(memberId, lobbyId);
-        this.lobbyMemberXref.set(lobbyId, [ ...this.lobbyMemberXref.get(lobbyId) || [], memberId ]);
+        this.save({ memberId, lobbyId });
     }
 
     unbindMember(memberId: number): void {
-        const lobbyId = this.memberLobbyXref.get(memberId);
-        this.memberLobbyXref.delete(memberId);
-
-        const memberIds = this.lobbyMemberXref.get(lobbyId).filter(mId => mId !== memberId);
-        if (memberIds.length) {
-            this.lobbyMemberXref.set(lobbyId, memberIds);
-        } else {
-            this.lobbyMemberXref.delete(lobbyId);
-        }
+        this.delete("memberId", memberId);
     }
 
     isMemberBound(memberId: number): boolean {
-        return this.memberLobbyXref.has(memberId);
+        return !!this.find("memberId", memberId);
     }
 
     unbindMembers(lobbyId: number): void {
-        const memberIds = this.lobbyMemberXref.has(lobbyId);
-        if (memberIds) {
-            this.lobbyMemberXref.get(lobbyId).forEach(mId => this.memberLobbyXref.delete(mId));
-            this.lobbyMemberXref.delete(lobbyId);
-        }
+        this.delete("lobbyId", lobbyId);
     }
 
 }

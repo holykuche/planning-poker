@@ -1,8 +1,9 @@
 import { CardCode } from "../enum";
+import { MemberCardXref } from "../entity";
 
 export default interface MemberCardXrefDAO {
-    getByMemberId(memberId: number): CardCode;
-    getByMemberIds(memberIds: number[]): [ number, CardCode ][];
+    getCardByMemberId(memberId: number): CardCode;
+    getCardsByMemberIds(memberIds: number[]): MemberCardXref[];
     put(memberId: number, cardCode: CardCode): void;
     removeByMemberId(memberId: number): void;
     removeByMemberIds(memberIds: number[]): void;

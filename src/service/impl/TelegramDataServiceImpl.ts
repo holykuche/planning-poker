@@ -1,6 +1,6 @@
 import { inject, injectable } from "inversify";
 
-import { TelegramMessageKey } from "data/entity";
+import { TelegramMessage } from "data/entity";
 import { DAO_TYPES, LobbyDAO, TelegramMessageDAO, MemberDAO, TelegramUserDAO } from "data/api";
 import { TelegramMessageType } from "data/enum";
 
@@ -16,30 +16,28 @@ export default class TelegramDataServiceImpl implements TelegramDataService {
     @inject(DAO_TYPES.LobbyDAO) private readonly lobbyDAO: LobbyDAO;
     @inject(DAO_TYPES.MemberDAO) private readonly memberDAO: MemberDAO;
 
-    getMessageId(lobbyId: number, chatId: number, messageType: TelegramMessageType): number {
-        return this.telegramMessageDAO.getMessageKeys(lobbyId, messageType)
-            .find(key => key.chatId === chatId)
-            ?.messageId;
+    getMessage(lobbyId: number, chatId: number, messageType: TelegramMessageType): TelegramMessage {
+        return this.telegramMessageDAO.getMessage(lobbyId, chatId, messageType);
     }
 
-    addMessageKey(lobbyId: number, messageType: TelegramMessageType, messageKey: TelegramMessageKey): void {
-        this.telegramMessageDAO.addMessageKey(lobbyId, messageType, messageKey);
+    addMessage(message: TelegramMessage): void {
+        this.telegramMessageDAO.addMessage(message);
     }
 
-    deleteMessageKey(lobbyId: number, messageType: TelegramMessageType, messageKey: TelegramMessageKey): void {
-        this.telegramMessageDAO.deleteMessageKey(lobbyId, messageType, messageKey);
+    deleteMessageById(messageId: number): void {
+        this.telegramMessageDAO.deleteMessageById(messageId);
     }
 
-    deleteMessageKeys(lobbyId: number, messageType: TelegramMessageType): void {
-        this.telegramMessageDAO.deleteMessageKeys(lobbyId, messageType);
+    deleteMessages(lobbyId: number, messageType: TelegramMessageType): void {
+        this.telegramMessageDAO.deleteMessage(lobbyId, messageType);
     }
 
-    deleteAllMessageKeys(lobbyId: number): void {
-        this.telegramMessageDAO.deleteAllMessageKeys(lobbyId);
+    deleteAllMessages(lobbyId: number): void {
+        this.telegramMessageDAO.deleteAllMessages(lobbyId);
     }
 
-    deleteAllMessageKeysFromChat(lobbyId: number, chatId: number): void {
-        this.telegramMessageDAO.deleteAllMessageKeysFromChat(lobbyId, chatId);
+    deleteAllMessagesFromChat(lobbyId: number, chatId: number): void {
+        this.telegramMessageDAO.deleteAllMessagesFromChat(lobbyId, chatId);
     }
 
     getMemberByTelegramUserId(telegramUserId: number): MemberDto {

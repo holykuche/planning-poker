@@ -1,31 +1,40 @@
 import { injectable } from "inversify";
 
 import { MemberCardXrefDAO } from "../api";
+import { MemberCardXref } from "../entity";
 import { CardCode } from "../enum";
 
+import AbstractInMemoryDAOImpl from "./AbstractInMemoryDAOImpl";
+
 @injectable()
-export default class MemberCardXrefDAOImpl implements MemberCardXrefDAO {
+export default class MemberCardXrefDAOImpl extends AbstractInMemoryDAOImpl<MemberCardXref> implements MemberCardXrefDAO {
 
-    private memberCardXref = new Map<number, CardCode>();
-
-    getByMemberId(memberId: number): CardCode {
-        return this.memberCardXref.get(memberId);
+    constructor() {
+        super({
+            indexBy: [ "memberId" ],
+        });
     }
 
-    getByMemberIds(memberIds: number[]): [ number, CardCode ][] {
-        return memberIds.reduce((arr, id) => [ ...arr, [ id, this.memberCardXref.get(id) ] ], []);
+    getCardByMemberId(memberId: number): CardCode {
+        return this.find("memberId", memberId)?.cardCode;
+    }
+
+    getCardsByMemberIds(memberIds: number[]): MemberCardXref[] {
+        return memberIds
+            .map(mId => this.find("memberId", mId))
+            .filter(xref => !!xref);
     }
 
     put(memberId: number, cardCode: CardCode): void {
-        this.memberCardXref.set(memberId, cardCode);
+        this.save({ memberId, cardCode });
     }
 
     removeByMemberId(memberId: number): void {
-        this.memberCardXref.delete(memberId);
+        this.delete("memberId", memberId);
     }
 
     removeByMemberIds(memberIds: number[]): void {
-        memberIds.forEach(memberId => this.memberCardXref.delete(memberId));
+        memberIds.forEach(memberId => this.removeByMemberId(memberId));
     }
 
 }

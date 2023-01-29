@@ -35,7 +35,7 @@ export default class LobbyServiceImpl implements LobbyService {
     }
 
     delete(id: number): void {
-        this.lobbyDAO.delete(id);
+        this.lobbyDAO.deleteById(id);
     }
 
     isExists(name: string): boolean {
@@ -150,8 +150,8 @@ export default class LobbyServiceImpl implements LobbyService {
 
     getPokerResult(lobbyId: number): PokerResultItemDto[] {
         const memberIds = this.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId);
-        const cards = this.memberCardXrefDAO.getByMemberIds(memberIds)
-            .reduce((cardsById, [ memberId, cardCode ]) => ({
+        const cards = this.memberCardXrefDAO.getCardsByMemberIds(memberIds)
+            .reduce((cardsById, { memberId, cardCode }) => ({
                 ...cardsById,
                 [ memberId ]: CardDto.fromCode(cardCode),
             }), {});
@@ -222,7 +222,7 @@ export default class LobbyServiceImpl implements LobbyService {
         this.memberCardXrefDAO.removeByMemberIds(memberIds);
         this.memberLobbyXrefDAO.unbindMembers(lobbyId);
         this.memberDAO.deleteByIds(memberIds);
-        this.lobbyDAO.delete(lobbyId);
+        this.lobbyDAO.deleteById(lobbyId);
 
         this.subscriptionService.unregister(lobbyId);
         this.lobbyDestroyTimeouts.delete(lobbyId);
@@ -236,8 +236,8 @@ export default class LobbyServiceImpl implements LobbyService {
         const memberIds = this.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobby.id);
         const members = this.memberDAO.getByIds(memberIds);
         const cards = new Map<number, CardDto>(
-            this.memberCardXrefDAO.getByMemberIds(memberIds)
-                .map(([ memberId, cardCode ]) => [ memberId, CardDto.fromCode(cardCode) ]));
+            this.memberCardXrefDAO.getCardsByMemberIds(memberIds)
+                .map(({ memberId, cardCode }) => [ memberId, CardDto.fromCode(cardCode) ]));
 
         return { ...lobby, members, cards };
     }

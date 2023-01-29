@@ -3,38 +3,34 @@ import { injectable } from "inversify";
 import { Lobby } from "../entity";
 import { LobbyDAO } from "../api"
 
-@injectable()
-export default class LobbyDAOImpl implements LobbyDAO {
+import AbstractInMemoryDAOImpl from "./AbstractInMemoryDAOImpl";
 
-    private nextLobbyId = 1;
-    private lobbiesById = new Map<number, Lobby>();
-    private lobbiesByName = new Map<string, Lobby>();
+@injectable()
+export default class LobbyDAOImpl extends AbstractInMemoryDAOImpl<Lobby, "id"> implements LobbyDAO {
+
+    constructor() {
+        super({
+            indexBy: [ "name" ],
+            primaryKey: "id",
+            initialPrimaryKeyValue: 1,
+            getNextPrimaryKeyValue: current => current + 1,
+        });
+    }
 
     getById(id: number): Lobby {
-        const lobby = this.lobbiesById.get(id);
-        return lobby && { ...lobby };
+        return this.find("id", id);
     }
 
     getByName(name: string): Lobby {
-        const lobby = this.lobbiesByName.get(name);
-        return lobby && { ...lobby };
+        return this.find("name", name);
     }
 
-    save(lobby: Lobby): Lobby {
-        const storedLobby = { ...lobby, id: lobby.id || this.nextLobbyId++ };
-        this.lobbiesById.set(storedLobby.id, storedLobby);
-        this.lobbiesByName.set(storedLobby.name, storedLobby);
-        return { ...storedLobby };
-    }
-
-    delete(id: number): void {
-        const lobby = this.lobbiesById.get(id);
-        this.lobbiesById.delete(id);
-        this.lobbiesByName.delete(lobby.name);
+    deleteById(id: number): void {
+        this.delete("id", id);
     }
 
     isExists(name: string): boolean {
-        return this.lobbiesByName.has(name);
+        return !!this.getByName(name);
     }
 
 }

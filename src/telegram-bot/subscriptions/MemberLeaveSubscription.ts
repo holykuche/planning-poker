@@ -30,18 +30,18 @@ export default class MemberLeaveSubscription extends AbstractTelegramBotCallback
         const member = this.telegramDataService.getMemberByTelegramUserId(callbackQuery.from.id);
         const lobbyId = this.memberService.getMembersLobbyId(member.id);
 
-        const lobbyMessageId = this.telegramDataService.getMessageId(lobbyId, callbackQuery.message.chat.id, TelegramMessageType.Lobby);
+        const lobbyMessage = this.telegramDataService.getMessage(lobbyId, callbackQuery.message.chat.id, TelegramMessageType.Lobby);
         await this.bot.editMessageReplyMarkup(null, {
             chat_id: callbackQuery.message.chat.id,
-            message_id: lobbyMessageId,
+            message_id: lobbyMessage.messageId,
         });
 
-        const resultMessageId = this.telegramDataService.getMessageId(lobbyId, callbackQuery.message.chat.id, TelegramMessageType.Poker);
+        const resultMessageId = this.telegramDataService.getMessage(lobbyId, callbackQuery.message.chat.id, TelegramMessageType.Poker);
         if (resultMessageId) {
             await this.bot.deleteMessage(callbackQuery.message.chat.id, String(resultMessageId));
         }
 
-        this.telegramDataService.deleteAllMessageKeysFromChat(lobbyId, callbackQuery.message.chat.id);
+        this.telegramDataService.deleteAllMessagesFromChat(lobbyId, callbackQuery.message.chat.id);
         this.lobbyService.leaveMember(member.id);
         this.telegramDataService.deleteMemberByMemberId(member.id);
 

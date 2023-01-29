@@ -32,7 +32,7 @@ export default class ResetUserSubscription extends AbstractTelegramBotMessageSub
         if (this.memberService.isMemberInLobby(member.id)) {
             const lobbyId = this.memberService.getMembersLobbyId(member.id);
             this.lobbyService.leaveMember(member.id);
-            this.telegramDataService.deleteAllMessageKeysFromChat(lobbyId, msg.chat.id);
+            this.telegramDataService.deleteAllMessagesFromChat(lobbyId, msg.chat.id);
         }
 
         this.telegramDataService.deleteMemberByMemberId(member.id);
