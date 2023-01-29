@@ -4,7 +4,7 @@ import ServiceError from "./ServiceError";
 export default class PokerIsNotStartedError extends ServiceError {
 
     constructor(lobby: Lobby) {
-        super(`Poker in lobby "${lobby.name}" is not started`);
+        super(`Poker in lobby "${lobby.name}" is not started.`);
         Object.setPrototypeOf(this, PokerIsNotStartedError.prototype);
     }
 
