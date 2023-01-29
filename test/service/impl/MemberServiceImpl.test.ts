@@ -9,7 +9,7 @@ import { MemberIsNotInLobbyError, PokerIsNotStartedError, UnknownMemberError } f
 
 import MemberServiceImpl from "service/impl/MemberServiceImpl";
 
-describe("MemberServiceImpl", () => {
+describe("service/impl/MemberServiceImpl", () => {
 
     let memberService: MemberService;
 
