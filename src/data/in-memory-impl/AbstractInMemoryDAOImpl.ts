@@ -73,7 +73,10 @@ export default abstract class AbstractInMemoryDAOImpl<E extends Entity, PK exten
 
         if (this.indexMaps[ this.primaryKey ]) {
             if (entity[ this.primaryKey ]) {
-                idx = this.indexMaps[ this.primaryKey ].get(entity[ this.primaryKey ])[ 0 ];
+                idx = this.indexMaps[ this.primaryKey ].get(entity[ this.primaryKey ])?.[ 0 ];
+                if (typeof idx !== "number") {
+                    idx = this.getFreeIndex();
+                }
                 storedEntity = { ...entity };
             } else {
                 idx = this.getFreeIndex();
@@ -84,15 +87,28 @@ export default abstract class AbstractInMemoryDAOImpl<E extends Entity, PK exten
             storedEntity = { ...entity };
         }
 
+        const existedEntity = this.data[ idx ];
         this.data[ idx ] = storedEntity;
 
-        Object.entries<IndexMaps<E>[ keyof E ]>(this.indexMaps)
-            .forEach(([ fieldName, indexMap ]) => {
-                const indexes = indexMap.get(storedEntity[ fieldName ]) || [];
+        Object.entries<IndexMaps<E>[ Key<E> ]>(this.indexMaps)
+            .forEach(([ key, indexMap ]) => {
+                if (existedEntity) {
+                    const indexes = indexMap.get(existedEntity[ key ]) || [];
+                    const storedIdxes = indexes
+                        .filter(i => i !== idx);
+
+                    if (storedIdxes.length) {
+                        indexMap.set(existedEntity[ key ], storedIdxes);
+                    } else {
+                        indexMap.delete(existedEntity[ key ]);
+                    }
+                }
+
+                const indexes = indexMap.get(storedEntity[ key ]) || [];
                 const storedIdxes = [ ...indexes, idx ]
                     .filter(AbstractInMemoryDAOImpl.distinct);
 
-                indexMap.set(storedEntity[ fieldName ], storedIdxes);
+                indexMap.set(storedEntity[ key ], storedIdxes);
             });
 
         return { ...storedEntity };
