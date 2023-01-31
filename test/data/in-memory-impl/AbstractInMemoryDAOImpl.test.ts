@@ -76,6 +76,9 @@ describe("data/in-memory-impl/AbstractInMemoryDAOImpl" ,() => {
 
             indexedDAOImpl.save(obj);
             expect(indexedDAOImpl.find("id", obj.id)).toEqual(obj);
+            expect(indexedDAOImpl.find("prop1", obj.prop1)).toEqual(obj);
+            expect(indexedDAOImpl.find("prop2", obj.prop2)).toEqual(obj);
+            expect(indexedDAOImpl.find("prop3", obj.prop3)).toEqual(obj);
 
             indexedDAOImpl.delete("id", obj.id);
             expect(indexedDAOImpl.find("id", obj.id)).toBeNull();
