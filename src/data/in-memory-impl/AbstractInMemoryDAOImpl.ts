@@ -71,7 +71,7 @@ export default abstract class AbstractInMemoryDAOImpl<E extends Entity, PK exten
         let idx: number;
         let storedEntity: E;
 
-        if (this.indexMaps[ this.primaryKey ]) {
+        if (this.primaryKey) {
             if (entity[ this.primaryKey ]) {
                 idx = this.indexMaps[ this.primaryKey ].get(entity[ this.primaryKey ])?.[ 0 ];
                 if (typeof idx !== "number") {
@@ -136,11 +136,11 @@ export default abstract class AbstractInMemoryDAOImpl<E extends Entity, PK exten
                 Object.entries<IndexMaps<E>[ keyof E ]>(this.indexMaps)
                     .forEach(([ f, indexMap ]) => {
                         const indexes = indexMap.get(entity[ f ]);
-                        const storedIdxes = indexes
+                        const storedIndexes = indexes
                             .filter(i => i !== idx);
 
-                        if (storedIdxes.length) {
-                            indexMap.set(entity[ f ], storedIdxes);
+                        if (storedIndexes.length) {
+                            indexMap.set(entity[ f ], storedIndexes);
                         } else {
                             indexMap.delete(entity[ f ]);
                         }

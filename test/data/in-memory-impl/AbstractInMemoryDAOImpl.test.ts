@@ -1,30 +1,38 @@
 import "reflect-metadata";
 import AbstractInMemoryDAOImpl from "data/in-memory-impl/AbstractInMemoryDAOImpl";
 
-interface TestObject {
+interface TestEntity {
     id?: number,
     prop1: string,
     prop2: number,
     prop3: boolean,
 }
 
+interface AbstractInMemoryDAOImplConstructor {
+    new(): AbstractInMemoryDAOImpl<TestEntity>;
+}
+
 describe("data/in-memory-impl/AbstractInMemoryDAOImpl" ,() => {
 
-    describe("with indexBy option", () => {
+    const testImpl = function(Constructor: AbstractInMemoryDAOImplConstructor) {
 
-        class IndexedDAOImpl extends AbstractInMemoryDAOImpl<TestObject, "id"> {
-            constructor() {
-                super({
-                    indexBy: [ "prop1", "prop2", "prop3" ],
-                    primaryKey: "id",
+        let impl: AbstractInMemoryDAOImpl<TestEntity>;
+
+        const testFindMany = <K extends keyof TestEntity>(key: K,
+                                                          value: TestEntity[ K ],
+                                                          receivedCount: number,
+                                                          getExpected: (id: number) => TestEntity) => {
+            const receivedEntities = impl.findMany(key, value);
+
+            expect(receivedEntities.length).toBe(receivedCount);
+            receivedEntities
+                .forEach(receivedEntity => {
+                    expect(receivedEntity).toEqual(getExpected(receivedEntity.id));
                 });
-            }
-        }
-
-        let indexedDAOImpl: IndexedDAOImpl;
+        };
 
         beforeEach(() => {
-            indexedDAOImpl = new IndexedDAOImpl();
+            impl = new Constructor();
         });
 
         it("save with existed object should update that object", () => {
@@ -35,7 +43,7 @@ describe("data/in-memory-impl/AbstractInMemoryDAOImpl" ,() => {
                 updated: { prop1: "updated prop1", prop2: 700, prop3: true },
             } as const;
 
-            const objects: Record<number, { initial: TestObject, updated: TestObject }>
+            const entities: Record<number, { initial: TestEntity, updated: TestEntity }>
                 = [ id1, id2 ]
                 .reduce((objs, id) => ({
                     ...objs,
@@ -45,47 +53,122 @@ describe("data/in-memory-impl/AbstractInMemoryDAOImpl" ,() => {
                     },
                 }), {});
 
-            indexedDAOImpl.save(objects[ id1 ].initial);
-            indexedDAOImpl.save(objects[ id1 ].updated);
-            indexedDAOImpl.save(objects[ id2 ].initial);
-            indexedDAOImpl.save(objects[ id2 ].updated);
+            impl.save(entities[ id1 ].initial);
+            impl.save(entities[ id1 ].updated);
+            impl.save(entities[ id2 ].initial);
+            impl.save(entities[ id2 ].updated);
 
-            expect(indexedDAOImpl.find("id", id1)).toEqual(objects[ id1 ].updated);
-            expect(indexedDAOImpl.find("id", id2)).toEqual(objects[ id2 ].updated);
+            expect(impl.find("id", id1)).toEqual(entities[ id1 ].updated);
+            expect(impl.find("id", id2)).toEqual(entities[ id2 ].updated);
 
-            const testFindMany = <K extends keyof TestObject>(key: K, value: TestObject[ K ]) => {
-                const receivedObjects = indexedDAOImpl.findMany(key, value);
+            testFindMany("prop1", props.updated.prop1, 2, id => entities[ id ].updated);
+            testFindMany("prop2", props.updated.prop2, 2, id => entities[ id ].updated);
+            testFindMany("prop3", props.updated.prop3, 2, id => entities[ id ].updated);
+            expect(impl.findMany("prop1", props.initial.prop1).length).toBe(0);
+            expect(impl.findMany("prop2", props.initial.prop2).length).toBe(0);
+            expect(impl.findMany("prop3", props.initial.prop3).length).toBe(0);
+        });
 
-                expect(receivedObjects.length).toBe(2);
-                receivedObjects
-                    .forEach(receivedObj => {
-                        expect(receivedObj).toEqual(objects[ receivedObj.id ].updated)
-                    });
+        it("save with not existed object should create this object", () => {
+            const entity: TestEntity = { id: 1, prop1: "dummy prop1", prop2: 500, prop3: false };
+
+            expect(impl.find("id", entity.id)).toBeNull();
+            expect(impl.find("prop1", entity.prop1)).toBeNull();
+            expect(impl.find("prop2", entity.prop2)).toBeNull();
+            expect(impl.find("prop3", entity.prop3)).toBeNull();
+
+            impl.save(entity);
+            expect(impl.find("id", entity.id)).toEqual(entity);
+            expect(impl.find("prop1", entity.prop1)).toEqual(entity);
+            expect(impl.find("prop2", entity.prop2)).toEqual(entity);
+            expect(impl.find("prop3", entity.prop3)).toEqual(entity);
+        });
+
+        it("delete should delete an object by primary key", () => {
+            const entity: TestEntity = { id: 1, prop1: "dummy prop1", prop2: 500, prop3: false };
+
+            impl.save(entity);
+            expect(impl.find("id", entity.id)).toEqual(entity);
+            expect(impl.find("prop1", entity.prop1)).toEqual(entity);
+            expect(impl.find("prop2", entity.prop2)).toEqual(entity);
+            expect(impl.find("prop3", entity.prop3)).toEqual(entity);
+
+            impl.delete("id", entity.id);
+            expect(impl.find("id", entity.id)).toBeNull();
+            expect(impl.find("prop1", entity.prop1)).toBeNull();
+            expect(impl.find("prop2", entity.prop2)).toBeNull();
+            expect(impl.find("prop3", entity.prop3)).toBeNull();
+        });
+
+        it("delete should delete all objects by any not primary key", () => {
+            const props: TestEntity = { prop1: "dummy prop1", prop2: 500, prop3: false };
+            const entities: Record<number, TestEntity> = [ 1, 2, 3, 4, 5 ]
+                .map(id => ({ id, ...props }))
+                .reduce((entitiesById, entity) => ({
+                    ...entitiesById,
+                    [ entity.id ]: entity,
+                }), {});
+            const otherProps: TestEntity = { prop1: "other dummy prop1", prop2: 700, prop3: true };
+            const otherEntities: Record<number, TestEntity> = [ 6, 7, 8, 9 ]
+                .map(id => ({ id, ...otherProps }))
+                .reduce((entitiesById, entity) => ({
+                    ...entitiesById,
+                    [ entity.id ]: entity,
+                }), {});
+
+            Object.values(otherEntities).forEach(e => impl.save(e));
+            testFindMany("prop1", otherProps.prop1, 4, id => otherEntities[ id ]);
+            testFindMany("prop2", otherProps.prop2, 4, id => otherEntities[ id ]);
+            testFindMany("prop3", otherProps.prop3, 4, id => otherEntities[ id ]);
+
+            const testDelete = (deleteByKey: keyof TestEntity) => {
+                Object.values(entities).forEach(e => impl.save(e));
+
+                testFindMany("prop1", props.prop1, 5, id => entities[ id ]);
+                testFindMany("prop2", props.prop2, 5, id => entities[ id ]);
+                testFindMany("prop3", props.prop3, 5, id => entities[ id ]);
+
+                impl.delete(deleteByKey, props[ deleteByKey ]);
+
+                expect(impl.find("prop1", props.prop1)).toBeNull();
+                expect(impl.find("prop2", props.prop2)).toBeNull();
+                expect(impl.find("prop3", props.prop3)).toBeNull();
+
+                testFindMany("prop1", otherProps.prop1, 4, id => otherEntities[ id ]);
+                testFindMany("prop2", otherProps.prop2, 4, id => otherEntities[ id ]);
+                testFindMany("prop3", otherProps.prop3, 4, id => otherEntities[ id ]);
             };
 
-            testFindMany("prop1", props.updated.prop1);
-            testFindMany("prop2", props.updated.prop2);
-            testFindMany("prop3", props.updated.prop3);
-            expect(indexedDAOImpl.findMany("prop1", props.initial.prop1).length).toBe(0);
-            expect(indexedDAOImpl.findMany("prop2", props.initial.prop2).length).toBe(0);
-            expect(indexedDAOImpl.findMany("prop3", props.initial.prop3).length).toBe(0);
+            testDelete("prop1");
+            testDelete("prop2");
+            testDelete("prop3");
         });
+    };
 
-        it("delete should delete an object", () => {
-            const obj: TestObject = { id: 1, prop1: "initial prop1", prop2: 500, prop3: false };
+    describe("with indexBy option", () => {
 
-            indexedDAOImpl.save(obj);
-            expect(indexedDAOImpl.find("id", obj.id)).toEqual(obj);
-            expect(indexedDAOImpl.find("prop1", obj.prop1)).toEqual(obj);
-            expect(indexedDAOImpl.find("prop2", obj.prop2)).toEqual(obj);
-            expect(indexedDAOImpl.find("prop3", obj.prop3)).toEqual(obj);
+        class IndexedDAOImpl extends AbstractInMemoryDAOImpl<TestEntity> {
+            constructor() {
+                super({
+                    indexBy: [ "prop1", "prop2", "prop3" ],
+                    primaryKey: "id",
+                });
+            }
+        }
 
-            indexedDAOImpl.delete("id", obj.id);
-            expect(indexedDAOImpl.find("id", obj.id)).toBeNull();
-            expect(indexedDAOImpl.find("prop1", obj.prop1)).toBeNull();
-            expect(indexedDAOImpl.find("prop2", obj.prop2)).toBeNull();
-            expect(indexedDAOImpl.find("prop3", obj.prop3)).toBeNull();
-        });
+        testImpl(IndexedDAOImpl);
+    });
 
+    describe("without indexBy option", () => {
+
+        class NotIndexedDAOImpl extends AbstractInMemoryDAOImpl<TestEntity> {
+            constructor() {
+                super({
+                    primaryKey: "id",
+                });
+            }
+        }
+
+        testImpl(NotIndexedDAOImpl);
     });
 });
