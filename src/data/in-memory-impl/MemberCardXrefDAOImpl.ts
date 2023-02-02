@@ -16,7 +16,7 @@ export default class MemberCardXrefDAOImpl extends AbstractInMemoryDAOImpl<Membe
     }
 
     getCardByMemberId(memberId: number): CardCode {
-        return this.find("memberId", memberId)?.cardCode;
+        return this.find("memberId", memberId)?.cardCode || null;
     }
 
     getCardsByMemberIds(memberIds: number[]): MemberCardXref[] {
