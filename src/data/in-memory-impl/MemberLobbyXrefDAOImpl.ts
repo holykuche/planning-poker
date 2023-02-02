@@ -15,7 +15,7 @@ export default class MemberLobbyXrefDAOImpl extends AbstractInMemoryDAOImpl<Memb
     }
 
     getMembersBinding(memberId: number): number {
-        return this.find("memberId", memberId)?.lobbyId;
+        return this.find("memberId", memberId)?.lobbyId || null;
     }
 
     getMemberIdsByLobbyId(lobbyId: number): number[] {
