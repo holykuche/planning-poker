@@ -80,7 +80,7 @@ export default abstract class AbstractInMemoryDAOImpl<E extends Entity, PK exten
                 storedEntity = { ...entity };
             } else {
                 idx = this.getFreeIndex();
-                storedEntity = { [ this.primaryKey ]: this.getPrimaryKeyValue(), ...entity };
+                storedEntity = { [ this.primaryKey ]: this.getAvailablePrimaryKeyValue(), ...entity };
             }
         } else {
             idx = this.getFreeIndex();
@@ -155,12 +155,15 @@ export default abstract class AbstractInMemoryDAOImpl<E extends Entity, PK exten
         return typeof freeIndex === "number" ? freeIndex : this.data.length;
     }
 
-    private getPrimaryKeyValue(): Value<E, PK> {
+    private getAvailablePrimaryKeyValue(): Value<E, PK> {
         if (!this.primaryKeyValue || !this.getNextPrimaryKeyValue) {
             throw new Error(`Can't calculate primary key '${String(this.primaryKey)}' automatically.`);
         }
 
-        return this.primaryKeyValue = this.getNextPrimaryKeyValue(this.primaryKeyValue);
+        const availablePrimaryKeyValue = this.primaryKeyValue;
+        this.primaryKeyValue = this.getNextPrimaryKeyValue(this.primaryKeyValue);
+
+        return availablePrimaryKeyValue;
     }
 
     private static distinct<T>(f: T, i: number, self: T[]): boolean {

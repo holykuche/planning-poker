@@ -143,9 +143,34 @@ describe("data/in-memory-impl/AbstractInMemoryDAOImpl" ,() => {
             testDelete("prop2");
             testDelete("prop3");
         });
+
+        it("delete with not existed object should do nothing", () => {
+            const entity: TestEntity = { id: 1, prop1: "dummy prop1", prop2: 500, prop3: false };
+
+            expect(impl.findMany("id" ,entity.id).length).toBe(0);
+            expect(impl.findMany("prop1" ,entity.prop1).length).toBe(0);
+            expect(impl.findMany("prop2" ,entity.prop2).length).toBe(0);
+            expect(impl.findMany("prop3" ,entity.prop3).length).toBe(0);
+
+            expect(() => impl.delete("id", entity.id)).not.toThrowError();
+            expect(() => impl.delete("prop1", entity.prop1)).not.toThrowError();
+            expect(() => impl.delete("prop2", entity.prop2)).not.toThrowError();
+            expect(() => impl.delete("prop3", entity.prop3)).not.toThrowError();
+
+            expect(impl.findMany("id" ,entity.id).length).toBe(0);
+            expect(impl.findMany("prop1" ,entity.prop1).length).toBe(0);
+            expect(impl.findMany("prop2" ,entity.prop2).length).toBe(0);
+            expect(impl.findMany("prop3" ,entity.prop3).length).toBe(0);
+        });
+
+        it("save without possibility to get primary key should throw error", () => {
+            const entity: TestEntity = { prop1: "dummy prop1", prop2: 500, prop3: false };
+
+            expect(() => impl.save(entity)).toThrowError("Can't calculate primary key 'id' automatically.");
+        });
     };
 
-    describe("with indexBy option", () => {
+    describe("with indexBy and primaryKey options", () => {
 
         class IndexedDAOImpl extends AbstractInMemoryDAOImpl<TestEntity> {
             constructor() {
@@ -159,7 +184,7 @@ describe("data/in-memory-impl/AbstractInMemoryDAOImpl" ,() => {
         testImpl(IndexedDAOImpl);
     });
 
-    describe("without indexBy option", () => {
+    describe("with primaryKey option", () => {
 
         class NotIndexedDAOImpl extends AbstractInMemoryDAOImpl<TestEntity> {
             constructor() {
@@ -170,5 +195,50 @@ describe("data/in-memory-impl/AbstractInMemoryDAOImpl" ,() => {
         }
 
         testImpl(NotIndexedDAOImpl);
+    });
+
+    describe("without any options", () => {
+
+        class WithoutOptionsDAOImpl extends AbstractInMemoryDAOImpl<TestEntity> {}
+
+        let impl: WithoutOptionsDAOImpl;
+
+        beforeEach(() => {
+            impl = new WithoutOptionsDAOImpl();
+        });
+
+        it("save should store many objects with identical key values", () => {
+            const entity1 = { prop1: "dummy prop1 1", prop2: 500, prop3: false };
+            const entity2 = { prop1: "dummy prop1 2", prop2: 700, prop3: true };
+
+            Array.from({ length: 10 })
+                .map(() => ({ ...entity1 }))
+                .forEach(e => impl.save(e));
+            Array.from({ length: 20 })
+                .map(() => ({ ...entity2 }))
+                .forEach(e => impl.save(e));
+
+            const testFindMany = <K extends keyof TestEntity>(key: K,
+                                                              value: TestEntity[ K ],
+                                                              receivedCount: number,
+                                                              expected: TestEntity) => {
+                const receivedEntities = impl.findMany(key, value);
+
+                expect(receivedEntities.length).toBe(receivedCount);
+                receivedEntities
+                    .forEach(receivedEntity => {
+                        expect(receivedEntity).toEqual(expected);
+                    });
+            };
+
+            testFindMany("prop1", entity1.prop1, 10, entity1);
+            testFindMany("prop2", entity1.prop2, 10, entity1);
+            testFindMany("prop3", entity1.prop3, 10, entity1);
+
+            testFindMany("prop1", entity2.prop1, 20, entity2);
+            testFindMany("prop2", entity2.prop2, 20, entity2);
+            testFindMany("prop3", entity2.prop3, 20, entity2);
+        });
+
     });
 });
