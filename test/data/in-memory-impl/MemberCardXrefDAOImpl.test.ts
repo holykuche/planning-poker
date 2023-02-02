@@ -7,18 +7,18 @@ import MemberCardXrefDAOImpl from "data/in-memory-impl/MemberCardXrefDAOImpl";
 
 describe("data/in-memory-impl/MemberCardXrefDAOImpl", () => {
 
-    let memberCardXrefDAOImpl: MemberCardXrefDAOImpl;
+    let memberCardXrefDAO: MemberCardXrefDAOImpl;
 
     beforeEach(() => {
-        memberCardXrefDAOImpl = new MemberCardXrefDAOImpl();
+        memberCardXrefDAO = new MemberCardXrefDAOImpl();
     });
 
     it("put should save member-card xref", () => {
         const xref: MemberCardXref = { memberId: 1, cardCode: CardCode.DontKnow };
 
-        expect(memberCardXrefDAOImpl.getCardByMemberId(xref.memberId)).toBeNull();
-        memberCardXrefDAOImpl.put(xref.memberId, xref.cardCode);
-        expect(memberCardXrefDAOImpl.getCardByMemberId(xref.memberId)).toBe(xref.cardCode);
+        expect(memberCardXrefDAO.getCardByMemberId(xref.memberId)).toBeNull();
+        memberCardXrefDAO.put(xref.memberId, xref.cardCode);
+        expect(memberCardXrefDAO.getCardByMemberId(xref.memberId)).toBe(xref.cardCode);
     });
 
     it("getCardByMemberId should return member's card", () => {
@@ -30,15 +30,15 @@ describe("data/in-memory-impl/MemberCardXrefDAOImpl", () => {
             { memberId: 5, cardCode: CardCode.Score0 },
         ];
 
-        xrefs.forEach(xref => memberCardXrefDAOImpl.put(xref.memberId, xref.cardCode));
+        xrefs.forEach(xref => memberCardXrefDAO.put(xref.memberId, xref.cardCode));
 
         xrefs
-            .map(xref => [ xref, memberCardXrefDAOImpl.getCardByMemberId(xref.memberId) ] as const)
+            .map(xref => [ xref, memberCardXrefDAO.getCardByMemberId(xref.memberId) ] as const)
             .forEach(([ xref, receivedCard ]) => expect(receivedCard).toBe(xref.cardCode));
     });
 
     it("getCardByMemberId shouldn't return not stored card", () => {
-        const notStoredCard = memberCardXrefDAOImpl.getCardByMemberId(1);
+        const notStoredCard = memberCardXrefDAO.getCardByMemberId(1);
         expect(notStoredCard).toBeNull();
     });
 
@@ -52,9 +52,9 @@ describe("data/in-memory-impl/MemberCardXrefDAOImpl", () => {
         ];
         const memberIds = xrefs.map(xref => xref.memberId);
 
-        xrefs.forEach(xref => memberCardXrefDAOImpl.put(xref.memberId, xref.cardCode));
+        xrefs.forEach(xref => memberCardXrefDAO.put(xref.memberId, xref.cardCode));
 
-        const receivedXrefs = memberCardXrefDAOImpl.getCardsByMemberIds(memberIds);
+        const receivedXrefs = memberCardXrefDAO.getCardsByMemberIds(memberIds);
 
         expect(receivedXrefs.length).toBe(xrefs.length);
 
@@ -66,7 +66,7 @@ describe("data/in-memory-impl/MemberCardXrefDAOImpl", () => {
 
     it("getCardsByMemberIds shouldn't return not stored member's cards", () => {
         const memberIds = [ 1, 2, 3, 4, 5, 6 ];
-        const receivedXrefs = memberCardXrefDAOImpl.getCardsByMemberIds(memberIds);
+        const receivedXrefs = memberCardXrefDAO.getCardsByMemberIds(memberIds);
 
         expect(receivedXrefs.length).toBe(0);
     });
@@ -74,11 +74,11 @@ describe("data/in-memory-impl/MemberCardXrefDAOImpl", () => {
     it("removeByMemberId should delete stored member-card xref", () => {
         const xref: MemberCardXref = { memberId: 1, cardCode: CardCode.DontKnow };
 
-        memberCardXrefDAOImpl.put(xref.memberId, xref.cardCode);
-        expect(memberCardXrefDAOImpl.getCardByMemberId(xref.memberId)).toBe(xref.cardCode);
+        memberCardXrefDAO.put(xref.memberId, xref.cardCode);
+        expect(memberCardXrefDAO.getCardByMemberId(xref.memberId)).toBe(xref.cardCode);
 
-        memberCardXrefDAOImpl.removeByMemberId(xref.memberId);
-        expect(memberCardXrefDAOImpl.getCardByMemberId(xref.memberId)).toBeNull();
+        memberCardXrefDAO.removeByMemberId(xref.memberId);
+        expect(memberCardXrefDAO.getCardByMemberId(xref.memberId)).toBeNull();
     });
 
     it("removeByMemberIds should delete stored member-card xrefs", () => {
@@ -91,10 +91,10 @@ describe("data/in-memory-impl/MemberCardXrefDAOImpl", () => {
         ];
         const memberIds = xrefs.map(xref => xref.memberId);
 
-        xrefs.forEach(xref => memberCardXrefDAOImpl.put(xref.memberId, xref.cardCode));
-        expect(memberCardXrefDAOImpl.getCardsByMemberIds(memberIds).length).toBe(xrefs.length);
+        xrefs.forEach(xref => memberCardXrefDAO.put(xref.memberId, xref.cardCode));
+        expect(memberCardXrefDAO.getCardsByMemberIds(memberIds).length).toBe(xrefs.length);
 
-        memberCardXrefDAOImpl.removeByMemberIds(memberIds);
-        expect(memberCardXrefDAOImpl.getCardsByMemberIds(memberIds).length).toBe(0);
+        memberCardXrefDAO.removeByMemberIds(memberIds);
+        expect(memberCardXrefDAO.getCardsByMemberIds(memberIds).length).toBe(0);
     });
 });

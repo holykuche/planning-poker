@@ -20,22 +20,23 @@ export default class TelegramMessageDAOImpl extends AbstractInMemoryDAOImpl<Tele
 
     getMessage(lobbyId: number, chatId: number, messageType: TelegramMessageType): TelegramMessage {
         return this.findMany("lobbyId", lobbyId)
-            .find(message => message.chatId === chatId && message.messageType === messageType);
+            .find(message => message.chatId === chatId && message.messageType === messageType)
+            || null;
     }
 
     getAllMessages(lobbyId: number): TelegramMessage[] {
         return this.findMany("lobbyId", lobbyId);
     }
 
-    addMessage(message: TelegramMessage): void {
-        this.save(message);
+    addMessage(message: TelegramMessage): TelegramMessage {
+        return this.save(message);
     }
 
     deleteMessageById(id: number): void {
         this.delete("id", id);
     }
 
-    deleteMessage(lobbyId: number, messageType: TelegramMessageType): void {
+    deleteMessages(lobbyId: number, messageType: TelegramMessageType): void {
         this.findMany("lobbyId", lobbyId)
             .filter(message => message.messageType === messageType)
             .map(message => message.id)

@@ -29,7 +29,7 @@ export default class TelegramDataServiceImpl implements TelegramDataService {
     }
 
     deleteMessages(lobbyId: number, messageType: TelegramMessageType): void {
-        this.telegramMessageDAO.deleteMessage(lobbyId, messageType);
+        this.telegramMessageDAO.deleteMessages(lobbyId, messageType);
     }
 
     deleteAllMessages(lobbyId: number): void {
