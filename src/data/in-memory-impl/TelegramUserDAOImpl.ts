@@ -15,14 +15,14 @@ export default class TelegramUserDAOImpl extends AbstractInMemoryDAOImpl<Telegra
     }
 
     getMemberIdByTelegramUserId(telegramUserId: number): number {
-        return this.find("telegramUserId", telegramUserId)?.memberId;
+        return this.find("telegramUserId", telegramUserId)?.memberId || null;
     }
 
     getTelegramUserIdByMemberId(memberId: number): number {
-        return this.find("memberId", memberId)?.telegramUserId;
+        return this.find("memberId", memberId)?.telegramUserId || null;
     }
 
-    isMemberExisted(telegramUserId: number): boolean {
+    isMemberExists(telegramUserId: number): boolean {
         return !!this.find("telegramUserId", telegramUserId);
     }
 

@@ -19,7 +19,7 @@ export default class StartPokerSubscription extends AbstractTelegramBotMessageSu
     constructor(@inject(TELEGRAM_BOT_TYPES.PlaintTexts$) messages$: Observable<Message>) {
         const startPokerMessages$ = messages$
             .pipe(
-                filter(msg => this.telegramDataService.isMemberExisted(msg.from.id))
+                filter(msg => this.telegramDataService.isMemberExists(msg.from.id))
             );
         super(startPokerMessages$);
     }

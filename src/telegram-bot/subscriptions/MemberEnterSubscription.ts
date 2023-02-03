@@ -25,7 +25,7 @@ export default class MemberEnterSubscription extends AbstractTelegramBotMessageS
     constructor(@inject(TELEGRAM_BOT_TYPES.PlaintTexts$) messages$: Observable<Message>) {
         const memberEnterMessages$ = messages$
             .pipe(
-                filter(msg => !this.telegramDataService.isMemberExisted(msg.from.id))
+                filter(msg => !this.telegramDataService.isMemberExists(msg.from.id))
             );
         super(memberEnterMessages$);
     }
