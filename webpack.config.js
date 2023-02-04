@@ -36,6 +36,7 @@ const baseConfig = appConfig => ({
     target: "node",
     entry: {
         "telegram-bot": [
+            "./src/config/index.ts",
             resolveDataImplPath(appConfig[ "db-type" ]),
             "./src/service/impl/index.ts",
             "./src/telegram-bot/index.ts",

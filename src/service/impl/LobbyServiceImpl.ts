@@ -1,11 +1,11 @@
 import { inject, injectable } from "inversify";
 
+import CONFIG_TYPES from "config/types";
 import { DAO_TYPES, LobbyDAO, MemberCardXrefDAO, MemberDAO, MemberLobbyXrefDAO } from "data/api";
 import { Lobby, Member } from "data/entity";
 import { LobbyState } from "data/enum";
 
 import {
-    LobbyAlreadyExistsError,
     UnknownMemberError,
     MemberIsAlreadyInLobbyError,
     MemberIsNotInLobbyError,
@@ -23,6 +23,7 @@ export default class LobbyServiceImpl implements LobbyService {
     @inject(DAO_TYPES.MemberLobbyXrefDAO) private readonly memberLobbyXrefDAO: MemberLobbyXrefDAO;
     @inject(DAO_TYPES.MemberCardXrefDAO) private readonly memberCardXrefDAO: MemberCardXrefDAO;
     @inject(SERVICE_TYPES.SubscriptionService) private readonly subscriptionService: SubscriptionService;
+    @inject(CONFIG_TYPES.LobbyLifetimeMs) private readonly lobbyLifetimeMs: number;
 
     private lobbyDestroyTimeouts = new Map<number, NodeJS.Timeout>();
 
@@ -58,7 +59,7 @@ export default class LobbyServiceImpl implements LobbyService {
             payload: { members: this.getMembers(lobby.id) },
         });
 
-        this.refreshLobbyDestroyTimeout(lobby.id);
+        this.resetLobbyDestroyTimeout(lobby.id);
     }
 
     leaveMember(memberId: number): void {
@@ -90,7 +91,7 @@ export default class LobbyServiceImpl implements LobbyService {
         }
 
         if (members.length) {
-            this.refreshLobbyDestroyTimeout(lobbyId);
+            this.resetLobbyDestroyTimeout(lobbyId);
         } else {
             clearTimeout(this.lobbyDestroyTimeouts.get(lobbyId));
             this.destroyLobby(lobbyId);
@@ -107,7 +108,7 @@ export default class LobbyServiceImpl implements LobbyService {
 
         this.lobbyDAO.save({ ...lobby, currentTheme: theme, state: LobbyState.Playing });
 
-        this.refreshLobbyDestroyTimeout(lobbyId);
+        this.resetLobbyDestroyTimeout(lobbyId);
 
         this.subscriptionService.dispatch(lobbyId, {
             type: EventType.PokerWasStarted,
@@ -132,7 +133,7 @@ export default class LobbyServiceImpl implements LobbyService {
         const lobby = this.lobbyDAO.getById(lobbyId);
         this.lobbyDAO.save({ ...lobby, currentTheme: null, state: LobbyState.Waiting });
 
-        this.refreshLobbyDestroyTimeout(lobbyId);
+        this.resetLobbyDestroyTimeout(lobbyId);
 
         this.subscriptionService.dispatch(lobbyId, {
             type: EventType.PokerWasFinished,
@@ -191,15 +192,8 @@ export default class LobbyServiceImpl implements LobbyService {
     }
 
     private createLobby(lobbyName: string): Lobby {
-        if (this.lobbyDAO.isExists(lobbyName)) {
-            throw new LobbyAlreadyExistsError(lobbyName);
-        }
-
         const createdLobby = this.lobbyDAO.save({ name: lobbyName, state: LobbyState.Waiting });
-
-        this.refreshLobbyDestroyTimeout(createdLobby.id);
         this.subscriptionService.register(createdLobby.id);
-
         return createdLobby;
     }
 
@@ -219,9 +213,9 @@ export default class LobbyServiceImpl implements LobbyService {
         this.lobbyDestroyTimeouts.delete(lobbyId);
     }
 
-    private refreshLobbyDestroyTimeout(lobbyId: number): void {
+    private resetLobbyDestroyTimeout(lobbyId: number): void {
         clearTimeout(this.lobbyDestroyTimeouts.get(lobbyId));
-        const destroyTimeout = setTimeout(() => this.destroyLobby(lobbyId), LOBBY_LIFETIME_MS);
+        const destroyTimeout = setTimeout(() => this.destroyLobby(lobbyId), this.lobbyLifetimeMs);
         this.lobbyDestroyTimeouts.set(lobbyId, destroyTimeout);
     }
 
