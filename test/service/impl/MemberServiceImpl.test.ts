@@ -4,7 +4,7 @@ import { mock, mockReset, anyNumber, MockProxy } from "jest-mock-extended";
 
 import { MemberDAO, MemberCardXrefDAO, MemberLobbyXrefDAO, LobbyDAO, DAO_TYPES } from "data/api";
 import { CardCode, LobbyState } from "data/enum";
-import { MemberService, SubscriptionService, LobbyService, SERVICE_TYPES } from "service/api";
+import { MemberService, LobbyService, SERVICE_TYPES } from "service/api";
 import { MemberIsNotInLobbyError, PokerIsNotStartedError, UnknownMemberError } from "service/error";
 
 import MemberServiceImpl from "service/impl/MemberServiceImpl";
@@ -17,7 +17,6 @@ describe("service/impl/MemberServiceImpl", () => {
     let memberCardXrefDAOMock: MockProxy<MemberCardXrefDAO>;
     let memberLobbyXrefDAOMock: MockProxy<MemberLobbyXrefDAO>;
     let lobbyDAOMock: MockProxy<LobbyDAO>;
-    let subscriptionServiceMock: MockProxy<SubscriptionService>;
     let lobbyServiceMock: MockProxy<LobbyService>;
 
     beforeAll(() => {
@@ -36,9 +35,6 @@ describe("service/impl/MemberServiceImpl", () => {
         lobbyDAOMock = mock<LobbyDAO>();
         container.bind<LobbyDAO>(DAO_TYPES.LobbyDAO).toConstantValue(lobbyDAOMock);
 
-        subscriptionServiceMock = mock<SubscriptionService>();
-        container.bind<SubscriptionService>(SERVICE_TYPES.SubscriptionService).toConstantValue(subscriptionServiceMock);
-
         lobbyServiceMock = mock<LobbyService>();
         container.bind<LobbyService>(SERVICE_TYPES.LobbyService).toConstantValue(lobbyServiceMock);
 
@@ -50,7 +46,6 @@ describe("service/impl/MemberServiceImpl", () => {
         mockReset(memberCardXrefDAOMock);
         mockReset(memberLobbyXrefDAOMock);
         mockReset(lobbyDAOMock);
-        mockReset(subscriptionServiceMock);
         mockReset(lobbyServiceMock);
     });
 
