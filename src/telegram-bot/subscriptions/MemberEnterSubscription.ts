@@ -33,7 +33,8 @@ export default class MemberEnterSubscription extends AbstractTelegramBotMessageS
     protected async handle(msg: Message): Promise<void> {
         const lobbyName = msg.text.trim().toUpperCase();
         const { id: memberId } = this.telegramDataService.createMember(fromTelegramUserToMember(msg.from));
-        const { id: lobbyId, state: lobbyState, currentTheme: lobbyCurrentTheme } = this.lobbyService.enterMember(memberId, lobbyName);
+        this.lobbyService.enterMember(memberId, lobbyName);
+        const { id: lobbyId, state: lobbyState, currentTheme: lobbyCurrentTheme } = this.lobbyService.getMembersLobby(memberId);
 
         await this.initLobbyMessage(msg.chat.id, msg.from.id, lobbyId, lobbyName);
 

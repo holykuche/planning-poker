@@ -1,14 +1,13 @@
-import { Member } from "data/entity";
+import { Member, Lobby } from "data/entity";
 
-import { LobbyDto, PokerResultItemDto, CardDto } from "../dto";
+import { PokerResultItemDto, CardDto } from "../dto";
 
 export default interface LobbyService {
-    getById(id: number): LobbyDto;
-    getByName(name: string): LobbyDto;
-    delete(id: number): void;
-    isExists(name: string): boolean;
+    getById(id: number): Lobby;
+    getByName(name: string): Lobby;
     getMembers(lobbyId: number): Member[];
-    enterMember(memberId: number, lobbyName: string): LobbyDto;
+    getMembersLobby(memberId: number): Lobby;
+    enterMember(memberId: number, lobbyName: string): void;
     leaveMember(memberId: number): void;
     startPoker(lobbyId: number, theme: string): void;
     checkPoker(lobbyId: number): void;

@@ -12,7 +12,7 @@ import {
     PokerIsAlreadyStartedError,
 } from "../error";
 import { LobbyService, SERVICE_TYPES, SubscriptionService } from "../api";
-import { CardDto, LobbyDto, PokerResultItemDto } from "../dto";
+import { CardDto, PokerResultItemDto } from "../dto";
 import { EventType } from "../event";
 
 @injectable()
@@ -26,20 +26,12 @@ export default class LobbyServiceImpl implements LobbyService {
 
     private lobbyDestroyTimeouts = new Map<number, NodeJS.Timeout>();
 
-    getById(id: number): LobbyDto {
-        return this.fromEntityToDto(this.lobbyDAO.getById(id));
+    getById(id: number): Lobby {
+        return this.lobbyDAO.getById(id);
     }
 
-    getByName(name: string): LobbyDto {
-        return this.fromEntityToDto(this.lobbyDAO.getByName(name));
-    }
-
-    delete(id: number): void {
-        this.lobbyDAO.deleteById(id);
-    }
-
-    isExists(name: string): boolean {
-        return this.lobbyDAO.isExists(name);
+    getByName(name: string): Lobby {
+        return this.lobbyDAO.getByName(name);
     }
 
     getMembers(lobbyId: number): Member[] {
@@ -47,7 +39,12 @@ export default class LobbyServiceImpl implements LobbyService {
         return this.memberDAO.getByIds(memberIds);
     }
 
-    enterMember(memberId: number, lobbyName: string): LobbyDto {
+    getMembersLobby(memberId: number): Lobby {
+        const lobbyId = this.memberLobbyXrefDAO.getMembersBinding(memberId);
+        return this.lobbyDAO.getById(lobbyId);
+    }
+
+    enterMember(memberId: number, lobbyName: string): void {
         if (this.memberLobbyXrefDAO.isMemberBound(memberId)) {
             const member = this.memberDAO.getById(memberId);
             throw new MemberIsAlreadyInLobbyError(member.name);
@@ -62,8 +59,6 @@ export default class LobbyServiceImpl implements LobbyService {
         });
 
         this.refreshLobbyDestroyTimeout(lobby.id);
-
-        return lobby;
     }
 
     leaveMember(memberId: number): void {
@@ -195,7 +190,7 @@ export default class LobbyServiceImpl implements LobbyService {
         return { result: minMaxResult.concat(specialResult), totalScore };
     }
 
-    private createLobby(lobbyName: string): LobbyDto {
+    private createLobby(lobbyName: string): Lobby {
         if (this.lobbyDAO.isExists(lobbyName)) {
             throw new LobbyAlreadyExistsError(lobbyName);
         }
@@ -205,11 +200,7 @@ export default class LobbyServiceImpl implements LobbyService {
         this.refreshLobbyDestroyTimeout(createdLobby.id);
         this.subscriptionService.register(createdLobby.id);
 
-        return {
-            ...createdLobby,
-            members: [],
-            cards: new Map<number, CardDto>(),
-        };
+        return createdLobby;
     }
 
     private destroyLobby(lobbyId: number): void {
@@ -226,20 +217,6 @@ export default class LobbyServiceImpl implements LobbyService {
 
         this.subscriptionService.unregister(lobbyId);
         this.lobbyDestroyTimeouts.delete(lobbyId);
-    }
-
-    private fromEntityToDto(lobby: Lobby): LobbyDto {
-        if (!lobby) {
-            return null;
-        }
-
-        const memberIds = this.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobby.id);
-        const members = this.memberDAO.getByIds(memberIds);
-        const cards = new Map<number, CardDto>(
-            this.memberCardXrefDAO.getCardsByMemberIds(memberIds)
-                .map(({ memberId, cardCode }) => [ memberId, CardDto.fromCode(cardCode) ]));
-
-        return { ...lobby, members, cards };
     }
 
     private refreshLobbyDestroyTimeout(lobbyId: number): void {
