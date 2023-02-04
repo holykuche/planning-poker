@@ -214,7 +214,7 @@ export default class LobbyServiceImpl implements LobbyService {
     }
 
     private scheduleLobbyDestroy(lobbyId: number): void {
-        this.timeoutScheduler.schedule(TaskType.Lobby, lobbyId, this.lobbyLifetimeMs, () => this.destroyLobby(lobbyId));
+        this.timeoutScheduler.schedule(TaskType.Lobby, lobbyId, this.lobbyLifetimeMs / 1000, () => this.destroyLobby(lobbyId));
     }
 
     private cancelScheduledLobbyDestroy(lobbyId: number): void {
