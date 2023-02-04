@@ -13,7 +13,7 @@ const resolveDataImplPath = dbType => {
             throw new Error(`DB "${dbType}" doesn't support`);
         case "in-memory":
         default:
-            return "./src/data/in-memory-impl/index.ts";
+            return path.resolve(__dirname, "src/data/in-memory-impl/index.ts");
     }
 };
 
@@ -36,10 +36,11 @@ const baseConfig = appConfig => ({
     target: "node",
     entry: {
         "telegram-bot": [
-            "./src/config/index.ts",
+            path.resolve(__dirname, "src/config/index.ts"),
             resolveDataImplPath(appConfig[ "db-type" ]),
-            "./src/service/impl/index.ts",
-            "./src/telegram-bot/index.ts",
+            path.resolve(__dirname, "src/service/impl/index.ts"),
+            path.resolve(__dirname, "src/scheduler/impl/index.ts"),
+            path.resolve(__dirname, "src/telegram-bot/index.ts"),
         ],
     },
     module: {

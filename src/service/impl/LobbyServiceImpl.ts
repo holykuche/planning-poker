@@ -4,12 +4,14 @@ import CONFIG_TYPES from "config/types";
 import { DAO_TYPES, LobbyDAO, MemberCardXrefDAO, MemberDAO, MemberLobbyXrefDAO } from "data/api";
 import { Lobby, Member } from "data/entity";
 import { LobbyState } from "data/enum";
+import { SCHEDULER_TYPES, TimeoutScheduler } from "scheduler/api";
+import { TaskType } from "scheduler/enum";
 
 import {
-    UnknownMemberError,
     MemberIsAlreadyInLobbyError,
     MemberIsNotInLobbyError,
     PokerIsAlreadyStartedError,
+    UnknownMemberError,
 } from "../error";
 import { LobbyService, SERVICE_TYPES, SubscriptionService } from "../api";
 import { CardDto, PokerResultItemDto } from "../dto";
@@ -23,9 +25,8 @@ export default class LobbyServiceImpl implements LobbyService {
     @inject(DAO_TYPES.MemberLobbyXrefDAO) private readonly memberLobbyXrefDAO: MemberLobbyXrefDAO;
     @inject(DAO_TYPES.MemberCardXrefDAO) private readonly memberCardXrefDAO: MemberCardXrefDAO;
     @inject(SERVICE_TYPES.SubscriptionService) private readonly subscriptionService: SubscriptionService;
+    @inject(SCHEDULER_TYPES.TimeoutScheduler) private readonly timeoutScheduler: TimeoutScheduler;
     @inject(CONFIG_TYPES.LobbyLifetimeMs) private readonly lobbyLifetimeMs: number;
-
-    private lobbyDestroyTimeouts = new Map<number, NodeJS.Timeout>();
 
     getById(id: number): Lobby {
         return this.lobbyDAO.getById(id);
@@ -54,12 +55,12 @@ export default class LobbyServiceImpl implements LobbyService {
         const lobby = this.getByName(lobbyName) || this.createLobby(lobbyName);
         this.memberLobbyXrefDAO.bindMember(memberId, lobby.id);
 
+        this.scheduleLobbyDestroy(lobby.id);
+
         this.subscriptionService.dispatch(lobby.id, {
             type: EventType.MembersWasChanged,
             payload: { members: this.getMembers(lobby.id) },
         });
-
-        this.resetLobbyDestroyTimeout(lobby.id);
     }
 
     leaveMember(memberId: number): void {
@@ -91,9 +92,9 @@ export default class LobbyServiceImpl implements LobbyService {
         }
 
         if (members.length) {
-            this.resetLobbyDestroyTimeout(lobbyId);
+            this.scheduleLobbyDestroy(lobbyId);
         } else {
-            clearTimeout(this.lobbyDestroyTimeouts.get(lobbyId));
+            this.cancelScheduledLobbyDestroy(lobbyId);
             this.destroyLobby(lobbyId);
         }
 
@@ -108,7 +109,7 @@ export default class LobbyServiceImpl implements LobbyService {
 
         this.lobbyDAO.save({ ...lobby, currentTheme: theme, state: LobbyState.Playing });
 
-        this.resetLobbyDestroyTimeout(lobbyId);
+        this.scheduleLobbyDestroy(lobbyId);
 
         this.subscriptionService.dispatch(lobbyId, {
             type: EventType.PokerWasStarted,
@@ -133,7 +134,7 @@ export default class LobbyServiceImpl implements LobbyService {
         const lobby = this.lobbyDAO.getById(lobbyId);
         this.lobbyDAO.save({ ...lobby, currentTheme: null, state: LobbyState.Waiting });
 
-        this.resetLobbyDestroyTimeout(lobbyId);
+        this.scheduleLobbyDestroy(lobbyId);
 
         this.subscriptionService.dispatch(lobbyId, {
             type: EventType.PokerWasFinished,
@@ -210,13 +211,14 @@ export default class LobbyServiceImpl implements LobbyService {
         this.lobbyDAO.deleteById(lobbyId);
 
         this.subscriptionService.unregister(lobbyId);
-        this.lobbyDestroyTimeouts.delete(lobbyId);
     }
 
-    private resetLobbyDestroyTimeout(lobbyId: number): void {
-        clearTimeout(this.lobbyDestroyTimeouts.get(lobbyId));
-        const destroyTimeout = setTimeout(() => this.destroyLobby(lobbyId), this.lobbyLifetimeMs);
-        this.lobbyDestroyTimeouts.set(lobbyId, destroyTimeout);
+    private scheduleLobbyDestroy(lobbyId: number): void {
+        this.timeoutScheduler.schedule(TaskType.Lobby, lobbyId, this.lobbyLifetimeMs, () => this.destroyLobby(lobbyId));
+    }
+
+    private cancelScheduledLobbyDestroy(lobbyId: number): void {
+        this.timeoutScheduler.cancel(TaskType.Lobby, lobbyId);
     }
 
 }
