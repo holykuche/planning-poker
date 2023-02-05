@@ -65,7 +65,7 @@ describe("service/impl/LobbyServiceImpl", () => {
         mockReset(timeoutScheduler);
     });
 
-    it("getById should return existed lobby", () => {
+    it("getById should return an existed lobby", () => {
         const lobby: Lobby = { id: 1, name: "dummy name", currentTheme: "task 1234", state: LobbyState.Playing };
 
         lobbyDAOMock.getById.calledWith(lobby.id).mockReturnValue(lobby);
@@ -78,7 +78,7 @@ describe("service/impl/LobbyServiceImpl", () => {
         expect(lobbyService.getById(1)).toBeNull();
     });
 
-    it("getByName should return lobby with its members and cards", () => {
+    it("getByName should return an existed lobby", () => {
         const lobby: Lobby = { id: 1, name: "dummy name", currentTheme: "task 1234", state: LobbyState.Playing };
 
         lobbyDAOMock.getByName.calledWith(lobby.name).mockReturnValue(lobby);
@@ -91,7 +91,7 @@ describe("service/impl/LobbyServiceImpl", () => {
         expect(lobbyService.getByName("dummy name")).toBeNull();
     });
 
-    it("getMembers should return members by lobby", () => {
+    it("getMembers should return members by their lobby", () => {
         const lobbyId = 1;
         const members = [
             { id: 10, name: "dummy member 1" },
@@ -114,7 +114,7 @@ describe("service/impl/LobbyServiceImpl", () => {
         expect(lobbyService.getMembers(1)).toEqual([]);
     });
 
-    it("getMembersLobby should return lobby by member", () => {
+    it("getMembersLobby should return a lobby by its member", () => {
         const memberId = 10;
         const lobby: Lobby = { id: 1, name: "dummy name", currentTheme: "task 1234", state: LobbyState.Playing };
 
@@ -124,14 +124,14 @@ describe("service/impl/LobbyServiceImpl", () => {
         expect(lobbyService.getMembersLobby(memberId)).toEqual(lobby);
     });
 
-    it("getMembersLobby shouldn't return lobby by not existed member", () => {
+    it("getMembersLobby shouldn't return a lobby by not existed member", () => {
         memberLobbyXrefDAOMock.getMembersBinding.calledWith(anyNumber()).mockReturnValue(null);
         lobbyDAOMock.getById.calledWith(null).mockReturnValue(null);
 
         expect(lobbyService.getMembersLobby(10)).toBeNull();
     });
 
-    it("enterMember should bind member to existed lobby", () => {
+    it("enterMember should bind member to an existed lobby", () => {
         const memberId = 10;
         const lobby: Lobby = { id: 1, name: "dummy name", state: LobbyState.Waiting };
 
@@ -143,7 +143,7 @@ describe("service/impl/LobbyServiceImpl", () => {
         expect(memberLobbyXrefDAOMock.bindMember).toBeCalledWith(memberId, lobby.id);
     });
 
-    it("enterMember should bind member to new lobby", () => {
+    it("enterMember should bind member to a new lobby", () => {
         const memberId = 10;
         const newLobbyId = 1;
         const lobby: Lobby = { name: "dummy name", state: LobbyState.Waiting };
@@ -158,7 +158,7 @@ describe("service/impl/LobbyServiceImpl", () => {
         expect(memberLobbyXrefDAOMock.bindMember).toBeCalledWith(memberId, newLobbyId);
     });
 
-    it("enterMember should throw exception if member is already in lobby", () => {
+    it("enterMember should throw exception if member is already in a lobby", () => {
         const member: Member = { id: 10, name: "dummy member name" };
         const lobbyName = "dummy lobby name";
 
@@ -168,7 +168,7 @@ describe("service/impl/LobbyServiceImpl", () => {
         expect(() => lobbyService.enterMember(member.id, lobbyName)).toThrowError(MemberIsAlreadyInLobbyError);
     });
 
-    it("enterMember should schedule destroying lobby", () => {
+    it("enterMember should schedule destroying the lobby", () => {
         const memberId = 10;
         const lobby: Lobby = { id: 1, name: "dummy name", state: LobbyState.Waiting };
 
