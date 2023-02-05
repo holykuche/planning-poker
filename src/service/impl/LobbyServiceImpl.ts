@@ -134,8 +134,6 @@ export default class LobbyServiceImpl implements LobbyService {
         const lobby = this.lobbyDAO.getById(lobbyId);
         this.lobbyDAO.save({ ...lobby, currentTheme: null, state: LobbyState.Waiting });
 
-        this.scheduleLobbyDestroy(lobbyId);
-
         this.subscriptionService.dispatch(lobbyId, {
             type: EventType.PokerWasFinished,
             payload: { theme: lobby.currentTheme, ...this.getPokerFinishResult(lobbyId) },
@@ -192,6 +190,14 @@ export default class LobbyServiceImpl implements LobbyService {
         return { result: minMaxResult.concat(specialResult), totalScore };
     }
 
+    scheduleLobbyDestroy(lobbyId: number): void {
+        this.timeoutScheduler.schedule(TaskType.Lobby, lobbyId, this.lobbyLifetimeMs / 1000, () => this.destroyLobby(lobbyId));
+    }
+
+    private cancelScheduledLobbyDestroy(lobbyId: number): void {
+        this.timeoutScheduler.cancel(TaskType.Lobby, lobbyId);
+    }
+
     private createLobby(lobbyName: string): Lobby {
         const createdLobby = this.lobbyDAO.save({ name: lobbyName, state: LobbyState.Waiting });
         this.subscriptionService.register(createdLobby.id);
@@ -211,14 +217,6 @@ export default class LobbyServiceImpl implements LobbyService {
         this.lobbyDAO.deleteById(lobbyId);
 
         this.subscriptionService.unregister(lobbyId);
-    }
-
-    private scheduleLobbyDestroy(lobbyId: number): void {
-        this.timeoutScheduler.schedule(TaskType.Lobby, lobbyId, this.lobbyLifetimeMs / 1000, () => this.destroyLobby(lobbyId));
-    }
-
-    private cancelScheduledLobbyDestroy(lobbyId: number): void {
-        this.timeoutScheduler.cancel(TaskType.Lobby, lobbyId);
     }
 
 }

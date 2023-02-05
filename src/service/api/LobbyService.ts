@@ -14,4 +14,5 @@ export default interface LobbyService {
     finishPoker(lobbyId: number): void;
     getPokerResult(lobbyId: number): PokerResultItemDto[];
     getPokerFinishResult(lobbyId: number): { result: PokerResultItemDto[], totalScore: CardDto };
+    scheduleLobbyDestroy(lobbyId: number): void;
 }

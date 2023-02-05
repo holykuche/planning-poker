@@ -49,6 +49,8 @@ export default class MemberServiceImpl implements MemberService {
             throw new PokerIsNotStartedError(lobby);
         }
 
+        this.lobbyService.scheduleLobbyDestroy(lobbyId);
+
         this.memberCardXrefDAO.put(memberId, cardCode);
         this.lobbyService.checkPoker(lobbyId);
     }
@@ -61,6 +63,8 @@ export default class MemberServiceImpl implements MemberService {
         if (lobby.state !== LobbyState.Playing) {
             throw new PokerIsNotStartedError(lobby);
         }
+
+        this.lobbyService.scheduleLobbyDestroy(lobbyId);
 
         this.memberCardXrefDAO.removeByMemberId(memberId);
         this.lobbyService.checkPoker(lobbyId);
