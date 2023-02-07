@@ -61,6 +61,13 @@ export default class LobbyServiceImpl implements LobbyService {
             type: EventType.MembersWasChanged,
             payload: { members: this.getMembers(lobby.id) },
         });
+
+        if (lobby.state === LobbyState.Playing) {
+            this.subscriptionService.dispatch(lobby.id, {
+                type: EventType.PokerResultWasChanged,
+                payload: { result: this.getPokerResult(lobby.id) },
+            });
+        }
     }
 
     leaveMember(memberId: number): void {
