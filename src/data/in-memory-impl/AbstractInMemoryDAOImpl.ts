@@ -21,7 +21,8 @@ export default abstract class AbstractInMemoryDAOImpl<E extends Entity, PK exten
     };
 
     private readonly data: E[];
-    private readonly freeIndexes: number[];
+    private currentFreeIndex: number;
+    private readonly freeIndexes: Map<number/*current*/, number/*previous*/>;
     private readonly indexMaps: IndexMaps<E>;
     private readonly primaryKey: Key<E>;
     private readonly getNextPrimaryKeyValue: (current: Value<E, PK>) => Value<E, PK>;
@@ -31,7 +32,9 @@ export default abstract class AbstractInMemoryDAOImpl<E extends Entity, PK exten
         const { indexBy, primaryKey, initialPrimaryKeyValue, getNextPrimaryKeyValue } = { ...AbstractInMemoryDAOImpl.DEFAULT_OPTIONS, ...options };
 
         this.data = [];
-        this.freeIndexes = [];
+
+        this.currentFreeIndex = null;
+        this.freeIndexes = new Map<number, number>();
         this.primaryKey = primaryKey;
         this.primaryKeyValue = initialPrimaryKeyValue;
         this.getNextPrimaryKeyValue = getNextPrimaryKeyValue;
@@ -51,7 +54,7 @@ export default abstract class AbstractInMemoryDAOImpl<E extends Entity, PK exten
         }
 
         const entity = this.data
-            .find((e, idx) => !this.freeIndexes.includes(idx) && e[ key ] === value);
+            .find((e, idx) => !this.isIndexFree(idx) && e[ key ] === value);
         return entity ? { ...entity } : null;
     }
 
@@ -63,7 +66,7 @@ export default abstract class AbstractInMemoryDAOImpl<E extends Entity, PK exten
         }
 
         return this.data
-            .filter((e, idx) => !this.freeIndexes.includes(idx) && e[ key ] === value)
+            .filter((e, idx) => !this.isIndexFree(idx) && e[ key ] === value)
             .map(e => ({ ...e }));
     }
 
@@ -122,7 +125,7 @@ export default abstract class AbstractInMemoryDAOImpl<E extends Entity, PK exten
         } else {
             indexes = this.data
                 .reduce((idxes, e, idx) => {
-                    if (this.freeIndexes.includes(idx) || e[ key ] !== value) {
+                    if (this.isIndexFree(idx) || e[ key ] !== value) {
                         return idxes;
                     }
 
@@ -147,12 +150,27 @@ export default abstract class AbstractInMemoryDAOImpl<E extends Entity, PK exten
                     });
             });
 
-        this.freeIndexes.push(...indexes);
+        this.addFreeIndex(...indexes);
     }
 
     private getFreeIndex(): number {
-        const freeIndex = this.freeIndexes.pop();
+        const freeIndex = this.currentFreeIndex;
+        this.currentFreeIndex = this.freeIndexes.get(freeIndex);
+        this.freeIndexes.delete(freeIndex);
+
         return typeof freeIndex === "number" ? freeIndex : this.data.length;
+    }
+
+    private addFreeIndex(...indexes: number[]): void {
+        indexes
+            .forEach(idx => {
+                this.freeIndexes.set(idx, this.currentFreeIndex);
+                this.currentFreeIndex = idx;
+            });
+    }
+
+    private isIndexFree(index: number): boolean {
+        return this.freeIndexes.has(index);
     }
 
     private getAvailablePrimaryKeyValue(): Value<E, PK> {
