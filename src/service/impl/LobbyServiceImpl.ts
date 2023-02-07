@@ -136,7 +136,7 @@ export default class LobbyServiceImpl implements LobbyService {
 
         this.subscriptionService.dispatch(lobbyId, {
             type: EventType.PokerWasFinished,
-            payload: { theme: lobby.currentTheme, ...this.getPokerFinishResult(lobbyId) },
+            payload: { theme: lobby.currentTheme, result: this.getPokerResult(lobbyId) },
         });
 
         const memberIds = this.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId);
@@ -153,41 +153,6 @@ export default class LobbyServiceImpl implements LobbyService {
         const members = this.memberDAO.getByIds(memberIds);
 
         return members.map(member => ({ member, card: cards[ member.id ] }));
-    }
-
-    getPokerFinishResult(lobbyId: number): { result: PokerResultItemDto[], totalScore: CardDto } {
-        const pokerResult = this.getPokerResult(lobbyId);
-        const cards = pokerResult.map(resultItem => resultItem.card);
-
-        const sortedCards = cards
-            .filter(card => card.isComparable())
-            .sort((left, right) => left.compareTo(right));
-
-        const minCard = sortedCards[ 0 ];
-        const maxCard = sortedCards[ sortedCards.length - 1 ];
-        const notComparableCards = cards.filter(card => !card.isComparable());
-
-        let minMaxResult: PokerResultItemDto[];
-        let specialResult: PokerResultItemDto[];
-        let totalScore: CardDto;
-
-        if (minCard !== maxCard) {
-            const minResult = pokerResult.filter(resultItem => resultItem.card === minCard);
-            const maxResult = pokerResult.filter(resultItem => resultItem.card === maxCard);
-            minMaxResult = minResult.concat(maxResult);
-            totalScore = null;
-        } else {
-            minMaxResult = [];
-            totalScore = minCard;
-        }
-
-        if (notComparableCards.length) {
-            specialResult = pokerResult.filter(resultItem => notComparableCards.includes(resultItem.card));
-        } else {
-            specialResult = [];
-        }
-
-        return { result: minMaxResult.concat(specialResult), totalScore };
     }
 
     scheduleLobbyDestroy(lobbyId: number): void {

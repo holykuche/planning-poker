@@ -1,6 +1,6 @@
 import { Member, Lobby } from "data/entity";
 
-import { PokerResultItemDto, CardDto } from "../dto";
+import { PokerResultItemDto } from "../dto";
 
 export default interface LobbyService {
     getById(id: number): Lobby;
@@ -13,6 +13,5 @@ export default interface LobbyService {
     checkPoker(lobbyId: number): void;
     finishPoker(lobbyId: number): void;
     getPokerResult(lobbyId: number): PokerResultItemDto[];
-    getPokerFinishResult(lobbyId: number): { result: PokerResultItemDto[], totalScore: CardDto };
     scheduleLobbyDestroy(lobbyId: number): void;
 }

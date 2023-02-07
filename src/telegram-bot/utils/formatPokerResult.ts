@@ -6,7 +6,7 @@ import italic from "./italic";
 import escape from "./escape";
 import membersComparatorFactory from "./membersComparatorFactory";
 
-export default function(items: PokerResultItemDto[], telegramUserId: number): string {
+export default function (items: PokerResultItemDto[], telegramUserId: number): string {
     const isAllMembersVoted = items.every(item => !!item.card);
     const membersComparator = membersComparatorFactory(telegramUserId);
 
@@ -25,7 +25,7 @@ export default function(items: PokerResultItemDto[], telegramUserId: number): st
                 ? bold(italic(escape(member.name)))
                 : italic(escape(member.name));
 
-            return `${ memberName }: ${italic(cardLabel)}`;
+            return `${ memberName }: ${ italic(cardLabel) }`;
         })
         .join("\n");
 };

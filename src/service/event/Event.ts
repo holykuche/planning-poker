@@ -1,5 +1,5 @@
 import { Member } from "data/entity";
-import { PokerResultItemDto, CardDto } from "../dto";
+import { PokerResultItemDto } from "../dto";
 import EventType from "./EventType";
 
 interface SimpleEventGeneric<T extends EventType> {
@@ -14,7 +14,7 @@ type LobbyWasDestroyedLobbyEvent = SimpleEventGeneric<EventType.LobbyWasDestroye
 type MembersWasChangedLobbyEvent = EventGeneric<EventType.MembersWasChanged, { members: Member[] }>;
 type PokerResultWasChangedLobbyEvent = EventGeneric<EventType.PokerResultWasChanged, { result: PokerResultItemDto[] }>;
 type PokerWasStartedLobbyEvent = EventGeneric<EventType.PokerWasStarted, { theme: string, result: PokerResultItemDto[] }>;
-type PokerWasFinishedLobbyEvent = EventGeneric<EventType.PokerWasFinished, { theme: string, result: PokerResultItemDto[], totalScore: CardDto }>;
+type PokerWasFinishedLobbyEvent = EventGeneric<EventType.PokerWasFinished, { theme: string, result: PokerResultItemDto[] }>;
 
 type Event =
     LobbyWasDestroyedLobbyEvent

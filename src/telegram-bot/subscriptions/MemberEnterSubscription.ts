@@ -7,10 +7,10 @@ import { LobbyState, TelegramMessageType } from "data/enum";
 import { Member } from "data/entity";
 import { LobbyService, SERVICE_TYPES, SubscriptionService, TelegramDataService } from "service/api";
 import { EventType } from "service/event";
-import { PokerResultItemDto, CardDto } from "service/dto";
+import { PokerResultItemDto } from "service/dto";
 
 import { ButtonCommand } from "../enum";
-import { formatLobby, formatPoker, formatResult, formatDestroyedLobby, fromTelegramUserToMember } from "../utils";
+import { formatLobby, formatPoker, formatFinishResult, formatDestroyedLobby, fromTelegramUserToMember } from "../utils";
 import { TELEGRAM_BOT_TYPES } from "../bot";
 
 import AbstractTelegramBotMessageSubscription from "./AbstractTelegramBotMessageSubscription";
@@ -55,7 +55,7 @@ export default class MemberEnterSubscription extends AbstractTelegramBotMessageS
                     await this.updatePokerMessage(msg.chat.id, msg.from.id, lobbyId, memberId, event.payload.result);
                     break;
                 case EventType.PokerWasFinished:
-                    await this.initFinishMessage(msg.chat.id, msg.from.id, lobbyId, event.payload.theme, event.payload.result, event.payload.totalScore);
+                    await this.initFinishMessage(msg.chat.id, msg.from.id, lobbyId, event.payload.theme, event.payload.result);
                     break;
                 case EventType.LobbyWasDestroyed:
                     await this.initDestroyedLobbyMessage(msg.chat.id, lobbyId, lobbyName, memberId);
@@ -145,13 +145,12 @@ export default class MemberEnterSubscription extends AbstractTelegramBotMessageS
                                     telegramUserId: number,
                                     lobbyId: number,
                                     pokerTheme: string,
-                                    result: PokerResultItemDto[],
-                                    totalScore: CardDto): Promise<void> {
+                                    result: PokerResultItemDto[]): Promise<void> {
         const pokerMessage = this.telegramDataService.getMessage(lobbyId, chatId, TelegramMessageType.Poker);
         await this.bot.deleteMessage(chatId, String(pokerMessage.messageId));
         this.telegramDataService.deleteMessageById(pokerMessage.id);
 
-        await this.bot.sendMessage(chatId, formatResult(pokerTheme, result, totalScore, telegramUserId), {
+        await this.bot.sendMessage(chatId, formatFinishResult(pokerTheme, result, telegramUserId), {
             parse_mode: MemberEnterSubscription.PARSE_MODE,
         });
     }

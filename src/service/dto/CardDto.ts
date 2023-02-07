@@ -2,7 +2,8 @@ import { CardCode } from "data/enum";
 
 export default class CardDto<T extends CardCode = CardCode> {
 
-    private constructor(public readonly code: T, public readonly label: string, private readonly value?: number) {}
+    private constructor(public readonly code: T, public readonly label: string, private readonly value?: number) {
+    }
 
     private static readonly values: Map<CardCode, CardDto> = new Map<CardCode, CardDto>([
         [ CardCode.Score0, new CardDto(CardCode.Score0, "0", 0) ],
@@ -24,15 +25,21 @@ export default class CardDto<T extends CardCode = CardCode> {
     }
 
     compareTo(card: CardDto): number {
-        if (!this.isComparable() || !card.isComparable()) {
-            throw new Error(`Tried to compare not comparable cards: ${this.code} and ${card.code}`);
+        if (card.code === CardCode.DontKnow) {
+            return -1;
+        }
+        if (this.code === CardCode.DontKnow) {
+            return 1;
+        }
+
+        if (card.code === CardCode.Skip) {
+            return -1;
+        }
+        if (this.code === CardCode.Skip) {
+            return 1;
         }
 
         return this.value - card.value;
-    }
-
-    isComparable(): boolean {
-        return this.value !== undefined;
     }
 
 }
