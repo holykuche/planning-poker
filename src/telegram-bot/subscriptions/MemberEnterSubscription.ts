@@ -175,6 +175,7 @@ export default class MemberEnterSubscription extends AbstractTelegramBotMessageS
 
         await this.bot.sendMessage(chatId, formatDestroyedLobby(lobbyName), {
             parse_mode: MemberEnterSubscription.PARSE_MODE,
+            disable_notification: true,
         });
     }
 }
