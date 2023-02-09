@@ -21,7 +21,7 @@ export default class CardDto<T extends CardCode = CardCode> {
     ]);
 
     static fromCode<T extends CardCode>(code: T): CardDto<T> {
-        return CardDto.values.get(code) as CardDto<T>;
+        return CardDto.values.get(code) as CardDto<T> || null;
     }
 
     compareTo(card: CardDto): number {

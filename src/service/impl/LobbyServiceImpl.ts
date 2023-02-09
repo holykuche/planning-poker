@@ -110,7 +110,7 @@ export default class LobbyServiceImpl implements LobbyService {
     startPoker(lobbyId: number, theme: string): void {
         const lobby = this.lobbyDAO.getById(lobbyId);
 
-        if (lobby.state !== LobbyState.Waiting) {
+        if (lobby.state === LobbyState.Playing) {
             throw new PokerIsAlreadyStartedError(lobby);
         }
 
