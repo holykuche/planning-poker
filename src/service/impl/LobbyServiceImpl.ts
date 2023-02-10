@@ -95,7 +95,7 @@ export default class LobbyServiceImpl implements LobbyService {
 
         const lobby = this.lobbyDAO.getById(lobbyId);
         if (lobby.state === LobbyState.Playing) {
-            this.checkPoker(lobbyId);
+            this.checkPokerResult(lobbyId);
         }
 
         if (members.length) {
@@ -124,30 +124,17 @@ export default class LobbyServiceImpl implements LobbyService {
         });
     }
 
-    checkPoker(lobbyId: number): void {
+    checkPokerResult(lobbyId: number): void {
         const result = this.getPokerResult(lobbyId);
 
         if (result.every(item => !!item.card)) {
-            this.finishPoker(lobbyId);
+            this.finishPoker(lobbyId, result);
         } else {
             this.subscriptionService.dispatch(lobbyId, {
                 type: EventType.PokerResultWasChanged,
                 payload: { result },
             });
         }
-    }
-
-    finishPoker(lobbyId: number): void {
-        const lobby = this.lobbyDAO.getById(lobbyId);
-        this.lobbyDAO.save({ ...lobby, currentTheme: null, state: LobbyState.Waiting });
-
-        this.subscriptionService.dispatch(lobbyId, {
-            type: EventType.PokerWasFinished,
-            payload: { theme: lobby.currentTheme, result: this.getPokerResult(lobbyId) },
-        });
-
-        const memberIds = this.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId);
-        this.memberCardXrefDAO.removeByMemberIds(memberIds);
     }
 
     getPokerResult(lobbyId: number): PokerResultItemDto[] {
@@ -164,6 +151,19 @@ export default class LobbyServiceImpl implements LobbyService {
 
     scheduleLobbyDestroy(lobbyId: number): void {
         this.timeoutScheduler.schedule(TaskType.Lobby, lobbyId, this.lobbyLifetimeMs / 1000, () => this.destroyLobby(lobbyId));
+    }
+
+    private finishPoker(lobbyId: number, result: PokerResultItemDto[]): void {
+        const lobby = this.lobbyDAO.getById(lobbyId);
+        this.lobbyDAO.save({ ...lobby, currentTheme: null, state: LobbyState.Waiting });
+
+        this.subscriptionService.dispatch(lobbyId, {
+            type: EventType.PokerWasFinished,
+            payload: { theme: lobby.currentTheme, result },
+        });
+
+        const memberIds = this.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId);
+        this.memberCardXrefDAO.removeByMemberIds(memberIds);
     }
 
     private cancelScheduledLobbyDestroy(lobbyId: number): void {

@@ -4,7 +4,7 @@ import { anyFunction, anyNumber, anyString, mock, MockProxy, mockReset } from "j
 
 import CONFIG_TYPES from "config/types";
 import { Lobby, Member, MemberCardXref } from "data/entity";
-import { LobbyState } from "data/enum";
+import { CardCode, LobbyState } from "data/enum";
 import { DAO_TYPES, LobbyDAO, MemberCardXrefDAO, MemberDAO, MemberLobbyXrefDAO } from "data/api";
 import { LobbyService, SERVICE_TYPES, SubscriptionService } from "service/api";
 import {
@@ -14,6 +14,7 @@ import {
     UnknownMemberError,
 } from "service/error";
 import { EventType } from "service/event";
+import { CardDto, PokerResultItemDto } from "service/dto";
 import { SCHEDULER_TYPES, TimeoutScheduler } from "scheduler/api";
 import { TaskType } from "scheduler/enum";
 
@@ -387,10 +388,10 @@ describe("service/impl/LobbyServiceImpl", () => {
         const lobby: Lobby = { id: 10, name: "dummy lobby name", state: LobbyState.Waiting };
         const theme = "dummy poker theme";
         const members: Record<number, Member> = [
-            { id: 10, name: "dummy member 1" },
-            { id: 20, name: "dummy member 2" },
-            { id: 30, name: "dummy member 3" },
-            { id: 40, name: "dummy member 4" },
+            { id: 1, name: "dummy member 1" },
+            { id: 2, name: "dummy member 2" },
+            { id: 3, name: "dummy member 3" },
+            { id: 4, name: "dummy member 4" },
         ]
             .reduce((membersById, member) => ({
                 ...membersById,
@@ -413,10 +414,10 @@ describe("service/impl/LobbyServiceImpl", () => {
         const lobby: Lobby = { id: 10, name: "dummy lobby name", state: LobbyState.Waiting };
         const theme = "dummy poker theme";
         const members: Record<number, Member> = [
-            { id: 10, name: "dummy member 1" },
-            { id: 20, name: "dummy member 2" },
-            { id: 30, name: "dummy member 3" },
-            { id: 40, name: "dummy member 4" },
+            { id: 1, name: "dummy member 1" },
+            { id: 2, name: "dummy member 2" },
+            { id: 3, name: "dummy member 3" },
+            { id: 4, name: "dummy member 4" },
         ]
             .reduce((membersById, member) => ({
                 ...membersById,
@@ -439,10 +440,10 @@ describe("service/impl/LobbyServiceImpl", () => {
         const lobby: Lobby = { id: 10, name: "dummy lobby name", state: LobbyState.Waiting };
         const theme = "dummy poker theme";
         const members: Record<number, Member> = [
-            { id: 10, name: "dummy member 1" },
-            { id: 20, name: "dummy member 2" },
-            { id: 30, name: "dummy member 3" },
-            { id: 40, name: "dummy member 4" },
+            { id: 1, name: "dummy member 1" },
+            { id: 2, name: "dummy member 2" },
+            { id: 3, name: "dummy member 3" },
+            { id: 4, name: "dummy member 4" },
         ]
             .reduce((membersById, member) => ({
                 ...membersById,
@@ -481,5 +482,92 @@ describe("service/impl/LobbyServiceImpl", () => {
         lobbyDAOMock.getById.calledWith(lobby.id).mockReturnValue(lobby);
 
         expect(() => lobbyService.startPoker(lobby.id, theme)).toThrowError(PokerIsAlreadyStartedError);
+    });
+
+    it("checkPokerResult should finish poker if all members have picked a card", () => {
+        const lobby: Lobby = {
+            id: 10,
+            name: "dummy lobby name",
+            currentTheme: "current dummy poker theme",
+            state: LobbyState.Playing,
+        };
+        const members: Record<number, Member> = [
+            { id: 1, name: "dummy member 1" },
+            { id: 2, name: "dummy member 2" },
+            { id: 3, name: "dummy member 3" },
+            { id: 4, name: "dummy member 4" },
+        ]
+            .reduce((membersById, member) => ({
+                ...membersById,
+                [ member.id ]: member,
+            }), {});
+        const memberIds = Object.keys(members).map(memberId => Number(memberId));
+        const memberCardXrefs: Record<number, MemberCardXref> = {
+            1: { memberId: 1, cardCode: CardCode.DontKnow },
+            2: { memberId: 2, cardCode: CardCode.Score40 },
+            3: { memberId: 3, cardCode: CardCode.Score20 },
+            4: { memberId: 4, cardCode: CardCode.Score40 },
+        };
+        const pokerResult: PokerResultItemDto[] = Object.values(memberCardXrefs)
+            .map(xref => ({
+                member: members[ xref.memberId ],
+                card: CardDto.fromCode(xref.cardCode),
+            }));
+
+        memberLobbyXrefDAOMock.getMemberIdsByLobbyId.calledWith(lobby.id).mockReturnValue(memberIds);
+        memberCardXrefDAOMock.getCardsByMemberIds.calledWith(sameArray(memberIds)).mockReturnValue(Object.values(memberCardXrefs));
+        memberDAOMock.getByIds.calledWith(sameArray(memberIds)).mockReturnValue(Object.values(members));
+        lobbyDAOMock.getById.calledWith(lobby.id).mockReturnValue(lobby);
+
+        lobbyService.checkPokerResult(lobby.id);
+        expect(lobbyDAOMock.save).toBeCalledWith({ ...lobby, currentTheme: null, state: LobbyState.Waiting });
+        expect(subscriptionServiceMock.dispatch).toBeCalledWith(lobby.id, {
+            type: EventType.PokerWasFinished,
+            payload: { theme: lobby.currentTheme, result: pokerResult },
+        });
+        expect(memberCardXrefDAOMock.removeByMemberIds).toBeCalledWith(memberIds);
+    });
+
+    it("checkPokerResult shouldn't finish poker if not all members have picked a card", () => {
+        const lobby: Lobby = {
+            id: 10,
+            name: "dummy lobby name",
+            currentTheme: "current dummy poker theme",
+            state: LobbyState.Playing,
+        };
+        const members: Record<number, Member> = [
+            { id: 1, name: "dummy member 1" },
+            { id: 2, name: "dummy member 2" },
+            { id: 3, name: "dummy member 3" },
+            { id: 4, name: "dummy member 4" },
+        ]
+            .reduce((membersById, member) => ({
+                ...membersById,
+                [ member.id ]: member,
+            }), {});
+        const memberIds = Object.keys(members).map(memberId => Number(memberId));
+        const memberCardXrefs: Record<number, MemberCardXref> = {
+            1: { memberId: 1, cardCode: CardCode.DontKnow },
+            2: { memberId: 2, cardCode: CardCode.Score40 },
+            3: { memberId: 3, cardCode: CardCode.Score20 },
+            4: { memberId: 4, cardCode: null },
+        };
+        const pokerResult: PokerResultItemDto[] = Object.values(memberCardXrefs)
+            .map(xref => ({
+                member: members[ xref.memberId ],
+                card: CardDto.fromCode(xref.cardCode),
+            }));
+
+        memberLobbyXrefDAOMock.getMemberIdsByLobbyId.calledWith(lobby.id).mockReturnValue(memberIds);
+        memberCardXrefDAOMock.getCardsByMemberIds.calledWith(sameArray(memberIds)).mockReturnValue(Object.values(memberCardXrefs));
+        memberDAOMock.getByIds.calledWith(sameArray(memberIds)).mockReturnValue(Object.values(members));
+
+        lobbyService.checkPokerResult(lobby.id);
+        expect(lobbyDAOMock.save).not.toBeCalled();
+        expect(memberCardXrefDAOMock.removeByMemberIds).not.toBeCalled();
+        expect(subscriptionServiceMock.dispatch).toBeCalledWith(lobby.id, {
+            type: EventType.PokerResultWasChanged,
+            payload: { result: pokerResult },
+        });
     });
 });

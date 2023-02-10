@@ -102,8 +102,8 @@ describe("service/impl/MemberServiceImpl", () => {
         memberService.putCard(memberId, cardCode);
         expect(memberCardXrefDAOMock.put).toBeCalledTimes(1);
         expect(memberCardXrefDAOMock.put).toBeCalledWith(memberId, cardCode);
-        expect(lobbyServiceMock.checkPoker).toBeCalledTimes(1);
-        expect(lobbyServiceMock.checkPoker).toBeCalledWith(dummyLobby.id);
+        expect(lobbyServiceMock.checkPokerResult).toBeCalledTimes(1);
+        expect(lobbyServiceMock.checkPokerResult).toBeCalledWith(dummyLobby.id);
     });
 
     it("putCard should throw an error if poker wasn't started in the member's lobby", () => {
@@ -117,8 +117,8 @@ describe("service/impl/MemberServiceImpl", () => {
         expect(() => memberService.putCard(memberId, cardCode)).toThrowError(PokerIsNotStartedError);
         expect(memberCardXrefDAOMock.put).not.toBeCalled();
         expect(memberCardXrefDAOMock.put).not.toBeCalled();
-        expect(lobbyServiceMock.checkPoker).not.toBeCalled();
-        expect(lobbyServiceMock.checkPoker).not.toBeCalled();
+        expect(lobbyServiceMock.checkPokerResult).not.toBeCalled();
+        expect(lobbyServiceMock.checkPokerResult).not.toBeCalled();
     });
 
     it("removeCard should remove member's card from storage if poker was started in the member's lobby", () => {
@@ -131,8 +131,8 @@ describe("service/impl/MemberServiceImpl", () => {
         memberService.removeCard(memberId);
         expect(memberCardXrefDAOMock.removeByMemberId).toBeCalledTimes(1);
         expect(memberCardXrefDAOMock.removeByMemberId).toBeCalledWith(memberId);
-        expect(lobbyServiceMock.checkPoker).toBeCalledTimes(1);
-        expect(lobbyServiceMock.checkPoker).toBeCalledWith(dummyLobby.id);
+        expect(lobbyServiceMock.checkPokerResult).toBeCalledTimes(1);
+        expect(lobbyServiceMock.checkPokerResult).toBeCalledWith(dummyLobby.id);
     });
 
     it("removeCard should throw an error if poker wasn't started in the member's lobby", () => {
@@ -145,7 +145,7 @@ describe("service/impl/MemberServiceImpl", () => {
         expect(() => memberService.removeCard(memberId)).toThrowError(PokerIsNotStartedError);
         expect(memberCardXrefDAOMock.removeByMemberId).not.toBeCalled();
         expect(memberCardXrefDAOMock.removeByMemberId).not.toBeCalled();
-        expect(lobbyServiceMock.checkPoker).not.toBeCalled();
-        expect(lobbyServiceMock.checkPoker).not.toBeCalled();
+        expect(lobbyServiceMock.checkPokerResult).not.toBeCalled();
+        expect(lobbyServiceMock.checkPokerResult).not.toBeCalled();
     });
 });

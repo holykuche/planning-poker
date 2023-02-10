@@ -52,7 +52,7 @@ export default class MemberServiceImpl implements MemberService {
         this.lobbyService.scheduleLobbyDestroy(lobbyId);
 
         this.memberCardXrefDAO.put(memberId, cardCode);
-        this.lobbyService.checkPoker(lobbyId);
+        this.lobbyService.checkPokerResult(lobbyId);
     }
 
     removeCard(memberId: number): void {
@@ -67,7 +67,7 @@ export default class MemberServiceImpl implements MemberService {
         this.lobbyService.scheduleLobbyDestroy(lobbyId);
 
         this.memberCardXrefDAO.removeByMemberId(memberId);
-        this.lobbyService.checkPoker(lobbyId);
+        this.lobbyService.checkPokerResult(lobbyId);
     }
 
 }

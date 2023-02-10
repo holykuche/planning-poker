@@ -10,8 +10,7 @@ export default interface LobbyService {
     enterMember(memberId: number, lobbyName: string): void;
     leaveMember(memberId: number): void;
     startPoker(lobbyId: number, theme: string): void;
-    checkPoker(lobbyId: number): void;
-    finishPoker(lobbyId: number): void;
+    checkPokerResult(lobbyId: number): void;
     getPokerResult(lobbyId: number): PokerResultItemDto[];
     scheduleLobbyDestroy(lobbyId: number): void;
 }
