@@ -5,10 +5,10 @@ import { Message } from "node-telegram-bot-api";
 
 import { TELEGRAM_BOT_TYPES } from "../bot";
 
-import AbstractTelegramBotMessageSubscription from "./AbstractTelegramBotMessageSubscription";
+import MessageSubscriptionTemplate from "./MessageSubscriptionTemplate";
 
 @injectable()
-export default class HelpSubscription extends AbstractTelegramBotMessageSubscription {
+export default class HelpSubscription extends MessageSubscriptionTemplate {
 
     private static readonly HELP_COMMAND_REGEXP = /^\/(help)|(start)$/;
     private static readonly HELP_MESSAGE =
@@ -22,7 +22,7 @@ export default class HelpSubscription extends AbstractTelegramBotMessageSubscrip
     constructor(@inject(TELEGRAM_BOT_TYPES.Commands$) commands$: Observable<Message>) {
         const helpCommands$ = commands$
             .pipe(
-                filter(msg => HelpSubscription.HELP_COMMAND_REGEXP.test(msg.text))
+                filter(msg => HelpSubscription.HELP_COMMAND_REGEXP.test(msg.text)),
             );
         super(helpCommands$);
     }

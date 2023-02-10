@@ -10,7 +10,7 @@ import { inlineKeyboardButtonFactory, formatWarning } from "../utils";
 import { TELEGRAM_BOT_TYPES } from "../bot";
 
 @injectable()
-export default abstract class AbstractTelegramBotSubscription<T> {
+export default abstract class AbstractSubscriptionTemplate<T> {
 
     protected static readonly PARSE_MODE = "MarkdownV2";
     protected static readonly INLINE_KEYBOARD: Record<ButtonCommand, InlineKeyboardButton[][]> = {
@@ -56,12 +56,12 @@ export default abstract class AbstractTelegramBotSubscription<T> {
     protected async handleError(item: T, error: any): Promise<void> {
         if (error instanceof ServiceError) {
             const warningMessage = await this.bot.sendMessage(this.getChatId(item), formatWarning(error.getUserMessage()), {
-                parse_mode: AbstractTelegramBotSubscription.PARSE_MODE,
+                parse_mode: AbstractSubscriptionTemplate.PARSE_MODE,
             });
             setTimeout(async () => await this.bot.deleteMessage(this.getChatId(item), String(warningMessage.message_id)), 5000);
         }
         if (error instanceof Error) {
-            console.log(`[ERROR]: ${error.message}`);
+            console.log(`[ERROR]: ${ error.message }`);
         }
     }
 }

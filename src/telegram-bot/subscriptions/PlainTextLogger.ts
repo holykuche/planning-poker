@@ -5,10 +5,10 @@ import { Message } from "node-telegram-bot-api";
 import { formatTelegramUserName } from "../utils";
 import { TELEGRAM_BOT_TYPES } from "../bot";
 
-import AbstractTelegramBotMessageSubscription from "./AbstractTelegramBotMessageSubscription";
+import MessageSubscriptionTemplate from "./MessageSubscriptionTemplate";
 
 @injectable()
-export default class PlainTextLogger extends AbstractTelegramBotMessageSubscription {
+export default class PlainTextLogger extends MessageSubscriptionTemplate {
 
     constructor(@inject(TELEGRAM_BOT_TYPES.PlaintTexts$) plainTexts$: Observable<Message>) {
         super(plainTexts$);
@@ -20,6 +20,6 @@ export default class PlainTextLogger extends AbstractTelegramBotMessageSubscript
     }
 
     private static format(msg: Message): string {
-        return `[INFO] ${formatTelegramUserName(msg.from)} [ ${msg.from.id} ] have typed message '${msg.text}'`;
+        return `[INFO] ${ formatTelegramUserName(msg.from) } [ ${ msg.from.id } ] have typed message '${ msg.text }'`;
     }
 }

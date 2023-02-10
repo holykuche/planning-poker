@@ -8,10 +8,10 @@ import { MemberService, SERVICE_TYPES, TelegramDataService } from "service/api";
 
 import { TELEGRAM_BOT_TYPES } from "../bot";
 
-import AbstractTelegramBotCallbackQuerySubscription from "./AbstractTelegramBotCallbackQuerySubscription";
+import CallbackQuerySubscriptionTemplate from "./CallbackQuerySubscriptionTemplate";
 
 @injectable()
-export default class PutCardSubscription extends AbstractTelegramBotCallbackQuerySubscription {
+export default class PutCardSubscription extends CallbackQuerySubscriptionTemplate {
 
     private static readonly PUT_CARD_COMMAND_REGEXP = /^\/put_card (Score(0|1|2|3|5|8|13|20|40|100)|DontKnow|Skip)$/;
 
@@ -21,7 +21,7 @@ export default class PutCardSubscription extends AbstractTelegramBotCallbackQuer
     constructor(@inject(TELEGRAM_BOT_TYPES.CallbackQueries$) callbackQueries$: Observable<CallbackQuery>) {
         const putCardCallbackQueries$ = callbackQueries$
             .pipe(
-                filter(callback => PutCardSubscription.PUT_CARD_COMMAND_REGEXP.test(callback.data))
+                filter(callback => PutCardSubscription.PUT_CARD_COMMAND_REGEXP.test(callback.data)),
             );
         super(putCardCallbackQueries$);
     }

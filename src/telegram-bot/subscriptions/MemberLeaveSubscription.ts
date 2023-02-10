@@ -9,10 +9,10 @@ import { LobbyService, MemberService, SERVICE_TYPES, TelegramDataService } from 
 import { ButtonCommand } from "../enum";
 import { TELEGRAM_BOT_TYPES } from "../bot";
 
-import AbstractTelegramBotCallbackQuerySubscription from "./AbstractTelegramBotCallbackQuerySubscription";
+import CallbackQuerySubscriptionTemplate from "./CallbackQuerySubscriptionTemplate";
 
 @injectable()
-export default class MemberLeaveSubscription extends AbstractTelegramBotCallbackQuerySubscription {
+export default class MemberLeaveSubscription extends CallbackQuerySubscriptionTemplate {
 
     @inject(SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
     @inject(SERVICE_TYPES.MemberService) private readonly memberService: MemberService;
@@ -21,7 +21,7 @@ export default class MemberLeaveSubscription extends AbstractTelegramBotCallback
     constructor(@inject(TELEGRAM_BOT_TYPES.CallbackQueries$) callbackQueries$: Observable<CallbackQuery>) {
         const leaveCallbackQueries$ = callbackQueries$
             .pipe(
-                filter(callback => callback.data === ButtonCommand.Leave)
+                filter(callback => callback.data === ButtonCommand.Leave),
             );
         super(leaveCallbackQueries$);
     }

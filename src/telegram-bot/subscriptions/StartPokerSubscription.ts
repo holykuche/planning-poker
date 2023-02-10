@@ -7,10 +7,10 @@ import { LobbyService, MemberService, SERVICE_TYPES, TelegramDataService } from 
 
 import { TELEGRAM_BOT_TYPES } from "../bot";
 
-import AbstractTelegramBotMessageSubscription from "./AbstractTelegramBotMessageSubscription";
+import MessageSubscriptionTemplate from "./MessageSubscriptionTemplate";
 
 @injectable()
-export default class StartPokerSubscription extends AbstractTelegramBotMessageSubscription {
+export default class StartPokerSubscription extends MessageSubscriptionTemplate {
 
     @inject(SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
     @inject(SERVICE_TYPES.MemberService) private readonly memberService: MemberService;
@@ -19,7 +19,7 @@ export default class StartPokerSubscription extends AbstractTelegramBotMessageSu
     constructor(@inject(TELEGRAM_BOT_TYPES.PlaintTexts$) messages$: Observable<Message>) {
         const startPokerMessages$ = messages$
             .pipe(
-                filter(msg => this.telegramDataService.isMemberExists(msg.from.id))
+                filter(msg => this.telegramDataService.isMemberExists(msg.from.id)),
             );
         super(startPokerMessages$);
     }

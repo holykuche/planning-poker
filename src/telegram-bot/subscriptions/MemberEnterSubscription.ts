@@ -13,10 +13,10 @@ import { ButtonCommand } from "../enum";
 import { formatLobby, formatPoker, formatFinishResult, formatDestroyedLobby, fromTelegramUserToMember } from "../utils";
 import { TELEGRAM_BOT_TYPES } from "../bot";
 
-import AbstractTelegramBotMessageSubscription from "./AbstractTelegramBotMessageSubscription";
+import MessageSubscriptionTemplate from "./MessageSubscriptionTemplate";
 
 @injectable()
-export default class MemberEnterSubscription extends AbstractTelegramBotMessageSubscription {
+export default class MemberEnterSubscription extends MessageSubscriptionTemplate {
 
     @inject(SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
     @inject(SERVICE_TYPES.TelegramDataService) private readonly telegramDataService: TelegramDataService;
@@ -25,7 +25,7 @@ export default class MemberEnterSubscription extends AbstractTelegramBotMessageS
     constructor(@inject(TELEGRAM_BOT_TYPES.PlaintTexts$) messages$: Observable<Message>) {
         const memberEnterMessages$ = messages$
             .pipe(
-                filter(msg => !this.telegramDataService.isMemberExists(msg.from.id))
+                filter(msg => !this.telegramDataService.isMemberExists(msg.from.id)),
             );
         super(memberEnterMessages$);
     }

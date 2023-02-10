@@ -5,10 +5,10 @@ import { Message } from "node-telegram-bot-api";
 import { formatTelegramUserName } from "../utils";
 import { TELEGRAM_BOT_TYPES } from "../bot";
 
-import AbstractTelegramBotMessageSubscription from "./AbstractTelegramBotMessageSubscription";
+import MessageSubscriptionTemplate from "./MessageSubscriptionTemplate";
 
 @injectable()
-export default class CommandLogger extends AbstractTelegramBotMessageSubscription {
+export default class CommandLogger extends MessageSubscriptionTemplate {
 
     constructor(@inject(TELEGRAM_BOT_TYPES.Commands$) commands$: Observable<Message>) {
         super(commands$);
@@ -20,6 +20,6 @@ export default class CommandLogger extends AbstractTelegramBotMessageSubscriptio
     }
 
     private static format(msg: Message): string {
-        return `[INFO] ${formatTelegramUserName(msg.from)} [ ${msg.from.id} ] have typed command '${msg.text}'`;
+        return `[INFO] ${ formatTelegramUserName(msg.from) } [ ${ msg.from.id } ] have typed command '${ msg.text }'`;
     }
 }

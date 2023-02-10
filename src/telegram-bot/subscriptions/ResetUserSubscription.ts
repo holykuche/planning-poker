@@ -7,10 +7,10 @@ import { LobbyService, MemberService, SERVICE_TYPES, TelegramDataService } from 
 
 import { TELEGRAM_BOT_TYPES } from "../bot";
 
-import AbstractTelegramBotMessageSubscription from "./AbstractTelegramBotMessageSubscription";
+import MessageSubscriptionTemplate from "./MessageSubscriptionTemplate";
 
 @injectable()
-export default class ResetUserSubscription extends AbstractTelegramBotMessageSubscription {
+export default class ResetUserSubscription extends MessageSubscriptionTemplate {
 
     @inject(SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
     @inject(SERVICE_TYPES.MemberService) private readonly memberService: MemberService;
@@ -21,7 +21,7 @@ export default class ResetUserSubscription extends AbstractTelegramBotMessageSub
     constructor(@inject(TELEGRAM_BOT_TYPES.Commands$) commands$: Observable<Message>) {
         const helpMessages$ = commands$
             .pipe(
-                filter(msg => msg.text === ResetUserSubscription.RESET_COMMAND)
+                filter(msg => msg.text === ResetUserSubscription.RESET_COMMAND),
             );
         super(helpMessages$);
     }

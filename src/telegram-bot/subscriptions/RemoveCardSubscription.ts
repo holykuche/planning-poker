@@ -8,10 +8,10 @@ import { MemberService, SERVICE_TYPES, TelegramDataService } from "service/api";
 import { ButtonCommand } from "../enum";
 import { TELEGRAM_BOT_TYPES } from "../bot";
 
-import AbstractTelegramBotCallbackQuerySubscription from "./AbstractTelegramBotCallbackQuerySubscription";
+import CallbackQuerySubscriptionTemplate from "./CallbackQuerySubscriptionTemplate";
 
 @injectable()
-export default class RemoveCardSubscription extends AbstractTelegramBotCallbackQuerySubscription {
+export default class RemoveCardSubscription extends CallbackQuerySubscriptionTemplate {
 
     @inject(SERVICE_TYPES.MemberService) private readonly memberService: MemberService;
     @inject(SERVICE_TYPES.TelegramDataService) private readonly telegramDataService: TelegramDataService;
@@ -19,7 +19,7 @@ export default class RemoveCardSubscription extends AbstractTelegramBotCallbackQ
     constructor(@inject(TELEGRAM_BOT_TYPES.CallbackQueries$) callbackQueries$: Observable<CallbackQuery>) {
         const removeCardCallbackQueries$ = callbackQueries$
             .pipe(
-                filter(callback => callback.data === ButtonCommand.RemoveCard)
+                filter(callback => callback.data === ButtonCommand.RemoveCard),
             );
         super(removeCardCallbackQueries$);
     }
