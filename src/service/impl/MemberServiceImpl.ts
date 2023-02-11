@@ -6,6 +6,7 @@ import { DAO_TYPES, LobbyDAO, MemberCardXrefDAO, MemberDAO, MemberLobbyXrefDAO }
 
 import { LobbyService, MemberService, SERVICE_TYPES } from "../api";
 import { PokerIsNotStartedError, MemberIsNotInLobbyError, UnknownMemberError } from "../error";
+import { MemberId, ResetLobbyLifetime } from "../aop";
 
 @injectable()
 export default class MemberServiceImpl implements MemberService {
@@ -40,7 +41,8 @@ export default class MemberServiceImpl implements MemberService {
         return this.memberLobbyXrefDAO.isMemberBound(memberId);
     }
 
-    putCard(memberId: number, cardCode: CardCode): void {
+    @ResetLobbyLifetime
+    putCard(@MemberId memberId: number, cardCode: CardCode): void {
         const lobbyId = this.getMembersLobbyId(memberId);
 
         const lobby = this.lobbyDAO.getById(lobbyId);
@@ -48,14 +50,13 @@ export default class MemberServiceImpl implements MemberService {
         if (lobby.state !== LobbyState.Playing) {
             throw new PokerIsNotStartedError(lobby);
         }
-
-        this.lobbyService.scheduleLobbyDestroy(lobbyId);
 
         this.memberCardXrefDAO.put(memberId, cardCode);
         this.lobbyService.checkPokerResult(lobbyId);
     }
 
-    removeCard(memberId: number): void {
+    @ResetLobbyLifetime
+    removeCard(@MemberId memberId: number): void {
         const lobbyId = this.getMembersLobbyId(memberId);
 
         const lobby = this.lobbyDAO.getById(lobbyId);
@@ -63,8 +64,6 @@ export default class MemberServiceImpl implements MemberService {
         if (lobby.state !== LobbyState.Playing) {
             throw new PokerIsNotStartedError(lobby);
         }
-
-        this.lobbyService.scheduleLobbyDestroy(lobbyId);
 
         this.memberCardXrefDAO.removeByMemberId(memberId);
         this.lobbyService.checkPokerResult(lobbyId);

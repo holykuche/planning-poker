@@ -1,7 +1,7 @@
 import "reflect-metadata";
-import { BindingScopeEnum, Container } from "inversify";
 import { anyFunction, anyNumber, anyString, mock, MockProxy, mockReset } from "jest-mock-extended";
 
+import { container } from "inversify.config";
 import CONFIG_TYPES from "config/types";
 import { Lobby, Member, MemberCardXref } from "data/entity";
 import { CardCode, LobbyState } from "data/enum";
@@ -36,7 +36,6 @@ describe("service/impl/LobbyServiceImpl", () => {
     const lobbyLifetimeMs = 10 * 1000; // 10 seconds
 
     beforeAll(() => {
-        const container = new Container({ defaultScope: BindingScopeEnum.Singleton });
         container.bind<LobbyService>(SERVICE_TYPES.LobbyService).to(LobbyServiceImpl);
 
         lobbyDAOMock = mock<LobbyDAO>();
@@ -142,6 +141,8 @@ describe("service/impl/LobbyServiceImpl", () => {
         const lobby: Lobby = { id: 1, name: "dummy name", state: LobbyState.Waiting };
 
         memberLobbyXrefDAOMock.isMemberBound.calledWith(memberId).mockReturnValue(false);
+        memberLobbyXrefDAOMock.getMemberIdsByLobbyId.calledWith(lobby.id).mockReturnValue([ memberId ]);
+        memberLobbyXrefDAOMock.getMembersBinding.calledWith(memberId).mockReturnValue(lobby.id);
         lobbyDAOMock.getByName.calledWith(lobby.name).mockReturnValue(lobby);
 
         lobbyService.enterMember(memberId, lobby.name);
@@ -155,6 +156,7 @@ describe("service/impl/LobbyServiceImpl", () => {
         const lobby: Lobby = { name: "dummy name", state: LobbyState.Waiting };
 
         memberLobbyXrefDAOMock.isMemberBound.calledWith(memberId).mockReturnValue(false);
+        memberLobbyXrefDAOMock.getMemberIdsByLobbyId.calledWith(lobby.id).mockReturnValue([ memberId ]);
         lobbyDAOMock.getByName.calledWith(lobby.name).mockReturnValue(null);
         lobbyDAOMock.save.calledWith(sameObject(lobby)).mockReturnValue({ id: newLobbyId, ...lobby });
 
@@ -179,6 +181,8 @@ describe("service/impl/LobbyServiceImpl", () => {
         const lobby: Lobby = { id: 1, name: "dummy name", state: LobbyState.Waiting };
 
         memberLobbyXrefDAOMock.isMemberBound.calledWith(memberId).mockReturnValue(false);
+        memberLobbyXrefDAOMock.getMemberIdsByLobbyId.calledWith(lobby.id).mockReturnValue([ memberId ]);
+        memberLobbyXrefDAOMock.getMembersBinding.calledWith(memberId).mockReturnValue(lobby.id);
         lobbyDAOMock.getByName.calledWith(lobby.name).mockReturnValue(lobby);
 
         lobbyService.enterMember(memberId, lobby.name);
@@ -197,8 +201,9 @@ describe("service/impl/LobbyServiceImpl", () => {
         const memberIds = members.map(m => m.id);
 
         memberLobbyXrefDAOMock.isMemberBound.calledWith(memberId).mockReturnValue(false);
-        lobbyDAOMock.getByName.calledWith(lobby.name).mockReturnValue(lobby);
         memberLobbyXrefDAOMock.getMemberIdsByLobbyId.calledWith(lobby.id).mockReturnValue(memberIds);
+        memberLobbyXrefDAOMock.getMembersBinding.calledWith(memberId).mockReturnValue(lobby.id);
+        lobbyDAOMock.getByName.calledWith(lobby.name).mockReturnValue(lobby);
         memberDAOMock.getByIds.calledWith(sameArray(memberIds)).mockReturnValue(members);
 
         lobbyService.enterMember(memberId, lobby.name);
@@ -231,8 +236,9 @@ describe("service/impl/LobbyServiceImpl", () => {
             }));
 
         memberLobbyXrefDAOMock.isMemberBound.calledWith(memberId).mockReturnValue(false);
-        lobbyDAOMock.getByName.calledWith(lobby.name).mockReturnValue(lobby);
         memberLobbyXrefDAOMock.getMemberIdsByLobbyId.calledWith(lobby.id).mockReturnValue(memberIds);
+        memberLobbyXrefDAOMock.getMembersBinding.calledWith(memberId).mockReturnValue(lobby.id);
+        lobbyDAOMock.getByName.calledWith(lobby.name).mockReturnValue(lobby);
         memberDAOMock.getByIds.calledWith(sameArray(memberIds)).mockReturnValue(Object.values(members));
         memberCardXrefDAOMock.getCardsByMemberIds.calledWith(sameArray(memberIds)).mockReturnValue(memberCardXrefs);
 
@@ -266,8 +272,9 @@ describe("service/impl/LobbyServiceImpl", () => {
             }));
 
         memberLobbyXrefDAOMock.isMemberBound.calledWith(memberId).mockReturnValue(false);
-        lobbyDAOMock.getByName.calledWith(lobby.name).mockReturnValue(lobby);
         memberLobbyXrefDAOMock.getMemberIdsByLobbyId.calledWith(lobby.id).mockReturnValue(memberIds);
+        memberLobbyXrefDAOMock.getMembersBinding.calledWith(memberId).mockReturnValue(lobby.id);
+        lobbyDAOMock.getByName.calledWith(lobby.name).mockReturnValue(lobby);
         memberDAOMock.getByIds.calledWith(sameArray(memberIds)).mockReturnValue(Object.values(members));
         memberCardXrefDAOMock.getCardsByMemberIds.calledWith(sameArray(memberIds)).mockReturnValue(memberCardXrefs);
 

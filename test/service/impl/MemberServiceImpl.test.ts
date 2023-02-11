@@ -1,13 +1,15 @@
 import "reflect-metadata";
-import { Container, BindingScopeEnum } from "inversify";
 import { mock, mockReset, anyNumber, MockProxy } from "jest-mock-extended";
 
+import { container } from "inversify.config";
 import { MemberDAO, MemberCardXrefDAO, MemberLobbyXrefDAO, LobbyDAO, DAO_TYPES } from "data/api";
 import { CardCode, LobbyState } from "data/enum";
-import { MemberService, LobbyService, SERVICE_TYPES } from "service/api";
+import { MemberService, LobbyService, SERVICE_TYPES, SubscriptionService } from "service/api";
 import { MemberIsNotInLobbyError, PokerIsNotStartedError, UnknownMemberError } from "service/error";
+import { SCHEDULER_TYPES, TimeoutScheduler } from "scheduler/api";
 
 import MemberServiceImpl from "service/impl/MemberServiceImpl";
+import CONFIG_TYPES from "../../../src/config/types";
 
 describe("service/impl/MemberServiceImpl", () => {
 
@@ -18,9 +20,12 @@ describe("service/impl/MemberServiceImpl", () => {
     let memberLobbyXrefDAOMock: MockProxy<MemberLobbyXrefDAO>;
     let lobbyDAOMock: MockProxy<LobbyDAO>;
     let lobbyServiceMock: MockProxy<LobbyService>;
+    let subscriptionServiceMock: MockProxy<SubscriptionService>;
+    let timeoutSchedulerMock: MockProxy<TimeoutScheduler>;
+
+    const lobbyLifetimeMs = 10 * 1000; // 10 seconds
 
     beforeAll(() => {
-        const container = new Container({ defaultScope: BindingScopeEnum.Singleton });
         container.bind<MemberService>(SERVICE_TYPES.MemberService).to(MemberServiceImpl);
 
         memberDAOMock = mock<MemberDAO>();
@@ -37,6 +42,14 @@ describe("service/impl/MemberServiceImpl", () => {
 
         lobbyServiceMock = mock<LobbyService>();
         container.bind<LobbyService>(SERVICE_TYPES.LobbyService).toConstantValue(lobbyServiceMock);
+
+        subscriptionServiceMock = mock<SubscriptionService>();
+        container.bind<SubscriptionService>(SERVICE_TYPES.SubscriptionService).toConstantValue(subscriptionServiceMock);
+
+        timeoutSchedulerMock = mock<TimeoutScheduler>();
+        container.bind<TimeoutScheduler>(SCHEDULER_TYPES.TimeoutScheduler).toConstantValue(timeoutSchedulerMock);
+
+        container.bind<number>(CONFIG_TYPES.LobbyLifetimeMs).toConstantValue(lobbyLifetimeMs);
 
         memberService = container.get<MemberService>(SERVICE_TYPES.MemberService);
     });
@@ -97,6 +110,7 @@ describe("service/impl/MemberServiceImpl", () => {
         const dummyLobby = { id: 2, name: "DUMMY", state: LobbyState.Playing };
 
         memberLobbyXrefDAOMock.getMembersBinding.calledWith(memberId).mockReturnValue(dummyLobby.id);
+        memberLobbyXrefDAOMock.getMemberIdsByLobbyId.calledWith(dummyLobby.id).mockReturnValue([ memberId ]);
         lobbyDAOMock.getById.calledWith(dummyLobby.id).mockReturnValue(dummyLobby);
 
         memberService.putCard(memberId, cardCode);
@@ -126,6 +140,7 @@ describe("service/impl/MemberServiceImpl", () => {
         const dummyLobby = { id: 2, name: "DUMMY", state: LobbyState.Playing };
 
         memberLobbyXrefDAOMock.getMembersBinding.calledWith(memberId).mockReturnValue(dummyLobby.id);
+        memberLobbyXrefDAOMock.getMemberIdsByLobbyId.calledWith(dummyLobby.id).mockReturnValue([ memberId ]);
         lobbyDAOMock.getById.calledWith(dummyLobby.id).mockReturnValue(dummyLobby);
 
         memberService.removeCard(memberId);

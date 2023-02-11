@@ -1,11 +1,8 @@
 import { inject, injectable } from "inversify";
 
-import CONFIG_TYPES from "config/types";
 import { DAO_TYPES, LobbyDAO, MemberCardXrefDAO, MemberDAO, MemberLobbyXrefDAO } from "data/api";
 import { Lobby, Member } from "data/entity";
 import { LobbyState } from "data/enum";
-import { SCHEDULER_TYPES, TimeoutScheduler } from "scheduler/api";
-import { TaskType } from "scheduler/enum";
 
 import {
     MemberIsAlreadyInLobbyError,
@@ -16,6 +13,7 @@ import {
 import { LobbyService, SERVICE_TYPES, SubscriptionService } from "../api";
 import { CardDto, PokerResultItemDto } from "../dto";
 import { EventType } from "../event";
+import { ResetLobbyLifetime, MemberId, LobbyId } from "../aop";
 
 @injectable()
 export default class LobbyServiceImpl implements LobbyService {
@@ -25,8 +23,6 @@ export default class LobbyServiceImpl implements LobbyService {
     @inject(DAO_TYPES.MemberLobbyXrefDAO) private readonly memberLobbyXrefDAO: MemberLobbyXrefDAO;
     @inject(DAO_TYPES.MemberCardXrefDAO) private readonly memberCardXrefDAO: MemberCardXrefDAO;
     @inject(SERVICE_TYPES.SubscriptionService) private readonly subscriptionService: SubscriptionService;
-    @inject(SCHEDULER_TYPES.TimeoutScheduler) private readonly timeoutScheduler: TimeoutScheduler;
-    @inject(CONFIG_TYPES.LobbyLifetimeMs) private readonly lobbyLifetimeMs: number;
 
     getById(id: number): Lobby {
         return this.lobbyDAO.getById(id);
@@ -46,7 +42,8 @@ export default class LobbyServiceImpl implements LobbyService {
         return this.lobbyDAO.getById(lobbyId);
     }
 
-    enterMember(memberId: number, lobbyName: string): void {
+    @ResetLobbyLifetime
+    enterMember(@MemberId memberId: number, lobbyName: string): void {
         if (this.memberLobbyXrefDAO.isMemberBound(memberId)) {
             const member = this.memberDAO.getById(memberId);
             throw new MemberIsAlreadyInLobbyError(member.name);
@@ -54,8 +51,6 @@ export default class LobbyServiceImpl implements LobbyService {
 
         const lobby = this.getByName(lobbyName) || this.createLobby(lobbyName);
         this.memberLobbyXrefDAO.bindMember(memberId, lobby.id);
-
-        this.scheduleLobbyDestroy(lobby.id);
 
         this.subscriptionService.dispatch(lobby.id, {
             type: EventType.MembersWasChanged,
@@ -70,7 +65,8 @@ export default class LobbyServiceImpl implements LobbyService {
         }
     }
 
-    leaveMember(memberId: number): void {
+    @ResetLobbyLifetime
+    leaveMember(@MemberId memberId: number): void {
         const member = this.memberDAO.getById(memberId);
 
         if (!member) {
@@ -97,17 +93,10 @@ export default class LobbyServiceImpl implements LobbyService {
         if (lobby.state === LobbyState.Playing) {
             this.checkPokerResult(lobbyId);
         }
-
-        if (members.length) {
-            this.scheduleLobbyDestroy(lobbyId);
-        } else {
-            this.cancelScheduledLobbyDestroy(lobbyId);
-            this.destroyLobby(lobbyId);
-        }
-
     }
 
-    startPoker(lobbyId: number, theme: string): void {
+    @ResetLobbyLifetime
+    startPoker(@LobbyId lobbyId: number, theme: string): void {
         const lobby = this.lobbyDAO.getById(lobbyId);
 
         if (lobby.state === LobbyState.Playing) {
@@ -115,8 +104,6 @@ export default class LobbyServiceImpl implements LobbyService {
         }
 
         this.lobbyDAO.save({ ...lobby, currentTheme: theme, state: LobbyState.Playing });
-
-        this.scheduleLobbyDestroy(lobbyId);
 
         this.subscriptionService.dispatch(lobbyId, {
             type: EventType.PokerWasStarted,
@@ -149,10 +136,6 @@ export default class LobbyServiceImpl implements LobbyService {
         return members.map(member => ({ member, card: cards[ member.id ] }));
     }
 
-    scheduleLobbyDestroy(lobbyId: number): void {
-        this.timeoutScheduler.schedule(TaskType.Lobby, lobbyId, this.lobbyLifetimeMs / 1000, () => this.destroyLobby(lobbyId));
-    }
-
     private finishPoker(lobbyId: number, result: PokerResultItemDto[]): void {
         const lobby = this.lobbyDAO.getById(lobbyId);
         this.lobbyDAO.save({ ...lobby, currentTheme: null, state: LobbyState.Waiting });
@@ -166,29 +149,10 @@ export default class LobbyServiceImpl implements LobbyService {
         this.memberCardXrefDAO.removeByMemberIds(memberIds);
     }
 
-    private cancelScheduledLobbyDestroy(lobbyId: number): void {
-        this.timeoutScheduler.cancel(TaskType.Lobby, lobbyId);
-    }
-
     private createLobby(lobbyName: string): Lobby {
         const createdLobby = this.lobbyDAO.save({ name: lobbyName, state: LobbyState.Waiting });
         this.subscriptionService.register(createdLobby.id);
         return createdLobby;
-    }
-
-    private destroyLobby(lobbyId: number): void {
-        const memberIds = this.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId);
-
-        this.subscriptionService.dispatch(lobbyId, {
-            type: EventType.LobbyWasDestroyed,
-        });
-
-        this.memberCardXrefDAO.removeByMemberIds(memberIds);
-        this.memberLobbyXrefDAO.unbindMembers(lobbyId);
-        this.memberDAO.deleteByIds(memberIds);
-        this.lobbyDAO.deleteById(lobbyId);
-
-        this.subscriptionService.unregister(lobbyId);
     }
 
 }
