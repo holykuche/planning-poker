@@ -9,10 +9,10 @@ import { LobbyService, MemberService, SERVICE_TYPES, TelegramDataService } from 
 import { ButtonCommand } from "../enum";
 import { TELEGRAM_BOT_TYPES } from "../bot";
 
-import CallbackQuerySubscriptionTemplate from "./CallbackQuerySubscriptionTemplate";
+import AbstractCallbackQuerySubscription from "./AbstractCallbackQuerySubscription";
 
 @injectable()
-export default class MemberLeaveSubscription extends CallbackQuerySubscriptionTemplate {
+export default class MemberLeaveSubscription extends AbstractCallbackQuerySubscription {
 
     @inject(SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
     @inject(SERVICE_TYPES.MemberService) private readonly memberService: MemberService;

@@ -5,10 +5,10 @@ import { Message } from "node-telegram-bot-api";
 
 import { TELEGRAM_BOT_TYPES } from "../bot";
 
-import MessageSubscriptionTemplate from "./MessageSubscriptionTemplate";
+import AbstractMessageSubscription from "./AbstractMessageSubscription";
 
 @injectable()
-export default class HelpSubscription extends MessageSubscriptionTemplate {
+export default class HelpSubscription extends AbstractMessageSubscription {
 
     private static readonly HELP_COMMAND_REGEXP = /^\/(help)|(start)$/;
     private static readonly HELP_MESSAGE =

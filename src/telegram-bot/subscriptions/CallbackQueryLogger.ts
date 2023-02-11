@@ -5,10 +5,10 @@ import { CallbackQuery } from "node-telegram-bot-api";
 import { formatTelegramUserName } from "../utils";
 import { TELEGRAM_BOT_TYPES } from "../bot";
 
-import CallbackQuerySubscriptionTemplate from "./CallbackQuerySubscriptionTemplate";
+import AbstractCallbackQuerySubscription from "./AbstractCallbackQuerySubscription";
 
 @injectable()
-export default class CallbackQueryLogger extends CallbackQuerySubscriptionTemplate {
+export default class CallbackQueryLogger extends AbstractCallbackQuerySubscription {
 
     constructor(@inject(TELEGRAM_BOT_TYPES.CallbackQueries$) callbackQueries$: Observable<CallbackQuery>) {
         super(callbackQueries$);

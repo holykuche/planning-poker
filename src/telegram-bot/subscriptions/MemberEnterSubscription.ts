@@ -13,10 +13,10 @@ import { ButtonCommand } from "../enum";
 import { formatLobby, formatPoker, formatFinishResult, formatDestroyedLobby, fromTelegramUserToMember } from "../utils";
 import { TELEGRAM_BOT_TYPES } from "../bot";
 
-import MessageSubscriptionTemplate from "./MessageSubscriptionTemplate";
+import AbstractMessageSubscription from "./AbstractMessageSubscription";
 
 @injectable()
-export default class MemberEnterSubscription extends MessageSubscriptionTemplate {
+export default class MemberEnterSubscription extends AbstractMessageSubscription {
 
     @inject(SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
     @inject(SERVICE_TYPES.TelegramDataService) private readonly telegramDataService: TelegramDataService;

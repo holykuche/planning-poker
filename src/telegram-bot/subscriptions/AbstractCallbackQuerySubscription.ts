@@ -1,8 +1,8 @@
 import { Subscription } from "rxjs";
 import { CallbackQuery } from "node-telegram-bot-api";
-import AbstractSubscriptionTemplate from "./AbstractSubscriptionTemplate";
+import AbstractSubscription from "./AbstractSubscription";
 
-export default abstract class CallbackQuerySubscriptionTemplate extends AbstractSubscriptionTemplate<CallbackQuery> {
+export default abstract class AbstractCallbackQuerySubscription extends AbstractSubscription<CallbackQuery> {
 
     subscribe(): Subscription {
         return this.observable$

@@ -8,10 +8,10 @@ import { MemberService, SERVICE_TYPES, TelegramDataService } from "service/api";
 import { ButtonCommand } from "../enum";
 import { TELEGRAM_BOT_TYPES } from "../bot";
 
-import CallbackQuerySubscriptionTemplate from "./CallbackQuerySubscriptionTemplate";
+import AbstractCallbackQuerySubscription from "./AbstractCallbackQuerySubscription";
 
 @injectable()
-export default class RemoveCardSubscription extends CallbackQuerySubscriptionTemplate {
+export default class RemoveCardSubscription extends AbstractCallbackQuerySubscription {
 
     @inject(SERVICE_TYPES.MemberService) private readonly memberService: MemberService;
     @inject(SERVICE_TYPES.TelegramDataService) private readonly telegramDataService: TelegramDataService;

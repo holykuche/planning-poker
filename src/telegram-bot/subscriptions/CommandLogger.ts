@@ -5,10 +5,10 @@ import { Message } from "node-telegram-bot-api";
 import { formatTelegramUserName } from "../utils";
 import { TELEGRAM_BOT_TYPES } from "../bot";
 
-import MessageSubscriptionTemplate from "./MessageSubscriptionTemplate";
+import AbstractMessageSubscription from "./AbstractMessageSubscription";
 
 @injectable()
-export default class CommandLogger extends MessageSubscriptionTemplate {
+export default class CommandLogger extends AbstractMessageSubscription {
 
     constructor(@inject(TELEGRAM_BOT_TYPES.Commands$) commands$: Observable<Message>) {
         super(commands$);

@@ -1,9 +1,9 @@
 import { container } from "inversify.config";
 
 import SUBSCRIPTION_TYPES from "./types";
-import AbstractSubscriptionTemplate from "./AbstractSubscriptionTemplate";
-import MessageSubscriptionTemplate from "./MessageSubscriptionTemplate";
-import CallbackQuerySubscriptionTemplate from "./CallbackQuerySubscriptionTemplate";
+import AbstractSubscription from "./AbstractSubscription";
+import AbstractMessageSubscription from "./AbstractMessageSubscription";
+import AbstractCallbackQuerySubscription from "./AbstractCallbackQuerySubscription";
 import PlainTextLogger from "./PlainTextLogger";
 import CommandLogger from "./CommandLogger";
 import CallbackQueryLogger from "./CallbackQueryLogger";
@@ -16,19 +16,19 @@ import DeleteMessageSubscription from "./DeleteMessageSubscription";
 import HelpSubscription from "./HelpSubscription";
 import ResetUserSubscription from "./ResetUserSubscription";
 
-container.bind<MessageSubscriptionTemplate>(SUBSCRIPTION_TYPES.MessageSubscription).to(DeleteMessageSubscription);
+container.bind<AbstractMessageSubscription>(SUBSCRIPTION_TYPES.MessageSubscription).to(DeleteMessageSubscription);
 
-container.bind<MessageSubscriptionTemplate>(SUBSCRIPTION_TYPES.PlainTextSubscription).to(PlainTextLogger);
-container.bind<MessageSubscriptionTemplate>(SUBSCRIPTION_TYPES.PlainTextSubscription).to(StartPokerSubscription);
-container.bind<MessageSubscriptionTemplate>(SUBSCRIPTION_TYPES.PlainTextSubscription).to(MemberEnterSubscription);
+container.bind<AbstractMessageSubscription>(SUBSCRIPTION_TYPES.PlainTextSubscription).to(PlainTextLogger);
+container.bind<AbstractMessageSubscription>(SUBSCRIPTION_TYPES.PlainTextSubscription).to(StartPokerSubscription);
+container.bind<AbstractMessageSubscription>(SUBSCRIPTION_TYPES.PlainTextSubscription).to(MemberEnterSubscription);
 
-container.bind<MessageSubscriptionTemplate>(SUBSCRIPTION_TYPES.CommandSubscription).to(CommandLogger);
-container.bind<MessageSubscriptionTemplate>(SUBSCRIPTION_TYPES.CommandSubscription).to(HelpSubscription);
-container.bind<MessageSubscriptionTemplate>(SUBSCRIPTION_TYPES.CommandSubscription).to(ResetUserSubscription);
+container.bind<AbstractMessageSubscription>(SUBSCRIPTION_TYPES.CommandSubscription).to(CommandLogger);
+container.bind<AbstractMessageSubscription>(SUBSCRIPTION_TYPES.CommandSubscription).to(HelpSubscription);
+container.bind<AbstractMessageSubscription>(SUBSCRIPTION_TYPES.CommandSubscription).to(ResetUserSubscription);
 
-container.bind<CallbackQuerySubscriptionTemplate>(SUBSCRIPTION_TYPES.CallbackQuerySubscription).to(CallbackQueryLogger);
-container.bind<CallbackQuerySubscriptionTemplate>(SUBSCRIPTION_TYPES.CallbackQuerySubscription).to(MemberLeaveSubscription);
-container.bind<CallbackQuerySubscriptionTemplate>(SUBSCRIPTION_TYPES.CallbackQuerySubscription).to(PutCardSubscription);
-container.bind<CallbackQuerySubscriptionTemplate>(SUBSCRIPTION_TYPES.CallbackQuerySubscription).to(RemoveCardSubscription);
+container.bind<AbstractCallbackQuerySubscription>(SUBSCRIPTION_TYPES.CallbackQuerySubscription).to(CallbackQueryLogger);
+container.bind<AbstractCallbackQuerySubscription>(SUBSCRIPTION_TYPES.CallbackQuerySubscription).to(MemberLeaveSubscription);
+container.bind<AbstractCallbackQuerySubscription>(SUBSCRIPTION_TYPES.CallbackQuerySubscription).to(PutCardSubscription);
+container.bind<AbstractCallbackQuerySubscription>(SUBSCRIPTION_TYPES.CallbackQuerySubscription).to(RemoveCardSubscription);
 
-export { SUBSCRIPTION_TYPES, AbstractSubscriptionTemplate };
+export { SUBSCRIPTION_TYPES, AbstractSubscription };

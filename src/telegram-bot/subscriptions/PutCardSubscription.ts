@@ -8,10 +8,10 @@ import { MemberService, SERVICE_TYPES, TelegramDataService } from "service/api";
 
 import { TELEGRAM_BOT_TYPES } from "../bot";
 
-import CallbackQuerySubscriptionTemplate from "./CallbackQuerySubscriptionTemplate";
+import AbstractCallbackQuerySubscription from "./AbstractCallbackQuerySubscription";
 
 @injectable()
-export default class PutCardSubscription extends CallbackQuerySubscriptionTemplate {
+export default class PutCardSubscription extends AbstractCallbackQuerySubscription {
 
     private static readonly PUT_CARD_COMMAND_REGEXP = /^\/put_card (Score(0|1|2|3|5|8|13|20|40|100)|DontKnow|Skip)$/;
 

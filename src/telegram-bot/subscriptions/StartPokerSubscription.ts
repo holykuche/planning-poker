@@ -7,10 +7,10 @@ import { LobbyService, MemberService, SERVICE_TYPES, TelegramDataService } from 
 
 import { TELEGRAM_BOT_TYPES } from "../bot";
 
-import MessageSubscriptionTemplate from "./MessageSubscriptionTemplate";
+import AbstractMessageSubscription from "./AbstractMessageSubscription";
 
 @injectable()
-export default class StartPokerSubscription extends MessageSubscriptionTemplate {
+export default class StartPokerSubscription extends AbstractMessageSubscription {
 
     @inject(SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
     @inject(SERVICE_TYPES.MemberService) private readonly memberService: MemberService;

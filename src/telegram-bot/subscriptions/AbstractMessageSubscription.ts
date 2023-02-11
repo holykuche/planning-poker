@@ -1,8 +1,8 @@
 import { Subscription } from "rxjs";
 import { Message } from "node-telegram-bot-api";
-import AbstractSubscriptionTemplate from "./AbstractSubscriptionTemplate";
+import AbstractSubscription from "./AbstractSubscription";
 
-export default abstract class MessageSubscriptionTemplate extends AbstractSubscriptionTemplate<Message> {
+export default abstract class AbstractMessageSubscription extends AbstractSubscription<Message> {
 
     subscribe(): Subscription {
         return this.observable$

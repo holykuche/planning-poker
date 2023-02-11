@@ -4,10 +4,10 @@ import { Message } from "node-telegram-bot-api";
 
 import { TELEGRAM_BOT_TYPES } from "../bot";
 
-import MessageSubscriptionTemplate from "./MessageSubscriptionTemplate";
+import AbstractMessageSubscription from "./AbstractMessageSubscription";
 
 @injectable()
-export default class DeleteMessageSubscription extends MessageSubscriptionTemplate {
+export default class DeleteMessageSubscription extends AbstractMessageSubscription {
 
     constructor(@inject(TELEGRAM_BOT_TYPES.Messages$) messages$: Observable<Message>) {
         super(messages$);
