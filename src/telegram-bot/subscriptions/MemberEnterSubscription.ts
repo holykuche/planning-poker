@@ -99,12 +99,12 @@ export default class MemberEnterSubscription extends AbstractMessageSubscription
 
         const message = this.telegramDataService.getMessage(lobbyId, chatId, TelegramMessageType.Poker);
         const messageText = formatPoker(theme, result, telegramUserId);
-        
+
         if (message) {
             const card = result
                 .find(resultItem => resultItem.member.telegramUserId === telegramUserId)
                 .card;
-            
+
             await this.bot.editMessageText(messageText, {
                 chat_id: chatId,
                 message_id: message.messageId,

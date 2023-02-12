@@ -11,7 +11,7 @@ interface Options<E, PK> {
     getNextPrimaryKeyValue?: (current: PK) => PK;
 }
 
-type IndexMaps<E> = { [ F in Key<E> ]: Map<Value<E, F>, number[]> };
+type IndexMaps<E> = { [F in Key<E>]: Map<Value<E, F>, number[]> };
 
 @injectable()
 export default abstract class AbstractInMemoryDAOImpl<E extends Entity, PK extends Key<E> = never> {
@@ -61,7 +61,7 @@ export default abstract class AbstractInMemoryDAOImpl<E extends Entity, PK exten
     findMany<K extends Key<E>>(key: K, value: Value<E, K>): E[] {
         if (this.indexMaps[ key ]) {
             return this.indexMaps[ key ].get(value)
-                ?.map(idx => ({ ...this.data[idx] }))
+                    ?.map(idx => ({ ...this.data[ idx ] }))
                 || [];
         }
 
@@ -135,7 +135,7 @@ export default abstract class AbstractInMemoryDAOImpl<E extends Entity, PK exten
 
         indexes
             .map(idx => [ idx, this.data[ idx ] ] as [ number, E ])
-            .forEach(([ idx, entity]) => {
+            .forEach(([ idx, entity ]) => {
                 Object.entries<IndexMaps<E>[ keyof E ]>(this.indexMaps)
                     .forEach(([ f, indexMap ]) => {
                         const indexes = indexMap.get(entity[ f ]);
@@ -175,7 +175,7 @@ export default abstract class AbstractInMemoryDAOImpl<E extends Entity, PK exten
 
     private getAvailablePrimaryKeyValue(): Value<E, PK> {
         if (!this.primaryKeyValue || !this.getNextPrimaryKeyValue) {
-            throw new Error(`Can't calculate primary key '${String(this.primaryKey)}' automatically.`);
+            throw new Error(`Can't calculate primary key '${ String(this.primaryKey) }' automatically.`);
         }
 
         const availablePrimaryKeyValue = this.primaryKeyValue;

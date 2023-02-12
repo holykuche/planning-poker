@@ -14,13 +14,13 @@ export const messages$ = new Observable<Message>(subscriber => {
 export const plainTexts$ = messages$
     .pipe(
         filter(msg => !!msg.text),
-        filter(msg => PLAIN_TEXT_REGEXP.test(msg.text))
+        filter(msg => PLAIN_TEXT_REGEXP.test(msg.text)),
     );
 
 export const commands$ = messages$
     .pipe(
         filter(msg => !!msg.text),
-        filter(msg => COMMAND_REGEXP.test(msg.text))
+        filter(msg => COMMAND_REGEXP.test(msg.text)),
     );
 
 export const callbackQueries$ = new Observable<CallbackQuery>(subscriber => {

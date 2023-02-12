@@ -14,7 +14,7 @@ function inlineKeyboardButtonFactory(buttonCommand: ButtonCommand, option?: any)
         case ButtonCommand.Leave:
             return { text: "Leave", callback_data: ButtonCommand.Leave };
         case ButtonCommand.PutCard:
-            return { text: CardDto.fromCode(option).label, callback_data: `${ButtonCommand.PutCard} ${option}` };
+            return { text: CardDto.fromCode(option).label, callback_data: `${ ButtonCommand.PutCard } ${ option }` };
         case ButtonCommand.RemoveCard:
             return { text: "Remove card", callback_data: ButtonCommand.RemoveCard };
         default:

@@ -20,7 +20,7 @@ export default class TelegramMessageDAOImpl extends AbstractInMemoryDAOImpl<Tele
 
     getMessage(lobbyId: number, chatId: number, messageType: TelegramMessageType): TelegramMessage {
         return this.findMany("lobbyId", lobbyId)
-            .find(message => message.chatId === chatId && message.messageType === messageType)
+                .find(message => message.chatId === chatId && message.messageType === messageType)
             || null;
     }
 

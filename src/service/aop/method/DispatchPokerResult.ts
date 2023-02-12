@@ -46,7 +46,7 @@ export default function (target: Object, propertyKey: string, descriptor: TypedP
 
     descriptor.value = function (...args: any[]) {
         const result = method.apply(this, args);
-        
+
         const dependencies: Dependencies = {
             memberLobbyXrefDAO: container.get<MemberLobbyXrefDAO>(DAO_TYPES.MemberLobbyXrefDAO),
             memberCardXrefDAO: container.get<MemberCardXrefDAO>(DAO_TYPES.MemberCardXrefDAO),
@@ -54,7 +54,7 @@ export default function (target: Object, propertyKey: string, descriptor: TypedP
             lobbyDAO: container.get<LobbyDAO>(DAO_TYPES.LobbyDAO),
             subscriptionService: container.get<SubscriptionService>(SERVICE_TYPES.SubscriptionService),
         };
-        
+
         let lobbyId: number;
 
         const lobbyIdParameterIndex = Reflect.getOwnMetadata(MetadataKey.LobbyId, target, propertyKey);
