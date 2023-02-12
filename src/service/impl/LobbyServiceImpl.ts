@@ -9,11 +9,11 @@ import {
     MemberIsNotInLobbyError,
     PokerIsAlreadyStartedError,
     UnknownMemberError,
+    LobbyAlreadyExists,
 } from "../error";
 import { LobbyService, SERVICE_TYPES, SubscriptionService } from "../api";
-import { CardDto, PokerResultItemDto } from "../dto";
 import { EventType } from "../event";
-import { ResetLobbyLifetime, MemberId, LobbyId } from "../aop";
+import { ResetLobbyLifetime, MemberId, LobbyId, DispatchPokerResult } from "../aop";
 
 @injectable()
 export default class LobbyServiceImpl implements LobbyService {
@@ -32,6 +32,16 @@ export default class LobbyServiceImpl implements LobbyService {
         return this.lobbyDAO.getByName(name);
     }
 
+    createLobby(name: string): Lobby {
+        if (this.lobbyDAO.isExists(name)) {
+            throw new LobbyAlreadyExists(name);
+        }
+
+        const createdLobby = this.lobbyDAO.save({ name, state: LobbyState.Waiting });
+        this.subscriptionService.register(createdLobby.id);
+        return createdLobby;
+    }
+
     getMembers(lobbyId: number): Member[] {
         const memberIds = this.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId);
         return this.memberDAO.getByIds(memberIds);
@@ -43,41 +53,34 @@ export default class LobbyServiceImpl implements LobbyService {
     }
 
     @ResetLobbyLifetime
-    enterMember(@MemberId memberId: number, lobbyName: string): void {
+    @DispatchPokerResult
+    enterMember(@MemberId memberId: number, lobbyId: number): void {
         if (this.memberLobbyXrefDAO.isMemberBound(memberId)) {
             const member = this.memberDAO.getById(memberId);
             throw new MemberIsAlreadyInLobbyError(member.name);
         }
 
-        const lobby = this.getByName(lobbyName) || this.createLobby(lobbyName);
-        this.memberLobbyXrefDAO.bindMember(memberId, lobby.id);
+        this.memberLobbyXrefDAO.bindMember(memberId, lobbyId);
 
-        this.subscriptionService.dispatch(lobby.id, {
+        this.subscriptionService.dispatch(lobbyId, {
             type: EventType.MembersWasChanged,
-            payload: { members: this.getMembers(lobby.id) },
+            payload: { members: this.getMembers(lobbyId) },
         });
-
-        if (lobby.state === LobbyState.Playing) {
-            this.subscriptionService.dispatch(lobby.id, {
-                type: EventType.PokerResultWasChanged,
-                payload: { result: this.getPokerResult(lobby.id) },
-            });
-        }
     }
 
     @ResetLobbyLifetime
-    leaveMember(@MemberId memberId: number): void {
+    @DispatchPokerResult
+    leaveMember(memberId: number, @LobbyId lobbyId: number): void {
         const member = this.memberDAO.getById(memberId);
 
         if (!member) {
             throw new UnknownMemberError();
         }
 
-        if (!this.memberLobbyXrefDAO.isMemberBound(memberId)) {
+        if (lobbyId !== this.memberLobbyXrefDAO.getMembersBinding(memberId)) {
             throw new MemberIsNotInLobbyError(member.name);
         }
 
-        const lobbyId = this.memberLobbyXrefDAO.getMembersBinding(memberId);
         this.memberLobbyXrefDAO.unbindMember(memberId);
         this.memberCardXrefDAO.removeByMemberId(memberId);
 
@@ -88,14 +91,10 @@ export default class LobbyServiceImpl implements LobbyService {
             type: EventType.MembersWasChanged,
             payload: { members },
         });
-
-        const lobby = this.lobbyDAO.getById(lobbyId);
-        if (lobby.state === LobbyState.Playing) {
-            this.checkPokerResult(lobbyId);
-        }
     }
 
     @ResetLobbyLifetime
+    @DispatchPokerResult
     startPoker(@LobbyId lobbyId: number, theme: string): void {
         const lobby = this.lobbyDAO.getById(lobbyId);
 
@@ -104,55 +103,6 @@ export default class LobbyServiceImpl implements LobbyService {
         }
 
         this.lobbyDAO.save({ ...lobby, currentTheme: theme, state: LobbyState.Playing });
-
-        this.subscriptionService.dispatch(lobbyId, {
-            type: EventType.PokerWasStarted,
-            payload: { theme, result: this.getPokerResult(lobbyId) },
-        });
-    }
-
-    checkPokerResult(lobbyId: number): void {
-        const result = this.getPokerResult(lobbyId);
-
-        if (result.every(item => !!item.card)) {
-            this.finishPoker(lobbyId, result);
-        } else {
-            this.subscriptionService.dispatch(lobbyId, {
-                type: EventType.PokerResultWasChanged,
-                payload: { result },
-            });
-        }
-    }
-
-    getPokerResult(lobbyId: number): PokerResultItemDto[] {
-        const memberIds = this.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId);
-        const cards = this.memberCardXrefDAO.getCardsByMemberIds(memberIds)
-            .reduce((cardsById, { memberId, cardCode }) => ({
-                ...cardsById,
-                [ memberId ]: CardDto.fromCode(cardCode),
-            }), {});
-        const members = this.memberDAO.getByIds(memberIds);
-
-        return members.map(member => ({ member, card: cards[ member.id ] }));
-    }
-
-    private finishPoker(lobbyId: number, result: PokerResultItemDto[]): void {
-        const lobby = this.lobbyDAO.getById(lobbyId);
-        this.lobbyDAO.save({ ...lobby, currentTheme: null, state: LobbyState.Waiting });
-
-        this.subscriptionService.dispatch(lobbyId, {
-            type: EventType.PokerWasFinished,
-            payload: { theme: lobby.currentTheme, result },
-        });
-
-        const memberIds = this.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId);
-        this.memberCardXrefDAO.removeByMemberIds(memberIds);
-    }
-
-    private createLobby(lobbyName: string): Lobby {
-        const createdLobby = this.lobbyDAO.save({ name: lobbyName, state: LobbyState.Waiting });
-        this.subscriptionService.register(createdLobby.id);
-        return createdLobby;
     }
 
 }

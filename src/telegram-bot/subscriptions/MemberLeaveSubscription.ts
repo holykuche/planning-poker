@@ -42,7 +42,7 @@ export default class MemberLeaveSubscription extends AbstractCallbackQuerySubscr
         }
 
         this.telegramDataService.deleteAllMessagesFromChat(lobbyId, callbackQuery.message.chat.id);
-        this.lobbyService.leaveMember(member.id);
+        this.lobbyService.leaveMember(member.id, lobbyId);
         this.telegramDataService.deleteMemberByMemberId(member.id);
 
         await this.bot.sendMessage(callbackQuery.message.chat.id, "You've gone");

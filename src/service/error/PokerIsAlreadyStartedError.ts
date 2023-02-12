@@ -4,7 +4,7 @@ import ServiceError from "./ServiceError";
 export default class PokerIsAlreadyStartedError extends ServiceError {
 
     constructor(lobby: Lobby) {
-        super(`Poker in lobby "${lobby.name}" is already started with theme "${lobby.currentTheme}".`);
+        super(`Poker in lobby '${ lobby.name }' is already started with theme '${ lobby.currentTheme }'.`);
         Object.setPrototypeOf(this, PokerIsAlreadyStartedError.prototype);
     }
 

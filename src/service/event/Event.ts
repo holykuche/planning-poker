@@ -12,15 +12,13 @@ interface EventGeneric<T extends EventType, P> extends SimpleEventGeneric<T> {
 
 type LobbyWasDestroyedLobbyEvent = SimpleEventGeneric<EventType.LobbyWasDestroyed>;
 type MembersWasChangedLobbyEvent = EventGeneric<EventType.MembersWasChanged, { members: Member[] }>;
-type PokerResultWasChangedLobbyEvent = EventGeneric<EventType.PokerResultWasChanged, { result: PokerResultItemDto[] }>;
-type PokerWasStartedLobbyEvent = EventGeneric<EventType.PokerWasStarted, { theme: string, result: PokerResultItemDto[] }>;
+type PokerResultWasChangedLobbyEvent = EventGeneric<EventType.PokerResultWasChanged, { theme: string, result: PokerResultItemDto[] }>;
 type PokerWasFinishedLobbyEvent = EventGeneric<EventType.PokerWasFinished, { theme: string, result: PokerResultItemDto[] }>;
 
 type Event =
     LobbyWasDestroyedLobbyEvent
     | MembersWasChangedLobbyEvent
     | PokerResultWasChangedLobbyEvent
-    | PokerWasStartedLobbyEvent
     | PokerWasFinishedLobbyEvent;
 
 export default Event;

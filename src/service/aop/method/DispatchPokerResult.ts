@@ -1,10 +1,9 @@
 import { container } from "inversify.config";
-import CONFIG_TYPES from "config/types";
 import { DAO_TYPES, LobbyDAO, MemberCardXrefDAO, MemberDAO, MemberLobbyXrefDAO } from "data/api";
-import { SCHEDULER_TYPES, TimeoutScheduler } from "scheduler/api";
-import { TaskType } from "scheduler/enum";
+import LobbyState from "data/enum/LobbyState";
 
 import { SERVICE_TYPES, SubscriptionService } from "../../api";
+import { CardDto, PokerResultItemDto } from "../../dto";
 import { EventType } from "../../event";
 
 import MetadataKey from "../MetadataKey";
@@ -15,22 +14,32 @@ interface Dependencies {
     memberDAO: MemberDAO,
     lobbyDAO: LobbyDAO,
     subscriptionService: SubscriptionService,
-    timeoutScheduler: TimeoutScheduler,
-    lobbyLifetimeMs: number,
 }
 
-const destroyLobby = function (lobbyId: number, memberIds: number[], dependencies: Dependencies): void {
+const getPokerResult = function (lobbyId: number, dependencies: Dependencies): PokerResultItemDto[] {
+    const memberIds = dependencies.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId);
+    const cards = dependencies.memberCardXrefDAO.getCardsByMemberIds(memberIds)
+        .reduce((cardsById, { memberId, cardCode }) => ({
+            ...cardsById,
+            [ memberId ]: CardDto.fromCode(cardCode),
+        }), {});
+    const members = dependencies.memberDAO.getByIds(memberIds);
+
+    return members.map(member => ({ member, card: cards[ member.id ] }));
+};
+
+const finishPoker = function (lobbyId: number, pokerResult: PokerResultItemDto[], dependencies: Dependencies): void {
+    const lobby = dependencies.lobbyDAO.getById(lobbyId);
+    dependencies.lobbyDAO.save({ ...lobby, currentTheme: null, state: LobbyState.Waiting });
+
     dependencies.subscriptionService.dispatch(lobbyId, {
-        type: EventType.LobbyWasDestroyed,
+        type: EventType.PokerWasFinished,
+        payload: { theme: lobby.currentTheme, result: pokerResult },
     });
 
+    const memberIds = dependencies.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId);
     dependencies.memberCardXrefDAO.removeByMemberIds(memberIds);
-    dependencies.memberLobbyXrefDAO.unbindMembers(lobbyId);
-    dependencies.memberDAO.deleteByIds(memberIds);
-    dependencies.lobbyDAO.deleteById(lobbyId);
-
-    dependencies.subscriptionService.unregister(lobbyId);
-};
+}
 
 export default function (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<Function>) {
     const method = descriptor.value;
@@ -44,10 +53,8 @@ export default function (target: Object, propertyKey: string, descriptor: TypedP
             memberDAO: container.get<MemberDAO>(DAO_TYPES.MemberDAO),
             lobbyDAO: container.get<LobbyDAO>(DAO_TYPES.LobbyDAO),
             subscriptionService: container.get<SubscriptionService>(SERVICE_TYPES.SubscriptionService),
-            timeoutScheduler: container.get<TimeoutScheduler>(SCHEDULER_TYPES.TimeoutScheduler),
-            lobbyLifetimeMs: container.get<number>(CONFIG_TYPES.LobbyLifetimeMs),
         };
-
+        
         let lobbyId: number;
 
         const lobbyIdParameterIndex = Reflect.getOwnMetadata(MetadataKey.LobbyId, target, propertyKey);
@@ -58,22 +65,24 @@ export default function (target: Object, propertyKey: string, descriptor: TypedP
             const memberId = args[ memberIdParameterIndex ];
             lobbyId = dependencies.memberLobbyXrefDAO.getMembersBinding(memberId);
         } else {
-            throw new Error("Wrong ResetLobbyLifetime usage. You should mark lobbyId or memberId in parameters.")
+            throw new Error("Wrong DispatchPokerResult usage. You should mark lobbyId or memberId in parameters.")
         }
 
-        const memberIds = dependencies.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId);
+        const { currentTheme, state } = dependencies.lobbyDAO.getById(lobbyId);
 
-        if (memberIds.length) {
-            dependencies.timeoutScheduler.schedule(
-                TaskType.Lobby,
-                lobbyId,
-                dependencies.lobbyLifetimeMs / 1000,
-                () => destroyLobby(lobbyId, memberIds, dependencies));
-        } else {
-            dependencies.timeoutScheduler.cancel(TaskType.Lobby, lobbyId);
-            destroyLobby(lobbyId, memberIds, dependencies);
+        if (state === LobbyState.Playing) {
+            const pokerResult = getPokerResult(lobbyId, dependencies);
+
+            if (pokerResult.every(item => !!item.card)) {
+                finishPoker(lobbyId, pokerResult, dependencies);
+            } else {
+                dependencies.subscriptionService.dispatch(lobbyId, {
+                    type: EventType.PokerResultWasChanged,
+                    payload: { theme: currentTheme, result: pokerResult },
+                });
+            }
         }
 
         return result;
     }
-};
+}

@@ -6,7 +6,7 @@ import { DAO_TYPES, LobbyDAO, MemberCardXrefDAO, MemberDAO, MemberLobbyXrefDAO }
 
 import { LobbyService, MemberService, SERVICE_TYPES } from "../api";
 import { PokerIsNotStartedError, MemberIsNotInLobbyError, UnknownMemberError } from "../error";
-import { MemberId, ResetLobbyLifetime } from "../aop";
+import { DispatchPokerResult, MemberId, ResetLobbyLifetime } from "../aop";
 
 @injectable()
 export default class MemberServiceImpl implements MemberService {
@@ -42,6 +42,7 @@ export default class MemberServiceImpl implements MemberService {
     }
 
     @ResetLobbyLifetime
+    @DispatchPokerResult
     putCard(@MemberId memberId: number, cardCode: CardCode): void {
         const lobbyId = this.getMembersLobbyId(memberId);
 
@@ -52,10 +53,10 @@ export default class MemberServiceImpl implements MemberService {
         }
 
         this.memberCardXrefDAO.put(memberId, cardCode);
-        this.lobbyService.checkPokerResult(lobbyId);
     }
 
     @ResetLobbyLifetime
+    @DispatchPokerResult
     removeCard(@MemberId memberId: number): void {
         const lobbyId = this.getMembersLobbyId(memberId);
 
@@ -66,7 +67,6 @@ export default class MemberServiceImpl implements MemberService {
         }
 
         this.memberCardXrefDAO.removeByMemberId(memberId);
-        this.lobbyService.checkPokerResult(lobbyId);
     }
 
 }
