@@ -6,3 +6,4 @@ export { default as formatLobby } from "./formatLobby";
 export { default as formatDestroyedLobby } from "./formatDestroyedLobby";
 export { default as formatWarning } from "./formatWarning";
 export { default as inlineKeyboardButtonFactory } from "./inlineKeyboardButtonFactory";
+export { default as formatError } from "./formatError";

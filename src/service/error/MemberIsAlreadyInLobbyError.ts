@@ -2,14 +2,11 @@ import ServiceError from "./ServiceError";
 
 export default class MemberIsAlreadyInLobbyError extends ServiceError {
 
-    private static readonly USER_MESSAGE = "You are already a member of a lobby.";
+    readonly memberName: string;
 
     constructor(memberName: string) {
         super(`User '${ memberName }' is already included into lobby.`);
+        this.memberName = memberName;
         Object.setPrototypeOf(this, MemberIsAlreadyInLobbyError.prototype);
-    }
-
-    getUserMessage(): string {
-        return MemberIsAlreadyInLobbyError.USER_MESSAGE;
     }
 }

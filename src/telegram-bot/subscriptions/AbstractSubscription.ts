@@ -6,7 +6,7 @@ import { CardCode } from "data/enum";
 import { ServiceError } from "service/error";
 
 import { ButtonCommand } from "../enum";
-import { inlineKeyboardButtonFactory, formatWarning } from "../utils";
+import { inlineKeyboardButtonFactory, formatWarning, formatError } from "../utils";
 import { TELEGRAM_BOT_TYPES } from "../bot";
 
 @injectable()
@@ -55,7 +55,7 @@ export default abstract class AbstractSubscription<T> {
 
     protected async handleError(item: T, error: any): Promise<void> {
         if (error instanceof ServiceError) {
-            const warningMessage = await this.bot.sendMessage(this.getChatId(item), formatWarning(error.getUserMessage()), {
+            const warningMessage = await this.bot.sendMessage(this.getChatId(item), formatWarning(formatError(error)), {
                 parse_mode: AbstractSubscription.PARSE_MODE,
             });
             setTimeout(async () => await this.bot.deleteMessage(this.getChatId(item), String(warningMessage.message_id)), 5000);

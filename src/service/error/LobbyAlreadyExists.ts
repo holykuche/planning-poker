@@ -2,13 +2,12 @@ import ServiceError from "./ServiceError";
 
 export default class LobbyAlreadyExists extends ServiceError {
 
-    constructor(lobbyName: string) {
-        super(`Lobby with name '${ lobbyName }'`);
-        Object.setPrototypeOf(this, LobbyAlreadyExists.prototype);
-    }
+    readonly lobbyName: string;
 
-    getUserMessage(): string {
-        return this.message;
+    constructor(lobbyName: string) {
+        super(`Lobby with name '${ lobbyName }' already exists`);
+        this.lobbyName = lobbyName;
+        Object.setPrototypeOf(this, LobbyAlreadyExists.prototype);
     }
 
 }
