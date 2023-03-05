@@ -1,6 +1,6 @@
-import TelegramBot from "node-telegram-bot-api";
+import TelegramBotProxy from "./TelegramBotProxy";
 
-const bot = new TelegramBot(TELEGRAM_BOT_API_TOKEN, { polling: true });
+const bot = new TelegramBotProxy(TELEGRAM_BOT_API_TOKEN, { polling: true });
 
 bot.setMyCommands(
     [
