@@ -15,7 +15,7 @@ export default function (error: ServiceError) {
         case PokerIsNotStartedError:
             return error.message;
         case UnknownMemberError:
-            return "You are not a member of any lobby.\nType /help for get a help message.";
+            return "You are not a member of any lobby.\nType /help for get the help message.";
         case MemberIsAlreadyInLobbyError:
             return "You are already a member of a lobby.";
         case MemberIsNotInLobbyError:
