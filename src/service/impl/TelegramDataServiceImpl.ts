@@ -20,6 +20,11 @@ export default class TelegramDataServiceImpl implements TelegramDataService {
         return this.telegramMessageDAO.getMessage(lobbyId, chatId, messageType);
     }
 
+    getMessages(lobbyId: number, messageType: TelegramMessageType): TelegramMessage[] {
+        return this.telegramMessageDAO.getAllMessages(lobbyId)
+            .filter(msg => msg.messageType === messageType);
+    }
+
     addMessage(message: TelegramMessage): void {
         this.telegramMessageDAO.addMessage(message);
     }

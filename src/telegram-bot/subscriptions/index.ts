@@ -15,6 +15,7 @@ import RemoveCardSubscription from "./RemoveCardSubscription";
 import DeleteMessageSubscription from "./DeleteMessageSubscription";
 import HelpSubscription from "./HelpSubscription";
 import ResetUserSubscription from "./ResetUserSubscription";
+import CancelPokerSubscription from "./CancelPokerSubscription";
 
 container.bind<AbstractMessageSubscription>(SUBSCRIPTION_TYPES.MessageSubscription).to(DeleteMessageSubscription);
 
@@ -25,6 +26,7 @@ container.bind<AbstractMessageSubscription>(SUBSCRIPTION_TYPES.PlainTextSubscrip
 container.bind<AbstractMessageSubscription>(SUBSCRIPTION_TYPES.CommandSubscription).to(CommandLogger);
 container.bind<AbstractMessageSubscription>(SUBSCRIPTION_TYPES.CommandSubscription).to(HelpSubscription);
 container.bind<AbstractMessageSubscription>(SUBSCRIPTION_TYPES.CommandSubscription).to(ResetUserSubscription);
+container.bind<AbstractMessageSubscription>(SUBSCRIPTION_TYPES.CommandSubscription).to(CancelPokerSubscription);
 
 container.bind<AbstractCallbackQuerySubscription>(SUBSCRIPTION_TYPES.CallbackQuerySubscription).to(CallbackQueryLogger);
 container.bind<AbstractCallbackQuerySubscription>(SUBSCRIPTION_TYPES.CallbackQuerySubscription).to(MemberLeaveSubscription);

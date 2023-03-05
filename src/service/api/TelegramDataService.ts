@@ -6,6 +6,8 @@ import { MemberDto } from "../dto";
 export default interface TelegramDataService {
     getMessage(lobbyId: number, chatId: number, messageType: TelegramMessageType): TelegramMessage;
 
+    getMessages(lobbyId: number, messageType: TelegramMessageType): TelegramMessage[];
+
     addMessage(message: TelegramMessage): void;
 
     deleteMessageById(messageId: number): void;

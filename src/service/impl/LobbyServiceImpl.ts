@@ -5,15 +5,16 @@ import { Lobby, Member } from "data/entity";
 import { LobbyState } from "data/enum";
 
 import {
+    LobbyAlreadyExists,
     MemberIsAlreadyInLobbyError,
     MemberIsNotInLobbyError,
     PokerIsAlreadyStartedError,
+    PokerIsNotStartedError,
     UnknownMemberError,
-    LobbyAlreadyExists,
 } from "../error";
 import { LobbyService, SERVICE_TYPES, SubscriptionService } from "../api";
 import { EventType } from "../event";
-import { ResetLobbyLifetime, MemberId, LobbyId, DispatchPokerResult } from "../aop";
+import { DispatchPokerResult, LobbyId, MemberId, ResetLobbyLifetime } from "../aop";
 
 @injectable()
 export default class LobbyServiceImpl implements LobbyService {
@@ -103,6 +104,19 @@ export default class LobbyServiceImpl implements LobbyService {
         }
 
         this.lobbyDAO.save({ ...lobby, currentTheme: theme, state: LobbyState.Playing });
+    }
+
+    @ResetLobbyLifetime
+    cancelPoker(@LobbyId lobbyId: number): void {
+        const lobby = this.lobbyDAO.getById(lobbyId);
+
+        if (lobby.state === LobbyState.Waiting) {
+            throw new PokerIsNotStartedError(lobby);
+        }
+
+        this.lobbyDAO.save({ ...lobby, currentTheme: null, state: LobbyState.Waiting });
+        const memberIds = this.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobby.id);
+        this.memberCardXrefDAO.removeByMemberIds(memberIds);
     }
 
 }

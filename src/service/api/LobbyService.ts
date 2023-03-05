@@ -16,4 +16,6 @@ export default interface LobbyService {
     leaveMember(memberId: number, lobbyId: number): void;
 
     startPoker(lobbyId: number, theme: string): void;
+
+    cancelPoker(lobbyId: number): void;
 }
