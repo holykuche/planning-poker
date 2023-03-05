@@ -19,11 +19,12 @@ export default class PutCardSubscription extends AbstractCallbackQuerySubscripti
     @inject(SERVICE_TYPES.TelegramDataService) private readonly telegramDataService: TelegramDataService;
 
     constructor(@inject(TELEGRAM_BOT_TYPES.CallbackQueries$) callbackQueries$: Observable<CallbackQuery>) {
-        const putCardCallbackQueries$ = callbackQueries$
-            .pipe(
-                filter(callback => PutCardSubscription.PUT_CARD_COMMAND_REGEXP.test(callback.data)),
-            );
-        super(putCardCallbackQueries$);
+        super(
+            callbackQueries$
+                .pipe(
+                    filter(callback => PutCardSubscription.PUT_CARD_COMMAND_REGEXP.test(callback.data)),
+                )
+        );
     }
 
     protected handle(callbackQuery: CallbackQuery): Promise<void> {

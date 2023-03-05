@@ -19,11 +19,12 @@ export default class ResetUserSubscription extends AbstractMessageSubscription {
     private static readonly RESET_COMMAND = "/reset";
 
     constructor(@inject(TELEGRAM_BOT_TYPES.Commands$) commands$: Observable<Message>) {
-        const helpMessages$ = commands$
-            .pipe(
-                filter(msg => msg.text === ResetUserSubscription.RESET_COMMAND),
-            );
-        super(helpMessages$);
+        super(
+            commands$
+                .pipe(
+                    filter(msg => msg.text === ResetUserSubscription.RESET_COMMAND),
+                )
+        );
     }
 
     protected async handle(msg: Message): Promise<void> {

@@ -17,11 +17,12 @@ export default class RemoveCardSubscription extends AbstractCallbackQuerySubscri
     @inject(SERVICE_TYPES.TelegramDataService) private readonly telegramDataService: TelegramDataService;
 
     constructor(@inject(TELEGRAM_BOT_TYPES.CallbackQueries$) callbackQueries$: Observable<CallbackQuery>) {
-        const removeCardCallbackQueries$ = callbackQueries$
-            .pipe(
-                filter(callback => callback.data === ButtonCommand.RemoveCard),
-            );
-        super(removeCardCallbackQueries$);
+        super(
+            callbackQueries$
+                .pipe(
+                    filter(callback => callback.data === ButtonCommand.RemoveCard),
+                )
+        );
     }
 
     protected handle(callbackQuery: CallbackQuery): Promise<void> {

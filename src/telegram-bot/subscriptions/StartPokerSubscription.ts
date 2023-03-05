@@ -17,11 +17,12 @@ export default class StartPokerSubscription extends AbstractMessageSubscription 
     @inject(SERVICE_TYPES.TelegramDataService) private readonly telegramDataService: TelegramDataService;
 
     constructor(@inject(TELEGRAM_BOT_TYPES.PlaintTexts$) messages$: Observable<Message>) {
-        const startPokerMessages$ = messages$
-            .pipe(
-                filter(msg => this.telegramDataService.isMemberExists(msg.from.id)),
-            );
-        super(startPokerMessages$);
+        super(
+            messages$
+                .pipe(
+                    filter(msg => this.telegramDataService.isMemberExists(msg.from.id)),
+                )
+        );
     }
 
     protected async handle(msg: Message): Promise<void> {

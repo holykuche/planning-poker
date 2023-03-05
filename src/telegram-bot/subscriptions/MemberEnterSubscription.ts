@@ -23,11 +23,12 @@ export default class MemberEnterSubscription extends AbstractMessageSubscription
     @inject(SERVICE_TYPES.SubscriptionService) private readonly subscriptionService: SubscriptionService;
 
     constructor(@inject(TELEGRAM_BOT_TYPES.PlaintTexts$) messages$: Observable<Message>) {
-        const memberEnterMessages$ = messages$
-            .pipe(
-                filter(msg => !this.telegramDataService.isMemberExists(msg.from.id)),
-            );
-        super(memberEnterMessages$);
+        super(
+            messages$
+                .pipe(
+                    filter(msg => !this.telegramDataService.isMemberExists(msg.from.id)),
+                )
+        );
     }
 
     protected async handle(msg: Message): Promise<void> {

@@ -19,11 +19,12 @@ export default class MemberLeaveSubscription extends AbstractCallbackQuerySubscr
     @inject(SERVICE_TYPES.TelegramDataService) private readonly telegramDataService: TelegramDataService;
 
     constructor(@inject(TELEGRAM_BOT_TYPES.CallbackQueries$) callbackQueries$: Observable<CallbackQuery>) {
-        const leaveCallbackQueries$ = callbackQueries$
-            .pipe(
-                filter(callback => callback.data === ButtonCommand.Leave),
-            );
-        super(leaveCallbackQueries$);
+        super(
+            callbackQueries$
+                .pipe(
+                    filter(callback => callback.data === ButtonCommand.Leave),
+                )
+        );
     }
 
     protected async handle(callbackQuery: CallbackQuery): Promise<void> {

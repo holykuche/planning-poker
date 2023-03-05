@@ -20,11 +20,12 @@ export default class HelpSubscription extends AbstractMessageSubscription {
         + "If you want to *leave from a current lobby*, push button *\"Leave\"* below lobby info message\\.";
 
     constructor(@inject(TELEGRAM_BOT_TYPES.Commands$) commands$: Observable<Message>) {
-        const helpCommands$ = commands$
-            .pipe(
-                filter(msg => HelpSubscription.HELP_COMMAND_REGEXP.test(msg.text)),
-            );
-        super(helpCommands$);
+        super(
+            commands$
+                .pipe(
+                    filter(msg => HelpSubscription.HELP_COMMAND_REGEXP.test(msg.text)),
+                )
+        );
     }
 
     protected async handle(msg: Message): Promise<void> {
