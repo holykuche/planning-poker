@@ -1,4 +1,4 @@
-import { Member, Lobby } from "data/entity";
+import { Lobby } from "data/entity";
 
 export default interface LobbyService {
     getById(id: number): Lobby;
@@ -6,8 +6,6 @@ export default interface LobbyService {
     getByName(name: string): Lobby;
 
     createLobby(lobbyName: string): Lobby;
-
-    getMembers(lobbyId: number): Member[];
 
     getMembersLobby(memberId: number): Lobby;
 

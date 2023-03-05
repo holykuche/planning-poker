@@ -155,37 +155,6 @@ describe("service/impl/LobbyServiceImpl", () => {
         expect(() => lobbyService.createLobby(lobbyName)).toThrowError(LobbyAlreadyExists);
     });
 
-    it("getMembers should return members by their lobby", () => {
-        const lobbyId = 1;
-        const members = [
-            { id: 10, name: "dummy member 1" },
-            { id: 20, name: "dummy member 2" },
-            { id: 30, name: "dummy member 3" },
-            { id: 40, name: "dummy member 4" },
-        ];
-        const memberIds = members.map(m => m.id);
-
-        memberLobbyXrefDAOMock.getMemberIdsByLobbyId
-            .calledWith(lobbyId)
-            .mockReturnValue(memberIds);
-        memberDAOMock.getByIds
-            .calledWith(sameArray(memberIds))
-            .mockReturnValue(members);
-
-        expect(lobbyService.getMembers(lobbyId)).toEqual(members);
-    });
-
-    it("getMembers shouldn't return members by not existed lobby", () => {
-        memberLobbyXrefDAOMock.getMemberIdsByLobbyId
-            .calledWith(anyNumber())
-            .mockReturnValue([]);
-        memberDAOMock.getByIds
-            .calledWith(sameArray([]))
-            .mockReturnValue([]);
-
-        expect(lobbyService.getMembers(1)).toEqual([]);
-    });
-
     it("getMembersLobby should return a lobby by its member", () => {
         const memberId = 10;
         const lobby: Lobby = { id: 1, name: "dummy name", currentTheme: "task 1234", state: LobbyState.Playing };

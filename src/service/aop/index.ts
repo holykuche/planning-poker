@@ -3,3 +3,4 @@ export { default as MemberId } from "./parameter/MemberId";
 
 export { default as ResetLobbyLifetime } from "./method/ResetLobbyLifetime";
 export { default as DispatchPokerResult } from "./method/DispatchPokerResult";
+export { default as DispatchMembers } from "./method/DispatchMembers";

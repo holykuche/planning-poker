@@ -6,17 +6,17 @@ import { SERVICE_TYPES, SubscriptionService } from "../../api";
 import { CardDto, PokerResultItemDto } from "../../dto";
 import { EventType } from "../../event";
 
-import MetadataKey from "../MetadataKey";
+import resolveLobbyId from "../resolveLobbyId";
 
 interface Dependencies {
-    memberLobbyXrefDAO: MemberLobbyXrefDAO,
-    memberCardXrefDAO: MemberCardXrefDAO,
-    memberDAO: MemberDAO,
-    lobbyDAO: LobbyDAO,
-    subscriptionService: SubscriptionService,
+    memberLobbyXrefDAO: MemberLobbyXrefDAO;
+    memberCardXrefDAO: MemberCardXrefDAO;
+    memberDAO: MemberDAO;
+    lobbyDAO: LobbyDAO;
+    subscriptionService: SubscriptionService;
 }
 
-const getPokerResult = function (lobbyId: number, dependencies: Dependencies): PokerResultItemDto[] {
+const getPokerResult = function (dependencies: Dependencies, lobbyId: number): PokerResultItemDto[] {
     const memberIds = dependencies.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId);
     const cards = dependencies.memberCardXrefDAO.getCardsByMemberIds(memberIds)
         .reduce((cardsById, { memberId, cardCode }) => ({
@@ -28,7 +28,7 @@ const getPokerResult = function (lobbyId: number, dependencies: Dependencies): P
     return members.map(member => ({ member, card: cards[ member.id ] }));
 };
 
-const finishPoker = function (lobbyId: number, pokerResult: PokerResultItemDto[], dependencies: Dependencies): void {
+const finishPoker = function (dependencies: Dependencies, lobbyId: number, pokerResult: PokerResultItemDto[]): void {
     const lobby = dependencies.lobbyDAO.getById(lobbyId);
     dependencies.lobbyDAO.save({ ...lobby, currentTheme: null, state: LobbyState.Waiting });
 
@@ -55,26 +55,15 @@ export default function (target: Object, propertyKey: string, descriptor: TypedP
             subscriptionService: container.get<SubscriptionService>(SERVICE_TYPES.SubscriptionService),
         };
 
-        let lobbyId: number;
-
-        const lobbyIdParameterIndex = Reflect.getOwnMetadata(MetadataKey.LobbyId, target, propertyKey);
-        const memberIdParameterIndex = Reflect.getOwnMetadata(MetadataKey.MemberId, target, propertyKey);
-        if (typeof lobbyIdParameterIndex === "number") {
-            lobbyId = args[ lobbyIdParameterIndex ];
-        } else if (typeof memberIdParameterIndex === "number") {
-            const memberId = args[ memberIdParameterIndex ];
-            lobbyId = dependencies.memberLobbyXrefDAO.getMembersBinding(memberId);
-        } else {
-            throw new Error("Wrong DispatchPokerResult usage. You should mark lobbyId or memberId in parameters.")
-        }
+        const lobbyId = resolveLobbyId(dependencies, args, target, propertyKey);
 
         const { currentTheme, state } = dependencies.lobbyDAO.getById(lobbyId);
 
         if (state === LobbyState.Playing) {
-            const pokerResult = getPokerResult(lobbyId, dependencies);
+            const pokerResult = getPokerResult(dependencies, lobbyId);
 
             if (pokerResult.every(item => !!item.card)) {
-                finishPoker(lobbyId, pokerResult, dependencies);
+                finishPoker(dependencies, lobbyId, pokerResult);
             } else {
                 dependencies.subscriptionService.dispatch(lobbyId, {
                     type: EventType.PokerResultWasChanged,

@@ -7,19 +7,19 @@ import { TaskType } from "scheduler/enum";
 import { SERVICE_TYPES, SubscriptionService } from "../../api";
 import { EventType } from "../../event";
 
-import MetadataKey from "../MetadataKey";
+import resolveLobbyId from "../resolveLobbyId";
 
 interface Dependencies {
-    memberLobbyXrefDAO: MemberLobbyXrefDAO,
-    memberCardXrefDAO: MemberCardXrefDAO,
-    memberDAO: MemberDAO,
-    lobbyDAO: LobbyDAO,
-    subscriptionService: SubscriptionService,
-    timeoutScheduler: TimeoutScheduler,
-    lobbyLifetimeMs: number,
+    memberLobbyXrefDAO: MemberLobbyXrefDAO;
+    memberCardXrefDAO: MemberCardXrefDAO;
+    memberDAO: MemberDAO;
+    lobbyDAO: LobbyDAO;
+    subscriptionService: SubscriptionService;
+    timeoutScheduler: TimeoutScheduler;
+    lobbyLifetimeMs: number;
 }
 
-const destroyLobby = function (lobbyId: number, memberIds: number[], dependencies: Dependencies): void {
+const destroyLobby = function (dependencies: Dependencies, lobbyId: number, memberIds: number[]): void {
     dependencies.subscriptionService.dispatch(lobbyId, {
         type: EventType.LobbyWasDestroyed,
     });
@@ -48,18 +48,7 @@ export default function (target: Object, propertyKey: string, descriptor: TypedP
             lobbyLifetimeMs: container.get<number>(CONFIG_TYPES.LobbyLifetimeMs),
         };
 
-        let lobbyId: number;
-
-        const lobbyIdParameterIndex = Reflect.getOwnMetadata(MetadataKey.LobbyId, target, propertyKey);
-        const memberIdParameterIndex = Reflect.getOwnMetadata(MetadataKey.MemberId, target, propertyKey);
-        if (typeof lobbyIdParameterIndex === "number") {
-            lobbyId = args[ lobbyIdParameterIndex ];
-        } else if (typeof memberIdParameterIndex === "number") {
-            const memberId = args[ memberIdParameterIndex ];
-            lobbyId = dependencies.memberLobbyXrefDAO.getMembersBinding(memberId);
-        } else {
-            throw new Error("Wrong ResetLobbyLifetime usage. You should mark lobbyId or memberId in parameters.")
-        }
+        const lobbyId = resolveLobbyId(dependencies, args, target, propertyKey);
 
         const memberIds = dependencies.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId);
 
@@ -68,10 +57,10 @@ export default function (target: Object, propertyKey: string, descriptor: TypedP
                 TaskType.Lobby,
                 lobbyId,
                 dependencies.lobbyLifetimeMs / 1000,
-                () => destroyLobby(lobbyId, memberIds, dependencies));
+                () => destroyLobby(dependencies, lobbyId, memberIds));
         } else {
             dependencies.timeoutScheduler.cancel(TaskType.Lobby, lobbyId);
-            destroyLobby(lobbyId, memberIds, dependencies);
+            destroyLobby(dependencies, lobbyId, memberIds);
         }
 
         return result;
