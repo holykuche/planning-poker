@@ -2,8 +2,8 @@ import { injectable, inject } from "inversify";
 import { Observable, Subscription } from "rxjs";
 import TelegramBot, { InlineKeyboardButton } from "node-telegram-bot-api";
 
-import { CardCode } from "data/enum";
-import { ServiceError } from "service/error";
+import { CardCode } from "data/common-data/enum";
+import { ServiceError } from "service/common-service/error";
 
 import { ButtonCommand } from "../enum";
 import { inlineKeyboardButtonFactory, formatWarning, formatError } from "../utils";

@@ -1,4 +1,4 @@
-import { MemberDto } from "service/dto";
+import { MemberDto } from "service/telegram-service/dto";
 
 type MembersComparator = (left: MemberDto, right: MemberDto) => number;
 

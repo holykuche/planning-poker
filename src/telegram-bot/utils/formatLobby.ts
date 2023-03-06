@@ -1,4 +1,4 @@
-import { MemberDto } from "service/dto";
+import { MemberDto } from "service/telegram-service/dto";
 
 import membersComparatorFactory from "./membersComparatorFactory";
 import bold from "./bold";

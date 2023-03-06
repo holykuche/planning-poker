@@ -1,5 +1,6 @@
-import { CardCode } from "data/enum";
-import { CardDto, MemberDto, PokerResultItemDto } from "service/dto";
+import { CardCode } from "data/common-data/enum";
+import { CardDto, PokerResultItemDto } from "service/common-service/dto";
+import { MemberDto } from "service/telegram-service/dto";
 
 import italic from "./italic";
 import escape from "./escape";

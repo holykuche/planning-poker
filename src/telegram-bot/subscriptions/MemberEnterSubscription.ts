@@ -3,11 +3,13 @@ import { Observable } from "rxjs";
 import { filter } from "rxjs/operators";
 import { Message } from "node-telegram-bot-api";
 
-import { TelegramMessageType } from "data/enum";
-import { Member } from "data/entity";
-import { LobbyService, SERVICE_TYPES, SubscriptionService, TelegramDataService } from "service/api";
-import { EventType } from "service/event";
-import { PokerResultItemDto } from "service/dto";
+import { TelegramMessageType } from "data/telegram-data/enum";
+import { TelegramDataService, TELEGRAM_SERVICE_TYPES } from "service/telegram-service/api";
+
+import { Member } from "data/common-data/entity";
+import { LobbyService, SubscriptionService, COMMON_SERVICE_TYPES } from "service/common-service/api";
+import { EventType } from "service/common-service/event";
+import { PokerResultItemDto } from "service/common-service/dto";
 
 import { ButtonCommand } from "../enum";
 import { formatLobby, formatPoker, formatFinishResult, formatDestroyedLobby, fromTelegramUserToMember } from "../utils";
@@ -18,9 +20,9 @@ import AbstractMessageSubscription from "./AbstractMessageSubscription";
 @injectable()
 export default class MemberEnterSubscription extends AbstractMessageSubscription {
 
-    @inject(SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
-    @inject(SERVICE_TYPES.TelegramDataService) private readonly telegramDataService: TelegramDataService;
-    @inject(SERVICE_TYPES.SubscriptionService) private readonly subscriptionService: SubscriptionService;
+    @inject(TELEGRAM_SERVICE_TYPES.TelegramDataService) private readonly telegramDataService: TelegramDataService;
+    @inject(COMMON_SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
+    @inject(COMMON_SERVICE_TYPES.SubscriptionService) private readonly subscriptionService: SubscriptionService;
 
     constructor(@inject(TELEGRAM_BOT_TYPES.PlaintTexts$) messages$: Observable<Message>) {
         super(

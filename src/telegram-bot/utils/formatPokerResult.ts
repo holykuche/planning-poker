@@ -1,4 +1,4 @@
-import { PokerResultItemDto } from "service/dto";
+import { PokerResultItemDto } from "service/common-service/dto";
 
 import { Emoji } from "../enum";
 import bold from "./bold";

@@ -1,7 +1,7 @@
 import { InlineKeyboardButton } from "node-telegram-bot-api";
 
-import { CardCode } from "data/enum";
-import { CardDto } from "service/dto";
+import { CardCode } from "data/common-data/enum";
+import { CardDto } from "service/common-service/dto";
 
 import { ButtonCommand } from "../enum";
 

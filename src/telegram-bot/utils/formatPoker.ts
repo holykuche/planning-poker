@@ -1,4 +1,4 @@
-import { PokerResultItemDto } from "service/dto";
+import { PokerResultItemDto } from "service/common-service/dto";
 
 import italic from "./italic";
 import escape from "./escape";

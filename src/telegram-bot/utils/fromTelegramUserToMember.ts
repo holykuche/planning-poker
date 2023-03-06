@@ -1,5 +1,5 @@
 import { User } from "node-telegram-bot-api";
-import { MemberDto } from "service/dto";
+import { MemberDto } from "service/telegram-service/dto";
 import formatTelegramUserName from "./formatTelegramUserName";
 
 export default function (user: User): MemberDto {

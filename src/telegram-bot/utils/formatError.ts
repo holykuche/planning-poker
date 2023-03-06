@@ -6,7 +6,7 @@ import {
     MemberIsAlreadyInLobbyError,
     MemberIsNotInLobbyError,
     PokerIsNotStartedError,
-} from "service/error";
+} from "service/common-service/error";
 
 export default function (error: ServiceError) {
     switch (error.constructor) {
