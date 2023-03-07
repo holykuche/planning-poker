@@ -1,9 +1,7 @@
 import { TelegramMessage } from "data/telegram-data/entity";
 import { TelegramMessageType } from "data/telegram-data/enum";
 
-import { MemberDto } from "../dto";
-
-export default interface TelegramDataService {
+export default interface TelegramMessageService {
     getMessage(lobbyId: number, chatId: number, messageType: TelegramMessageType): TelegramMessage;
 
     getMessages(lobbyId: number, messageType: TelegramMessageType): TelegramMessage[];
@@ -17,14 +15,4 @@ export default interface TelegramDataService {
     deleteAllMessages(lobbyId: number): void;
 
     deleteAllMessagesFromChat(lobbyId: number, chatId: number): void;
-
-    getMemberByTelegramUserId(telegramUserId: number): MemberDto;
-
-    createMember(member: MemberDto): MemberDto;
-
-    isMemberExists(telegramUserId: number): boolean;
-
-    deleteMemberByMemberId(memberId: number): void;
-
-    deleteMemberByTelegramUserId(telegramUserId: number): void;
 }

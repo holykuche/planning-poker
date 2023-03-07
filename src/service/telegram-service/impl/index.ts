@@ -1,7 +1,9 @@
 import "reflect-metadata";
 import { container } from "inversify.config";
 
-import { TELEGRAM_SERVICE_TYPES, TelegramDataService } from "../api";
-import TelegramDataServiceImpl from "./TelegramDataServiceImpl";
+import { TELEGRAM_SERVICE_TYPES, TelegramMessageService, TelegramUserService } from "../api";
+import TelegramMessageServiceImpl from "./TelegramMessageServiceImpl";
+import TelegramUserServiceImpl from "./TelegramUserServiceImpl";
 
-container.bind<TelegramDataService>(TELEGRAM_SERVICE_TYPES.TelegramDataService).to(TelegramDataServiceImpl);
+container.bind<TelegramMessageService>(TELEGRAM_SERVICE_TYPES.TelegramMessageService).to(TelegramMessageServiceImpl);
+container.bind<TelegramUserService>(TELEGRAM_SERVICE_TYPES.TelegramUserService).to(TelegramUserServiceImpl);

@@ -1,3 +1,4 @@
 export default {
-    TelegramDataService: Symbol.for("TelegramDataService"),
+    TelegramMessageService: Symbol.for("TelegramMessageService"),
+    TelegramUserService: Symbol.for("TelegramUserService"),
 };

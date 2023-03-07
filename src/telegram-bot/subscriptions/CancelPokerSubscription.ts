@@ -4,8 +4,8 @@ import { filter } from "rxjs/operators";
 import { Message } from "node-telegram-bot-api";
 
 import { TelegramMessageType } from "data/telegram-data/enum";
-import { TelegramDataService, TELEGRAM_SERVICE_TYPES } from "service/telegram-service/api";
-import { LobbyService, MemberService, COMMON_SERVICE_TYPES } from "service/common-service/api";
+import { TELEGRAM_SERVICE_TYPES, TelegramMessageService, TelegramUserService } from "service/telegram-service/api";
+import { COMMON_SERVICE_TYPES, LobbyService, MemberService } from "service/common-service/api";
 
 import { TELEGRAM_BOT_TYPES } from "../bot";
 
@@ -16,7 +16,8 @@ export default class CancelPokerSubscription extends AbstractMessageSubscription
 
     @inject(COMMON_SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
     @inject(COMMON_SERVICE_TYPES.MemberService) private readonly memberService: MemberService;
-    @inject(TELEGRAM_SERVICE_TYPES.TelegramDataService) private readonly telegramDataService: TelegramDataService;
+    @inject(TELEGRAM_SERVICE_TYPES.TelegramMessageService) private readonly telegramMessageService: TelegramMessageService;
+    @inject(TELEGRAM_SERVICE_TYPES.TelegramUserService) private readonly telegramUserService: TelegramUserService;
 
     private static readonly CANCEL_COMMAND = "/cancel";
 
@@ -30,13 +31,13 @@ export default class CancelPokerSubscription extends AbstractMessageSubscription
     }
 
     protected async handle(msg: Message): Promise<void> {
-        const member = this.telegramDataService.getMemberByTelegramUserId(msg.from.id);
+        const member = this.telegramUserService.getMemberByTelegramUserId(msg.from.id);
         const lobbyId = this.memberService.getMembersLobbyId(member.id);
 
         this.lobbyService.cancelPoker(lobbyId);
 
-        const messages = this.telegramDataService.getMessages(lobbyId, TelegramMessageType.Poker);
-        this.telegramDataService.deleteMessages(lobbyId, TelegramMessageType.Poker);
+        const messages = this.telegramMessageService.getMessages(lobbyId, TelegramMessageType.Poker);
+        this.telegramMessageService.deleteMessages(lobbyId, TelegramMessageType.Poker);
         messages.forEach(msg => this.bot.deleteMessage(msg.chatId, String(msg.messageId)));
     }
 

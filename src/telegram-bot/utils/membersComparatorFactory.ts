@@ -1,6 +1,6 @@
-import { MemberDto } from "service/telegram-service/dto";
+import { TelegramMemberDto } from "service/telegram-service/dto";
 
-type MembersComparator = (left: MemberDto, right: MemberDto) => number;
+type MembersComparator = (left: TelegramMemberDto, right: TelegramMemberDto) => number;
 
 export default function (telegramUserId: number): MembersComparator {
     return (left, right) => {

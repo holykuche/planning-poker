@@ -1,11 +1,11 @@
-import { MemberDto } from "service/telegram-service/dto";
+import { TelegramMemberDto } from "service/telegram-service/dto";
 
 import membersComparatorFactory from "./membersComparatorFactory";
 import bold from "./bold";
 import italic from "./italic";
 import escape from "./escape";
 
-export default function (lobbyName: string, members: MemberDto[], telegramUserId: number): string {
+export default function (lobbyName: string, members: TelegramMemberDto[], telegramUserId: number): string {
     const membersComparator = membersComparatorFactory(telegramUserId);
     const membersStr = members
         .sort(membersComparator)

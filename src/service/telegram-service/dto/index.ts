@@ -1,1 +1,1 @@
-export { default as MemberDto } from "./MemberDto";
+export { default as TelegramMemberDto } from "./TelegramMemberDto";

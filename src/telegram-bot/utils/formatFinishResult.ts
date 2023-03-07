@@ -1,6 +1,6 @@
 import { CardCode } from "data/common-data/enum";
 import { CardDto, PokerResultItemDto } from "service/common-service/dto";
-import { MemberDto } from "service/telegram-service/dto";
+import { TelegramMemberDto } from "service/telegram-service/dto";
 
 import italic from "./italic";
 import escape from "./escape";
@@ -13,11 +13,11 @@ export default function (theme: string, items: PokerResultItemDto[], telegramUse
         .reduce((byCard, item) => ({
             ...byCard,
             [ item.card.code ]: (byCard[ item.card.code ] || []).concat(item.member),
-        }), {} as Record<CardCode, MemberDto[]>);
+        }), {} as Record<CardCode, TelegramMemberDto[]>);
 
     const membersComparator = membersComparatorFactory(telegramUserId);
     const result = Object.entries(membersByCard)
-        .map(([ cardCode, members ]: [ CardCode, MemberDto[] ]) => ({
+        .map(([ cardCode, members ]: [ CardCode, TelegramMemberDto[] ]) => ({
             cardCode,
             members: members
                 .sort(membersComparator)

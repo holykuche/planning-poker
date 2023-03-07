@@ -3,7 +3,7 @@ import { Observable } from "rxjs";
 import { filter } from "rxjs/operators";
 import { Message } from "node-telegram-bot-api";
 
-import { TelegramDataService, TELEGRAM_SERVICE_TYPES } from "service/telegram-service/api";
+import { TELEGRAM_SERVICE_TYPES, TelegramMessageService, TelegramUserService } from "service/telegram-service/api";
 import { LobbyService, MemberService, COMMON_SERVICE_TYPES } from "service/common-service/api";
 
 import { TELEGRAM_BOT_TYPES } from "../bot";
@@ -13,7 +13,8 @@ import AbstractMessageSubscription from "./AbstractMessageSubscription";
 @injectable()
 export default class ResetUserSubscription extends AbstractMessageSubscription {
 
-    @inject(TELEGRAM_SERVICE_TYPES.TelegramDataService) private readonly telegramDataService: TelegramDataService;
+    @inject(TELEGRAM_SERVICE_TYPES.TelegramMessageService) private readonly telegramMessageService: TelegramMessageService;
+    @inject(TELEGRAM_SERVICE_TYPES.TelegramUserService) private readonly telegramUserService: TelegramUserService;
     @inject(COMMON_SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
     @inject(COMMON_SERVICE_TYPES.MemberService) private readonly memberService: MemberService;
 
@@ -29,15 +30,15 @@ export default class ResetUserSubscription extends AbstractMessageSubscription {
     }
 
     protected async handle(msg: Message): Promise<void> {
-        const member = this.telegramDataService.getMemberByTelegramUserId(msg.from.id);
+        const member = this.telegramUserService.getMemberByTelegramUserId(msg.from.id);
 
         if (this.memberService.isMemberInLobby(member.id)) {
             const lobbyId = this.memberService.getMembersLobbyId(member.id);
             this.lobbyService.leaveMember(member.id, lobbyId);
-            this.telegramDataService.deleteAllMessagesFromChat(lobbyId, msg.chat.id);
+            this.telegramMessageService.deleteAllMessagesFromChat(lobbyId, msg.chat.id);
         }
 
-        this.telegramDataService.deleteMemberByMemberId(member.id);
+        this.telegramUserService.deleteMemberByMemberId(member.id);
 
         await this.bot.sendMessage(msg.chat.id, "Your user was successfully reset");
     }

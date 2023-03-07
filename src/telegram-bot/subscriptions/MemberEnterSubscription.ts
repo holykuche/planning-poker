@@ -4,7 +4,7 @@ import { filter } from "rxjs/operators";
 import { Message } from "node-telegram-bot-api";
 
 import { TelegramMessageType } from "data/telegram-data/enum";
-import { TelegramDataService, TELEGRAM_SERVICE_TYPES } from "service/telegram-service/api";
+import { TELEGRAM_SERVICE_TYPES, TelegramMessageService, TelegramUserService } from "service/telegram-service/api";
 
 import { Member } from "data/common-data/entity";
 import { LobbyService, SubscriptionService, COMMON_SERVICE_TYPES } from "service/common-service/api";
@@ -20,7 +20,8 @@ import AbstractMessageSubscription from "./AbstractMessageSubscription";
 @injectable()
 export default class MemberEnterSubscription extends AbstractMessageSubscription {
 
-    @inject(TELEGRAM_SERVICE_TYPES.TelegramDataService) private readonly telegramDataService: TelegramDataService;
+    @inject(TELEGRAM_SERVICE_TYPES.TelegramMessageService) private readonly telegramMessageService: TelegramMessageService;
+    @inject(TELEGRAM_SERVICE_TYPES.TelegramUserService) private readonly telegramUserService: TelegramUserService;
     @inject(COMMON_SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
     @inject(COMMON_SERVICE_TYPES.SubscriptionService) private readonly subscriptionService: SubscriptionService;
 
@@ -28,7 +29,7 @@ export default class MemberEnterSubscription extends AbstractMessageSubscription
         super(
             messages$
                 .pipe(
-                    filter(msg => !this.telegramDataService.isMemberExists(msg.from.id)),
+                    filter(msg => !this.telegramUserService.isMemberExists(msg.from.id)),
                 )
         );
     }
@@ -38,7 +39,7 @@ export default class MemberEnterSubscription extends AbstractMessageSubscription
         const lobbyName = msg.text.trim().toUpperCase();
 
         const { id: lobbyId } = this.lobbyService.getByName(lobbyName) || this.lobbyService.createLobby(lobbyName);
-        const { id: memberId } = this.telegramDataService.createMember(fromTelegramUserToMember(msg.from));
+        const { id: memberId } = this.telegramUserService.createMember(fromTelegramUserToMember(msg.from));
 
         this.subscriptionService.subscribe(lobbyId, memberId, async event => {
             switch (event.type) {
@@ -67,7 +68,7 @@ export default class MemberEnterSubscription extends AbstractMessageSubscription
                                      lobbyName: string,
                                      members: Member[]): Promise<void> {
 
-        const message = this.telegramDataService.getMessage(lobbyId, chatId, TelegramMessageType.Lobby);
+        const message = this.telegramMessageService.getMessage(lobbyId, chatId, TelegramMessageType.Lobby);
 
         if (message) {
             await this.bot.editMessageText(formatLobby(lobbyName, members, telegramUserId), {
@@ -85,7 +86,7 @@ export default class MemberEnterSubscription extends AbstractMessageSubscription
                     inline_keyboard: MemberEnterSubscription.INLINE_KEYBOARD[ ButtonCommand.Leave ],
                 },
             });
-            this.telegramDataService.addMessage({
+            this.telegramMessageService.addMessage({
                 lobbyId,
                 chatId: lobbyMsg.chat.id,
                 messageId: lobbyMsg.message_id,
@@ -100,7 +101,7 @@ export default class MemberEnterSubscription extends AbstractMessageSubscription
                                      theme: string,
                                      result: PokerResultItemDto[]): Promise<void> {
 
-        const message = this.telegramDataService.getMessage(lobbyId, chatId, TelegramMessageType.Poker);
+        const message = this.telegramMessageService.getMessage(lobbyId, chatId, TelegramMessageType.Poker);
         const messageText = formatPoker(theme, result, telegramUserId);
 
         if (message) {
@@ -125,7 +126,7 @@ export default class MemberEnterSubscription extends AbstractMessageSubscription
                     inline_keyboard: MemberEnterSubscription.INLINE_KEYBOARD[ ButtonCommand.PutCard ],
                 },
             });
-            this.telegramDataService.addMessage({
+            this.telegramMessageService.addMessage({
                 lobbyId,
                 chatId: pokerResultMsg.chat.id,
                 messageId: pokerResultMsg.message_id,
@@ -140,9 +141,9 @@ export default class MemberEnterSubscription extends AbstractMessageSubscription
                                     pokerTheme: string,
                                     result: PokerResultItemDto[]): Promise<void> {
 
-        const pokerMessage = this.telegramDataService.getMessage(lobbyId, chatId, TelegramMessageType.Poker);
+        const pokerMessage = this.telegramMessageService.getMessage(lobbyId, chatId, TelegramMessageType.Poker);
         await this.bot.deleteMessage(chatId, String(pokerMessage.messageId));
-        this.telegramDataService.deleteMessageById(pokerMessage.id);
+        this.telegramMessageService.deleteMessageById(pokerMessage.id);
 
         await this.bot.sendMessage(chatId, formatFinishResult(pokerTheme, result, telegramUserId), {
             parse_mode: MemberEnterSubscription.PARSE_MODE,
@@ -154,19 +155,19 @@ export default class MemberEnterSubscription extends AbstractMessageSubscription
                                             lobbyName: string,
                                             memberId): Promise<void> {
 
-        const lobbyMessage = this.telegramDataService.getMessage(lobbyId, chatId, TelegramMessageType.Lobby);
+        const lobbyMessage = this.telegramMessageService.getMessage(lobbyId, chatId, TelegramMessageType.Lobby);
         await this.bot.editMessageReplyMarkup(null, {
             chat_id: chatId,
             message_id: lobbyMessage.messageId,
         });
 
-        const resultMessage = this.telegramDataService.getMessage(lobbyId, chatId, TelegramMessageType.Poker);
+        const resultMessage = this.telegramMessageService.getMessage(lobbyId, chatId, TelegramMessageType.Poker);
         if (resultMessage) {
             await this.bot.deleteMessage(chatId, String(resultMessage.messageId));
         }
 
-        this.telegramDataService.deleteAllMessagesFromChat(lobbyId, chatId);
-        this.telegramDataService.deleteMemberByMemberId(memberId);
+        this.telegramMessageService.deleteAllMessagesFromChat(lobbyId, chatId);
+        this.telegramUserService.deleteMemberByMemberId(memberId);
 
         await this.bot.sendMessage(chatId, formatDestroyedLobby(lobbyName), {
             parse_mode: MemberEnterSubscription.PARSE_MODE,

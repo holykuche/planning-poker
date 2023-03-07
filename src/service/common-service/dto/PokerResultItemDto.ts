@@ -1,7 +1,7 @@
 import CardDto from "./CardDto";
-import MemberDto from "../../telegram-service/dto/MemberDto";
+import TelegramMemberDto from "../../telegram-service/dto/TelegramMemberDto";
 
 export default interface PokerResultItemDto {
-    member: MemberDto,
+    member: TelegramMemberDto,
     card: CardDto,
 }
