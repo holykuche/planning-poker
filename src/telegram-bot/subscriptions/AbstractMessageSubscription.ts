@@ -9,8 +9,8 @@ export default abstract class AbstractMessageSubscription extends AbstractSubscr
             .subscribe(async message => {
                 try {
                     await this.handle(message);
-                } catch (error) {
-                    await this.handleError(message, error);
+                } catch (error: unknown) {
+                    await this.handleError(error, message);
                 }
             });
     }

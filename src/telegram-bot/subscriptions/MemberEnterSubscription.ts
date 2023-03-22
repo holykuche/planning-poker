@@ -42,20 +42,24 @@ export default class MemberEnterSubscription extends AbstractMessageSubscription
         const { id: memberId } = this.telegramUserService.createMember(fromTelegramUserToMember(msg.from));
 
         this.subscriptionService.subscribe(lobbyId, memberId, async event => {
-            switch (event.type) {
-                case EventType.MembersWasChanged:
-                    await this.updateLobbyMessage(chatId, telegramUserId, lobbyId, lobbyName, event.payload.members);
-                    break;
-                case EventType.PokerResultWasChanged:
-                    await this.updatePokerMessage(chatId, telegramUserId, lobbyId, event.payload.theme, event.payload.result);
-                    break;
-                case EventType.PokerWasFinished:
-                    await this.initFinishMessage(chatId, telegramUserId, lobbyId, event.payload.theme, event.payload.result);
-                    break;
-                case EventType.LobbyWasDestroyed:
-                    await this.initDestroyedLobbyMessage(chatId, lobbyId, lobbyName, memberId);
-                    break;
-                default:
+            try {
+                switch (event.type) {
+                    case EventType.MembersWasChanged:
+                        await this.updateLobbyMessage(chatId, telegramUserId, lobbyId, lobbyName, event.payload.members);
+                        break;
+                    case EventType.PokerResultWasChanged:
+                        await this.updatePokerMessage(chatId, telegramUserId, lobbyId, event.payload.theme, event.payload.result);
+                        break;
+                    case EventType.PokerWasFinished:
+                        await this.initFinishMessage(chatId, telegramUserId, lobbyId, event.payload.theme, event.payload.result);
+                        break;
+                    case EventType.LobbyWasDestroyed:
+                        await this.initDestroyedLobbyMessage(chatId, lobbyId, lobbyName, memberId);
+                        break;
+                    default:
+                }
+            } catch (error: unknown) {
+                await this.handleError(error);
             }
         });
 

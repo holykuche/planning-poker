@@ -9,8 +9,8 @@ export default abstract class AbstractCallbackQuerySubscription extends Abstract
             .subscribe(async callbackQuery => {
                 try {
                     await this.handle(callbackQuery);
-                } catch (error) {
-                    await this.handleError(callbackQuery, error);
+                } catch (error: unknown) {
+                    await this.handleError(error, callbackQuery);
                 } finally {
                     await this.bot?.answerCallbackQuery(callbackQuery.id);
                 }

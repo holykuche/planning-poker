@@ -53,7 +53,7 @@ export default abstract class AbstractSubscription<T> {
 
     protected abstract getChatId(item: T): number;
 
-    protected async handleError(item: T, error: any): Promise<void> {
+    protected async handleError(error: unknown, item?: T): Promise<void> {
         if (error instanceof ServiceError) {
             const warningMessage = await this.bot.sendMessage(this.getChatId(item), formatWarning(formatError(error)), {
                 parse_mode: AbstractSubscription.PARSE_MODE,
