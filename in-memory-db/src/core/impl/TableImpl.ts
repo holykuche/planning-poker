@@ -1,10 +1,11 @@
-import { Key, Value, Entity, Options } from "./types";
+import { Entity, Options } from "../dto";
+import { Table } from "../api";
 
-type IndexMaps<E> = { [F in Key<E>]: Map<Value<E, F>, number[]> };
+type IndexMaps<E> = { [ F in keyof E ]: Map<E[ F ], number[]> };
 
-export default class InMemoryStorage<E extends Entity, PK extends Key<E> = never> {
+export default class TableImpl<E extends Entity> implements Table<E> {
 
-    private static readonly DEFAULT_OPTIONS: Options<undefined, never> = {
+    private static readonly DEFAULT_OPTIONS: Options<undefined> = {
         indexBy: [],
     };
 
@@ -12,12 +13,12 @@ export default class InMemoryStorage<E extends Entity, PK extends Key<E> = never
     private currentFreeIndex: number;
     private readonly freeIndexes: Map<number/*current*/, number/*previous*/>;
     private readonly indexMaps: IndexMaps<E>;
-    private readonly primaryKey: Key<E>;
-    private readonly getNextPrimaryKeyValue: (current: Value<E, PK>) => Value<E, PK>;
-    private primaryKeyValue: Value<E, PK>;
+    private readonly primaryKey: keyof E;
+    private readonly getNextPrimaryKeyValue: (current: E[ keyof E ]) => E[ keyof E ];
+    private primaryKeyValue: E[ keyof E ];
 
-    constructor(options: Options<E, Value<E, PK>> = {}) {
-        const { indexBy, primaryKey, initialPrimaryKeyValue, getNextPrimaryKeyValue } = { ...InMemoryStorage.DEFAULT_OPTIONS, ...options };
+    constructor(options: Options<E> = {}) {
+        const { indexBy, primaryKey, initialPrimaryKeyValue, getNextPrimaryKeyValue } = { ...TableImpl.DEFAULT_OPTIONS, ...options };
 
         this.data = [];
 
@@ -28,14 +29,14 @@ export default class InMemoryStorage<E extends Entity, PK extends Key<E> = never
         this.getNextPrimaryKeyValue = getNextPrimaryKeyValue;
 
         this.indexMaps = (primaryKey ? [ primaryKey, ...indexBy ] : indexBy)
-            .filter(InMemoryStorage.distinct)
+            .filter(TableImpl.distinct)
             .reduce((idxMaps, key) => ({
                 ...idxMaps,
-                [ key ]: new Map<Value<E, typeof key>, number[]>(),
+                [ key ]: new Map<E[ typeof key ], number[]>(),
             }), {} as IndexMaps<E>);
     }
 
-    find<K extends Key<E>>(key: K, value: Value<E, K>): E {
+    find<K extends keyof E>(key: K, value: E[ K ]): E {
         if (this.indexMaps[ key ]) {
             const firstIdx = this.indexMaps[ key ].get(value)?.[ 0 ];
             return this.data[ firstIdx ] ? { ...this.data[ firstIdx ] } : null;
@@ -46,7 +47,7 @@ export default class InMemoryStorage<E extends Entity, PK extends Key<E> = never
         return entity ? { ...entity } : null;
     }
 
-    findMany<K extends Key<E>>(key: K, value: Value<E, K>): E[] {
+    findMany<K extends keyof E>(key: K, value: E[ K ]): E[] {
         if (this.indexMaps[ key ]) {
             return this.indexMaps[ key ].get(value)
                     ?.map(idx => ({ ...this.data[ idx ] }))
@@ -81,7 +82,7 @@ export default class InMemoryStorage<E extends Entity, PK extends Key<E> = never
         const existedEntity = this.data[ idx ];
         this.data[ idx ] = storedEntity;
 
-        Object.entries<IndexMaps<E>[ Key<E> ]>(this.indexMaps)
+        Object.entries<IndexMaps<E>[ keyof E ]>(this.indexMaps)
             .forEach(([ key, indexMap ]) => {
                 if (existedEntity) {
                     const indexes = indexMap.get(existedEntity[ key ]) || [];
@@ -97,7 +98,7 @@ export default class InMemoryStorage<E extends Entity, PK extends Key<E> = never
 
                 const indexes = indexMap.get(storedEntity[ key ]) || [];
                 const storedIdxes = [ ...indexes, idx ]
-                    .filter(InMemoryStorage.distinct);
+                    .filter(TableImpl.distinct);
 
                 indexMap.set(storedEntity[ key ], storedIdxes);
             });
@@ -105,7 +106,7 @@ export default class InMemoryStorage<E extends Entity, PK extends Key<E> = never
         return { ...storedEntity };
     }
 
-    delete<K extends Key<E>>(key: K, value: Value<E, K>): void {
+    delete<K extends keyof E>(key: K, value: E[ K ]): void {
         let indexes: number[];
 
         if (this.indexMaps[ key ]) {
@@ -161,7 +162,7 @@ export default class InMemoryStorage<E extends Entity, PK extends Key<E> = never
         return this.freeIndexes.has(index);
     }
 
-    private getAvailablePrimaryKeyValue(): Value<E, PK> {
+    private getAvailablePrimaryKeyValue(): E[ keyof E ] {
         if (!this.primaryKeyValue || !this.getNextPrimaryKeyValue) {
             throw new Error(`Can't calculate primary key '${ String(this.primaryKey) }' automatically.`);
         }

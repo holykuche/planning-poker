@@ -10,9 +10,7 @@ module.exports = {
     '!<rootDir>/node_modules/**',
   ],
   coveragePathIgnorePatterns: [
-      "config.ts",
       "index.ts",
       "types.ts",
-      "<rootDir>/src/telegram-bot/bot",
   ],
 };
