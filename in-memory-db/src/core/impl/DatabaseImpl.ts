@@ -1,9 +1,9 @@
 import { injectable } from "inversify";
 
 import { Entity, Options } from "../dto";
+import { Database, Table } from "../api";
 
 import TableImpl from "./TableImpl";
-import { Database, Table } from "../api";
 
 @injectable()
 export default class DatabaseImpl implements Database {
