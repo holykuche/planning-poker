@@ -1,6 +1,7 @@
 import { injectable } from "inversify";
 
-import { Entity, Options } from "../dto";
+import { Entity, TableDefinition } from "../dto";
+import { TableInitializeError, TableOperationError } from "../error";
 import { Database, Table } from "../api";
 
 import TableImpl from "./TableImpl";
@@ -8,18 +9,18 @@ import TableImpl from "./TableImpl";
 @injectable()
 export default class DatabaseImpl implements Database {
 
-    private readonly tables: Map<string, Table<unknown>>;
+    private readonly tables: Map<string, Table>;
 
     constructor() {
-        this.tables = new Map<string, TableImpl<unknown>>()
+        this.tables = new Map<string, Table>();
     }
 
-    createTable<E extends Entity, PK extends keyof E>(tableName: string, options: Options<E>): void {
+    createTable(tableName: string, definition: TableDefinition): void {
         if (this.tables.has(tableName)) {
-            throw new Error(`Table with name "${tableName}" already exists`);
+            throw new TableInitializeError(tableName, `Table already exists.`);
         }
 
-        this.tables.set(tableName, new TableImpl<E>(options));
+        this.tables.set(tableName, new TableImpl(tableName, definition));
     }
 
     dropTable(tableName: string): void {
@@ -27,29 +28,33 @@ export default class DatabaseImpl implements Database {
         this.tables.delete(tableName);
     }
 
-    find<E extends Entity, K extends keyof E>(tableName: string, key: K, value: E[ K ]): E {
-        this.checkTableExistence(tableName);
-        return (this.tables.get(tableName) as Table<E>).find(key, value);
+    isTableExists(tableName: string): boolean {
+        return this.tables.has(tableName);
     }
 
-    findMany<E extends Entity, K extends keyof E>(tableName: string, key: K, value: E[ K ]): E[] {
+    find(tableName: string, key: string, value: string): Entity {
         this.checkTableExistence(tableName);
-        return (this.tables.get(tableName) as Table<E>).findMany(key, value);
+        return (this.tables.get(tableName) as Table).find(key, value);
     }
 
-    save<E extends Entity>(tableName: string, entity: E): E {
+    findMany(tableName: string, key: string, value: string): Entity[] {
         this.checkTableExistence(tableName);
-        return (this.tables.get(tableName) as Table<E>).save(entity);
+        return (this.tables.get(tableName) as Table).findMany(key, value);
     }
 
-    delete<E extends Entity, K extends keyof E>(tableName: string, key: K, value: E[ K ]): void {
+    save(tableName: string, entity: Entity): Entity {
         this.checkTableExistence(tableName);
-        return (this.tables.get(tableName) as Table<E>).delete(key, value);
+        return (this.tables.get(tableName) as Table).save(entity);
+    }
+
+    delete(tableName: string, key: string, value: string): void {
+        this.checkTableExistence(tableName);
+        return (this.tables.get(tableName) as Table).delete(key, value);
     }
 
     private checkTableExistence(tableName: string): void {
-        if (!this.tables.has(tableName)) {
-            throw new Error(`Table with name "${tableName}" doesn't exist`);
+        if (!this.isTableExists(tableName)) {
+            throw new TableOperationError(tableName, `Table doesn't exist.`);
         }
     }
 }

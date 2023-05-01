@@ -1,13 +1,13 @@
 import { Entity } from "../dto";
 
-export default interface Table<E extends Entity> {
+export default interface Table {
 
-    find<K extends keyof E>(key: K, value: E[ K ]): E;
+    find(key: string, value: string): Entity;
 
-    findMany<K extends keyof E>(key: K, value: E[ K ]): E[];
+    findMany(key: string, value: string): Entity[];
 
-    save(entity: E): E;
+    save(entity: Entity): Entity;
 
-    delete<K extends keyof E>(key: K, value: E[ K ]): void;
+    delete(key: string, value: string): void;
 
 }

@@ -1,2 +1,3 @@
 export { default as Entity } from "./Entity";
-export { default as Options } from "./Options";
+export { default as TableDefinition } from "./TableDefinition";
+export { default as ColumnDefinition } from "./ColumnDefinition";

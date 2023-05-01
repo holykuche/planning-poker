@@ -1,3 +1,3 @@
-type Entity = Record<string, any>;
+type Entity = Record<string, string>;
 
 export default Entity;

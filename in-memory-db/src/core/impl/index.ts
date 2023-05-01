@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { container } from "inversify.config";
+import { container } from "config/inversify";
 import { Database, CORE_TYPES } from "../api";
 import DatabaseImpl from "./DatabaseImpl";
 

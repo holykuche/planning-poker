@@ -1,19 +1,34 @@
 import "reflect-metadata";
 
-import { container } from "inversify.config";
+import { container } from "config/inversify";
 import { CORE_TYPES, Database } from "core/api";
-import { Options } from "core/dto";
+import { ColumnDefinition, TableDefinition } from "core/dto";
+import { ColumnDataType } from "core/enum";
 
 import DatabaseImpl from "core/impl/DatabaseImpl";
 
-interface TestEntity {
-    id?: number,
+type TestEntity = {
+    id?: string,
     prop1: string,
-    prop2: number,
-    prop3: boolean,
-}
+    prop2: string,
+    prop3: string,
+};
 
-describe("core/impl/DatabaseImpl" ,() => {
+const COLUMNS_WITH_PRIMARY_KEY: Record<string, ColumnDefinition> = {
+    id: { type: ColumnDataType.Number, primaryKey: true },
+    prop1: { type: ColumnDataType.String, required: true },
+    prop2: { type: ColumnDataType.Number, required: true },
+    prop3: { type: ColumnDataType.Boolean, required: true },
+};
+
+const COLUMNS_WITHOUT_PRIMARY_KEY: Record<string, ColumnDefinition> = {
+    id: { type: ColumnDataType.Number, required: true },
+    prop1: { type: ColumnDataType.String, required: true },
+    prop2: { type: ColumnDataType.Number, required: true },
+    prop3: { type: ColumnDataType.Boolean, required: true },
+};
+
+describe("core/impl/DatabaseImpl", () => {
 
     let database: Database;
 
@@ -22,14 +37,14 @@ describe("core/impl/DatabaseImpl" ,() => {
         database = container.get(CORE_TYPES.Database);
     });
 
-    function testTable<T>(options: Options<T>) {
+    function testTable<T>(definition: TableDefinition) {
 
         const tableName = "TestTable";
 
         function testFindMany <K extends keyof TestEntity>(key: K,
                                                            value: TestEntity[ K ],
                                                            receivedCount: number,
-                                                           getExpected: (id: number) => TestEntity) {
+                                                           getExpected: (id: TestEntity[ "id" ]) => TestEntity) {
             const receivedEntities = database.findMany(tableName, key, value);
 
             expect(receivedEntities.length).toBe(receivedCount);
@@ -40,7 +55,7 @@ describe("core/impl/DatabaseImpl" ,() => {
         }
 
         beforeEach(() => {
-            database.createTable(tableName, options);
+            database.createTable(tableName, definition);
         });
 
         afterEach(() => {
@@ -48,14 +63,14 @@ describe("core/impl/DatabaseImpl" ,() => {
         });
 
         it("save with existed object should update that object", () => {
-            const id1 = 1;
-            const id2 = 2;
+            const id1 = "1";
+            const id2 = "2";
             const props = {
-                initial: { prop1: "initial prop1", prop2: 500, prop3: false },
-                updated: { prop1: "updated prop1", prop2: 700, prop3: true },
+                initial: { prop1: "initial prop1", prop2: "500", prop3: "false" },
+                updated: { prop1: "updated prop1", prop2: "700", prop3: "true" },
             } as const;
 
-            const entities: Record<number, { initial: TestEntity, updated: TestEntity }>
+            const entities: Record<string, { initial: TestEntity, updated: TestEntity }>
                 = [ id1, id2 ]
                 .reduce((objs, id) => ({
                     ...objs,
@@ -82,7 +97,7 @@ describe("core/impl/DatabaseImpl" ,() => {
         });
 
         it("save with not existed object should create this object", () => {
-            const entity: TestEntity = { id: 1, prop1: "dummy prop1", prop2: 500, prop3: false };
+            const entity: TestEntity = { id: "1", prop1: "dummy prop1", prop2: "500", prop3: "false" };
 
             expect(database.find(tableName, "id", entity.id)).toBeNull();
             expect(database.find(tableName, "prop1", entity.prop1)).toBeNull();
@@ -97,7 +112,7 @@ describe("core/impl/DatabaseImpl" ,() => {
         });
 
         it("delete should delete an object by primary key", () => {
-            const entity: TestEntity = { id: 1, prop1: "dummy prop1", prop2: 500, prop3: false };
+            const entity: TestEntity = { id: "1", prop1: "dummy prop1", prop2: "500", prop3: "false" };
 
             database.save(tableName, entity);
             expect(database.find(tableName, "id", entity.id)).toEqual(entity);
@@ -113,14 +128,14 @@ describe("core/impl/DatabaseImpl" ,() => {
         });
 
         it("delete should delete all objects by any not primary key", () => {
-            const props: TestEntity = { prop1: "dummy prop1", prop2: 500, prop3: false };
+            const props: TestEntity = { prop1: "dummy prop1", prop2: "500", prop3: "false" };
             const entities: Record<number, TestEntity> = [ 1, 2, 3, 4, 5 ]
                 .map(id => ({ id, ...props }))
                 .reduce((entitiesById, entity) => ({
                     ...entitiesById,
                     [ entity.id ]: entity,
                 }), {});
-            const otherProps: TestEntity = { prop1: "other dummy prop1", prop2: 700, prop3: true };
+            const otherProps: TestEntity = { prop1: "other dummy prop1", prop2: "700", prop3: "true" };
             const otherEntities: Record<number, TestEntity> = [ 6, 7, 8, 9 ]
                 .map(id => ({ id, ...otherProps }))
                 .reduce((entitiesById, entity) => ({
@@ -157,7 +172,7 @@ describe("core/impl/DatabaseImpl" ,() => {
         });
 
         it("delete with not existed object should do nothing", () => {
-            const entity: TestEntity = { id: 1, prop1: "dummy prop1", prop2: 500, prop3: false };
+            const entity: TestEntity = { id: "1", prop1: "dummy prop1", prop2: "500", prop3: "false" };
 
             expect(database.findMany(tableName, "id" ,entity.id).length).toBe(0);
             expect(database.findMany(tableName, "prop1" ,entity.prop1).length).toBe(0);
@@ -174,32 +189,28 @@ describe("core/impl/DatabaseImpl" ,() => {
             expect(database.findMany(tableName, "prop2" ,entity.prop2).length).toBe(0);
             expect(database.findMany(tableName, "prop3" ,entity.prop3).length).toBe(0);
         });
-
-        it("save without possibility to get primary key should throw error", () => {
-            const entity: TestEntity = { prop1: "dummy prop1", prop2: 500, prop3: false };
-
-            expect(() => database.save(tableName, entity)).toThrowError("Can't calculate primary key 'id' automatically.");
-        });
     }
 
-    describe("with indexBy and primaryKey options", () => {
+    describe("with indexBy and primaryKey", () => {
         testTable({
             indexBy: [ "prop1", "prop2", "prop3" ],
-            primaryKey: "id",
+            columns: COLUMNS_WITH_PRIMARY_KEY,
         });
     });
 
-    describe("with primaryKey option", () => {
+    describe("with primaryKey", () => {
         testTable({
-            primaryKey: "id",
+            columns: COLUMNS_WITH_PRIMARY_KEY,
         });
     });
 
-    describe("without any options", () => {
+    describe("without primaryKey", () => {
         const tableName = "TestTable";
 
         beforeEach(() => {
-            database.createTable(tableName, {});
+            database.createTable(tableName, {
+                columns: COLUMNS_WITHOUT_PRIMARY_KEY,
+            });
         });
 
         afterEach(() => {
@@ -207,8 +218,8 @@ describe("core/impl/DatabaseImpl" ,() => {
         });
 
         it("save should store many objects with identical key values", () => {
-            const entity1 = { prop1: "dummy prop1 1", prop2: 500, prop3: false };
-            const entity2 = { prop1: "dummy prop1 2", prop2: 700, prop3: true };
+            const entity1: TestEntity = { prop1: "dummy prop1 1", prop2: "500", prop3: "false" };
+            const entity2: TestEntity = { prop1: "dummy prop1 2", prop2: "700", prop3: "true" };
 
             Array.from({ length: 10 })
                 .map(() => ({ ...entity1 }))
@@ -217,10 +228,10 @@ describe("core/impl/DatabaseImpl" ,() => {
                 .map(() => ({ ...entity2 }))
                 .forEach(e => database.save(tableName, e));
 
-            const testFindMany = <K extends keyof TestEntity>(key: K,
-                                                              value: TestEntity[ K ],
-                                                              receivedCount: number,
-                                                              expected: TestEntity) => {
+            function testFindMany <K extends keyof TestEntity>(key: K,
+                                                               value: TestEntity[ K ],
+                                                               receivedCount: number,
+                                                               expected: TestEntity) {
                 const receivedEntities = database.findMany(tableName, key, value);
 
                 expect(receivedEntities.length).toBe(receivedCount);
@@ -228,7 +239,7 @@ describe("core/impl/DatabaseImpl" ,() => {
                     .forEach(receivedEntity => {
                         expect(receivedEntity).toEqual(expected);
                     });
-            };
+            }
 
             testFindMany("prop1", entity1.prop1, 10, entity1);
             testFindMany("prop2", entity1.prop2, 10, entity1);

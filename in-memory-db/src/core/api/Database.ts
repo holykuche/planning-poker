@@ -1,17 +1,19 @@
-import { Entity, Options } from "../dto";
+import { Entity, TableDefinition } from "../dto";
 
 export default interface Database {
 
-    createTable<E extends Entity, PK extends keyof E>(tableName: string, options: Options<E>): void;
+    createTable(tableName: string, definition: TableDefinition): void;
 
     dropTable(tableName: string): void;
 
-    find<E extends Entity, K extends keyof E>(tableName: string, key: K, value: E[ K ]): E;
+    isTableExists(tableName: string): boolean;
 
-    findMany<E extends Entity, K extends keyof E>(tableName: string, key: K, value: E[ K ]): E[];
+    find(tableName: string, key: string, value: string): Entity;
 
-    save<E extends Entity>(tableName: string, entity: E): E;
+    findMany(tableName: string, key: string, value: string): Entity[];
 
-    delete<E extends Entity, K extends keyof E>(tableName: string, key: K, value: E[ K ]): void;
+    save(tableName: string, entity: Entity): Entity;
+
+    delete(tableName: string, key: string, value: string): void;
 
 }
