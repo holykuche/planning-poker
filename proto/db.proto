@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+service Database {
+  rpc CreateTable (CreateTableRequest) returns (EmptyResponse);
+  rpc DropTable (TableRequest) returns (EmptyResponse);
+  rpc IsTableExists (TableRequest) returns (BoolResponse);
+  rpc find (TableFieldRequest) returns (EntityResponse);
+  rpc findMany (TableFieldRequest) returns (EntitiesResponse);
+  rpc save (SaveRequest) returns (EntityResponse);
+  rpc delete (TableFieldRequest) returns (EmptyResponse);
+}
+
+message EmptyResponse {}
+
+message CreateTableRequest {
+  string tableName = 1;
+  TableDefinition definition = 2;
+}
+
+message TableDefinition {
+  repeated string indexBy = 1;
+  string primaryKey = 2;
+}
+
+message ColumnDefinition {
+  ColumnDataType type = 1;
+  bool required = 2;
+  bool primaryKey = 3;
+}
+
+enum ColumnDataType {
+  Number = 0;
+  String = 1;
+  Boolean = 2;
+}
+
+message TableRequest {
+  string tableName = 1;
+}
+
+message TableFieldRequest {
+  string tableName = 1;
+  string key = 2;
+  string value = 3;
+}
+
+message BoolResponse {
+  bool result = 1;
+}
+
+message Entity {
+  repeated EntityFieldEntry fields = 1;
+}
+
+message EntityFieldEntry {
+  string key = 1;
+  string value = 2;
+}
+
+message EntityResponse {
+  Entity result = 1;
+}
+
+message EntitiesResponse {
+  repeated Entity result = 1;
+}
+
+message SaveRequest {
+  string tableName = 1;
+  Entity entity = 2;
+}
