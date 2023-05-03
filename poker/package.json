@@ -11,6 +11,7 @@
   "license": "ISC",
   "keywords": [],
   "dependencies": {
+    "@grpc/grpc-js": "^1.8.14",
     "inversify": "^6.0.1",
     "inversify-inject-decorators": "^3.1.0",
     "reflect-metadata": "^0.1.13",

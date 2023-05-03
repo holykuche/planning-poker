@@ -32,44 +32,44 @@ const database = container.get<Database>(CORE_TYPES.Database);
 
 function createTable(call: ServerUnaryCall<CreateTableRequest, void>, callback: sendUnaryData<void>) {
     const { tableName, definition } = call.request;
-    
+
     let error: Error = null;
-    
+
     try {
         database.createTable(tableName, definition);
     } catch (e) {
         error = e;
     }
-    
+
     callback(error);
 }
 
 function dropTable(call: ServerUnaryCall<TableRequest, void>, callback: sendUnaryData<void>) {
     const { tableName } = call.request;
-    
+
     let error: Error = null;
-    
+
     try {
         database.dropTable(tableName);
     } catch (e) {
         error = e;
     }
-    
+
     callback(error);
 }
 
 function isTableExists(call: ServerUnaryCall<TableRequest, BoolResponse>, callback: sendUnaryData<BoolResponse>) {
     const { tableName } = call.request;
-    
+
     let response: BoolResponse = null;
     let error: Error = null;
-    
+
     try {
         response = { result: database.isTableExists(tableName) };
     } catch (e) {
         error = e;
     }
-    
+
     callback(error, response);
 }
 
@@ -78,13 +78,13 @@ function find(call: ServerUnaryCall<TableFieldRequest, EntityResponse>, callback
 
     let response: EntityResponse = null;
     let error: Error = null;
-    
+
     try {
         response = { result: database.find(tableName, key, value) };
     } catch (e) {
         error = e;
     }
-    
+
     callback(error, response);
 }
 
