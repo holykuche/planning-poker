@@ -1,4 +1,5 @@
 enum TableName {
+    MigrationHistory = "migration_history",
     Lobby = "lobby",
     Member = "member",
     MemberCardXref = "member_card_xref",

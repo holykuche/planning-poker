@@ -3,7 +3,7 @@ import { loadPackageDefinition, ServiceClientConstructor, credentials } from "@g
 import { loadSync } from "@grpc/proto-loader";
 
 import { DatabaseClient } from "../api";
-import { Entity, TableDefinition } from "../dto";
+import { TableDefinition } from "../dto";
 
 @injectable()
 export default class DatabaseClientImpl implements DatabaseClient {
@@ -20,7 +20,7 @@ export default class DatabaseClientImpl implements DatabaseClient {
         const protoDescriptor = loadPackageDefinition(packageDefinition);
 
         const ClientConstructor = protoDescriptor.Database as ServiceClientConstructor;
-        this.client = new ClientConstructor(`${process.env.DB_IP}:${process.env.DB_PORT}`, credentials.createInsecure());
+        this.client = new ClientConstructor(`${ process.env.DB_IP }:${ process.env.DB_PORT }`, credentials.createInsecure());
     }
 
     createTable(tableName: string, definition: TableDefinition): Promise<void> {
@@ -41,25 +41,31 @@ export default class DatabaseClientImpl implements DatabaseClient {
         });
     }
 
-    find(tableName: string, key: string, value: string): Promise<Entity> {
-        return new Promise<Entity>((resolve, reject) => {
-            this.client.Find(tableName, key, value, DatabaseClientImpl.callbackFactory<Entity>(resolve, reject));
+    find<T extends object, K extends keyof T>(tableName: string, key: K, value: T[ K ]): Promise<T> {
+        return new Promise<T>((resolve, reject) => {
+            this.client.Find(tableName, key, value, DatabaseClientImpl.callbackFactory<T>(resolve, reject));
         });
     }
 
-    findMany(tableName: string, key: string, value: string): Promise<Entity[]> {
-        return new Promise<Entity[]>((resolve, reject) => {
-            this.client.FindMany(tableName, key, value, DatabaseClientImpl.callbackFactory<Entity[]>(resolve, reject));
+    findMany<T extends object, K extends keyof T>(tableName: string, key: K, value: T[ K ]): Promise<T[]> {
+        return new Promise<T[]>((resolve, reject) => {
+            this.client.FindMany(tableName, key, value, DatabaseClientImpl.callbackFactory<T[]>(resolve, reject));
         });
     }
 
-    save(tableName: string, entity: Entity): Promise<Entity> {
-        return new Promise<Entity>((resolve, reject) => {
-            this.client.Save(tableName, entity, DatabaseClientImpl.callbackFactory<Entity>(resolve, reject));
+    findAll<T extends object>(tableName: string): Promise<T[]> {
+        return new Promise<T[]>((resolve, reject) => {
+            this.client.FindAll(tableName, DatabaseClientImpl.callbackFactory<T[]>(resolve, reject));
         });
     }
 
-    delete(tableName: string, key: string, value: string): Promise<void> {
+    save<T extends object>(tableName: string, entity: T): Promise<T> {
+        return new Promise<T>((resolve, reject) => {
+            this.client.Save(tableName, entity, DatabaseClientImpl.callbackFactory<T>(resolve, reject));
+        });
+    }
+
+    delete<T extends object, K extends keyof T>(tableName: string, key: K, value: T[ K ]): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             this.client.Delete(tableName, key, value, DatabaseClientImpl.callbackFactory<void>(resolve, reject));
         });

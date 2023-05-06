@@ -1,4 +1,4 @@
-import { Entity, TableDefinition } from "../dto";
+import { TableDefinition } from "../dto";
 
 export default interface DatabaseClient {
 
@@ -8,12 +8,14 @@ export default interface DatabaseClient {
 
     isTableExists(tableName: string): Promise<boolean>;
 
-    find(tableName: string, key: string, value: string): Promise<Entity>;
+    find<T extends object, K extends keyof T>(tableName: string, key: K, value: T[ K ]): Promise<T>;
 
-    findMany(tableName: string, key: string, value: string): Promise<Entity[]>;
+    findMany<T extends object, K extends keyof T>(tableName: string, key: K, value: T[ K ]): Promise<T[]>;
 
-    save(tableName: string, entity: Entity): Promise<Entity>;
+    findAll<T extends object>(tableName: string): Promise<T[]>;
 
-    delete(tableName: string, key: string, value: string): Promise<void>;
+    save<T extends object>(tableName: string, entity: T): Promise<T>;
+
+    delete<T extends object, K extends keyof T>(tableName: string, key: K, value: T[ K ]): Promise<void>;
 
 }

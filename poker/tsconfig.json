@@ -5,6 +5,7 @@
     "sourceMap": true,
     "baseUrl": "./src/",
     "target": "ESNext",
+    "module": "ESNext",
     "lib": [ "ESNext" ],
     "moduleResolution": "node",
     "experimentalDecorators": true,
