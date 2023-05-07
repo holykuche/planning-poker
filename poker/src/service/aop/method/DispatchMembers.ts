@@ -1,6 +1,6 @@
 import { container } from "config/inversify";
 
-import { COMMON_DAO_TYPES, MemberDAO, MemberLobbyXrefDAO } from "data/api";
+import { DAO_TYPES, MemberDAO, MemberLobbyXrefDAO } from "data/api";
 import { Member } from "data/entity";
 
 import { COMMON_SERVICE_TYPES, SubscriptionService } from "../../api";
@@ -26,8 +26,8 @@ export default function (target: Object, propertyKey: string, descriptor: TypedP
         const result = method.apply(this, args);
 
         const dependencies: Dependencies = {
-            memberLobbyXrefDAO: container.get<MemberLobbyXrefDAO>(COMMON_DAO_TYPES.MemberLobbyXrefDAO),
-            memberDAO: container.get<MemberDAO>(COMMON_DAO_TYPES.MemberDAO),
+            memberLobbyXrefDAO: container.get<MemberLobbyXrefDAO>(DAO_TYPES.MemberLobbyXrefDAO),
+            memberDAO: container.get<MemberDAO>(DAO_TYPES.MemberDAO),
             subscriptionService: container.get<SubscriptionService>(COMMON_SERVICE_TYPES.SubscriptionService),
         };
 

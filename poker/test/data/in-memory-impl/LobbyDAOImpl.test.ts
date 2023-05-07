@@ -3,13 +3,13 @@ import { CalledWithMock, mock, MockProxy, mockReset } from "jest-mock-extended";
 
 import { container } from "config/inversify";
 import { LobbyState, TableName } from "data/enum";
-import { LobbyDAO, COMMON_DAO_TYPES } from "data/api";
+import { LobbyDAO, DAO_TYPES } from "data/api";
 import { DatabaseClient, DB_CLIENT_TYPES } from "db-client/api";
 import { Lobby } from "data/entity";
 
-import LobbyDAOImpl from "data/impl/LobbyDAOImpl";
-
 import { sameObject } from "../../test-utils/customMatchers";
+
+import LobbyDAOImpl from "data/impl/LobbyDAOImpl";
 
 describe("data/common-data/in-memory-impl/LobbyDAOImpl", () => {
 
@@ -18,12 +18,12 @@ describe("data/common-data/in-memory-impl/LobbyDAOImpl", () => {
     let dbClientMock: MockProxy<DatabaseClient>;
 
     beforeAll(() => {
-        container.bind<LobbyDAO>(COMMON_DAO_TYPES.LobbyDAO).to(LobbyDAOImpl);
+        container.bind<LobbyDAO>(DAO_TYPES.LobbyDAO).to(LobbyDAOImpl);
 
         dbClientMock = mock<DatabaseClient>();
         container.bind<DatabaseClient>(DB_CLIENT_TYPES.DatabaseClient).toConstantValue(dbClientMock);
 
-        lobbyDAO = container.get<LobbyDAO>(COMMON_DAO_TYPES.LobbyDAO);
+        lobbyDAO = container.get<LobbyDAO>(DAO_TYPES.LobbyDAO);
     });
 
     beforeEach(() => {
@@ -58,7 +58,7 @@ describe("data/common-data/in-memory-impl/LobbyDAOImpl", () => {
             currentTheme: "dummy theme 1",
         };
 
-        (dbClientMock.find as CalledWithMock<Promise<Lobby>, [ string, string, number ]>)
+        (dbClientMock.find as CalledWithMock<Promise<Lobby>, [ TableName, string, number ]>)
             .calledWith(TableName.Lobby, "id", lobby.id)
             .mockReturnValue(Promise.resolve(lobby));
 
@@ -77,7 +77,7 @@ describe("data/common-data/in-memory-impl/LobbyDAOImpl", () => {
             currentTheme: "dummy theme 1",
         };
 
-        (dbClientMock.find as CalledWithMock<Promise<Lobby>, [ string, string, string ]>)
+        (dbClientMock.find as CalledWithMock<Promise<Lobby>, [ TableName, string, string ]>)
             .calledWith(TableName.Lobby, "name", lobby.name)
             .mockReturnValue(Promise.resolve(lobby));
 
@@ -91,7 +91,7 @@ describe("data/common-data/in-memory-impl/LobbyDAOImpl", () => {
     it("deleteById should send delete query to db", () => {
         const lobbyId = 1;
 
-        (dbClientMock.delete as CalledWithMock<Promise<void>, [ string, string, number ]>)
+        (dbClientMock.delete as CalledWithMock<Promise<void>, [ TableName, string, number ]>)
             .calledWith(TableName.Lobby, "id", lobbyId)
             .mockReturnValue(Promise.resolve());
 
@@ -109,7 +109,7 @@ describe("data/common-data/in-memory-impl/LobbyDAOImpl", () => {
             currentTheme: "dummy theme 1",
         };
 
-        (dbClientMock.find as CalledWithMock<Promise<Lobby>, [ string, string, string ]>)
+        (dbClientMock.find as CalledWithMock<Promise<Lobby>, [ TableName, string, string ]>)
             .calledWith(TableName.Lobby, "name", lobby.name)
             .mockReturnValue(Promise.resolve(lobby));
 

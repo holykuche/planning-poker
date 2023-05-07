@@ -2,7 +2,7 @@ import { inject, injectable } from "inversify";
 
 import { Member } from "data/entity";
 import { CardCode, LobbyState } from "data/enum";
-import { COMMON_DAO_TYPES, LobbyDAO, MemberCardXrefDAO, MemberDAO, MemberLobbyXrefDAO } from "data/api";
+import { DAO_TYPES, LobbyDAO, MemberCardXrefDAO, MemberDAO, MemberLobbyXrefDAO } from "data/api";
 
 import { LobbyService, MemberService, COMMON_SERVICE_TYPES } from "../api";
 import { PokerIsNotStartedError, MemberIsNotInLobbyError, UnknownMemberError } from "../error";
@@ -11,10 +11,10 @@ import { DispatchPokerResult, MemberId, ResetLobbyLifetime } from "../aop";
 @injectable()
 export default class MemberServiceImpl implements MemberService {
 
-    @inject(COMMON_DAO_TYPES.MemberDAO) private readonly memberDAO: MemberDAO;
-    @inject(COMMON_DAO_TYPES.MemberCardXrefDAO) private readonly memberCardXrefDAO: MemberCardXrefDAO;
-    @inject(COMMON_DAO_TYPES.MemberLobbyXrefDAO) private readonly memberLobbyXrefDAO: MemberLobbyXrefDAO;
-    @inject(COMMON_DAO_TYPES.LobbyDAO) private readonly lobbyDAO: LobbyDAO;
+    @inject(DAO_TYPES.MemberDAO) private readonly memberDAO: MemberDAO;
+    @inject(DAO_TYPES.MemberCardXrefDAO) private readonly memberCardXrefDAO: MemberCardXrefDAO;
+    @inject(DAO_TYPES.MemberLobbyXrefDAO) private readonly memberLobbyXrefDAO: MemberLobbyXrefDAO;
+    @inject(DAO_TYPES.LobbyDAO) private readonly lobbyDAO: LobbyDAO;
     @inject(COMMON_SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
 
     getById(memberId: number): Promise<Member> {

@@ -2,15 +2,15 @@ import "reflect-metadata";
 import { mock, mockReset, anyNumber, MockProxy } from "jest-mock-extended";
 
 import { container } from "config/inversify";
-import { MemberDAO, MemberCardXrefDAO, MemberLobbyXrefDAO, LobbyDAO, COMMON_DAO_TYPES } from "data/api";
+import { MemberDAO, MemberCardXrefDAO, MemberLobbyXrefDAO, LobbyDAO, DAO_TYPES } from "data/api";
 import { CardCode, LobbyState } from "data/enum";
 import { MemberService, LobbyService, COMMON_SERVICE_TYPES, SubscriptionService } from "service/api";
 import { MemberIsNotInLobbyError, PokerIsNotStartedError, UnknownMemberError } from "service/error";
-import { SCHEDULER_TYPES, TimeoutScheduler } from "../../../../scheduler/src/api";
+import { SCHEDULER_TYPES, TimeoutScheduler } from "scheduler/api";
 
 import MemberServiceImpl from "service/impl/MemberServiceImpl";
 
-import { sameArray } from "../../customMatchers";
+import { sameArray } from "../../test-utils/customMatchers";
 
 describe("service/common-service/impl/MemberServiceImpl", () => {
 
@@ -28,16 +28,16 @@ describe("service/common-service/impl/MemberServiceImpl", () => {
         container.bind<MemberService>(COMMON_SERVICE_TYPES.MemberService).to(MemberServiceImpl);
 
         memberDAOMock = mock<MemberDAO>();
-        container.bind<MemberDAO>(COMMON_DAO_TYPES.MemberDAO).toConstantValue(memberDAOMock);
+        container.bind<MemberDAO>(DAO_TYPES.MemberDAO).toConstantValue(memberDAOMock);
 
         memberCardXrefDAOMock = mock<MemberCardXrefDAO>();
-        container.bind<MemberCardXrefDAO>(COMMON_DAO_TYPES.MemberCardXrefDAO).toConstantValue(memberCardXrefDAOMock);
+        container.bind<MemberCardXrefDAO>(DAO_TYPES.MemberCardXrefDAO).toConstantValue(memberCardXrefDAOMock);
 
         memberLobbyXrefDAOMock = mock<MemberLobbyXrefDAO>();
-        container.bind<MemberLobbyXrefDAO>(COMMON_DAO_TYPES.MemberLobbyXrefDAO).toConstantValue(memberLobbyXrefDAOMock);
+        container.bind<MemberLobbyXrefDAO>(DAO_TYPES.MemberLobbyXrefDAO).toConstantValue(memberLobbyXrefDAOMock);
 
         lobbyDAOMock = mock<LobbyDAO>();
-        container.bind<LobbyDAO>(COMMON_DAO_TYPES.LobbyDAO).toConstantValue(lobbyDAOMock);
+        container.bind<LobbyDAO>(DAO_TYPES.LobbyDAO).toConstantValue(lobbyDAOMock);
 
         lobbyServiceMock = mock<LobbyService>();
         container.bind<LobbyService>(COMMON_SERVICE_TYPES.LobbyService).toConstantValue(lobbyServiceMock);

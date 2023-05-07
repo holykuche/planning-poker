@@ -2,10 +2,11 @@ import "reflect-metadata";
 import { anyFunction, anyNumber, anyString, mock, MockProxy, mockReset } from "jest-mock-extended";
 
 import { container } from "config/inversify";
+import { LOBBY_LIFETIME_SEC } from "config/app";
 
 import { Lobby, Member, MemberCardXref } from "data/entity";
 import { LobbyState } from "data/enum";
-import { COMMON_DAO_TYPES, LobbyDAO, MemberCardXrefDAO, MemberDAO, MemberLobbyXrefDAO } from "data/api";
+import { DAO_TYPES, LobbyDAO, MemberCardXrefDAO, MemberDAO, MemberLobbyXrefDAO } from "data/api";
 import { LobbyService, COMMON_SERVICE_TYPES, SubscriptionService } from "service/api";
 import {
     LobbyAlreadyExists,
@@ -15,12 +16,12 @@ import {
     UnknownMemberError,
 } from "service/error";
 import { EventType } from "service/event";
-import { SCHEDULER_TYPES, TimeoutScheduler } from "../../../../scheduler/src/api";
-import { TaskType } from "../../../../scheduler/src/enum";
+import { SCHEDULER_TYPES, TimeoutScheduler } from "scheduler/api";
+import { TaskType } from "scheduler/enum";
 
 import LobbyServiceImpl from "service/impl/LobbyServiceImpl";
 
-import { sameArray, sameObject } from "../../customMatchers";
+import { sameArray, sameObject } from "../../test-utils/customMatchers";
 
 describe("service/common-service/impl/LobbyServiceImpl", () => {
 
@@ -37,16 +38,16 @@ describe("service/common-service/impl/LobbyServiceImpl", () => {
         container.bind<LobbyService>(COMMON_SERVICE_TYPES.LobbyService).to(LobbyServiceImpl);
 
         lobbyDAOMock = mock<LobbyDAO>();
-        container.bind<LobbyDAO>(COMMON_DAO_TYPES.LobbyDAO).toConstantValue(lobbyDAOMock);
+        container.bind<LobbyDAO>(DAO_TYPES.LobbyDAO).toConstantValue(lobbyDAOMock);
 
         memberLobbyXrefDAOMock = mock<MemberLobbyXrefDAO>();
-        container.bind<MemberLobbyXrefDAO>(COMMON_DAO_TYPES.MemberLobbyXrefDAO).toConstantValue(memberLobbyXrefDAOMock);
+        container.bind<MemberLobbyXrefDAO>(DAO_TYPES.MemberLobbyXrefDAO).toConstantValue(memberLobbyXrefDAOMock);
 
         memberCardXrefDAOMock = mock<MemberCardXrefDAO>();
-        container.bind<MemberCardXrefDAO>(COMMON_DAO_TYPES.MemberCardXrefDAO).toConstantValue(memberCardXrefDAOMock);
+        container.bind<MemberCardXrefDAO>(DAO_TYPES.MemberCardXrefDAO).toConstantValue(memberCardXrefDAOMock);
 
         memberDAOMock = mock<MemberDAO>();
-        container.bind<MemberDAO>(COMMON_DAO_TYPES.MemberDAO).toConstantValue(memberDAOMock);
+        container.bind<MemberDAO>(DAO_TYPES.MemberDAO).toConstantValue(memberDAOMock);
 
         subscriptionServiceMock = mock<SubscriptionService>();
         container.bind<SubscriptionService>(COMMON_SERVICE_TYPES.SubscriptionService).toConstantValue(subscriptionServiceMock);
@@ -235,7 +236,7 @@ describe("service/common-service/impl/LobbyServiceImpl", () => {
             .mockReturnValue(lobby);
 
         lobbyService.enterMember(memberId, lobby.id);
-        expect(timeoutSchedulerMock.schedule).toBeCalledWith(TaskType.Lobby, lobby.id, lobbyLifetimeMs / 1000, anyFunction());
+        expect(timeoutSchedulerMock.schedule).toBeCalledWith(TaskType.Lobby, lobby.id, LOBBY_LIFETIME_SEC, anyFunction());
     });
 
     it("enterMember should dispatch MembersWasChanged event", () => {
@@ -521,7 +522,7 @@ describe("service/common-service/impl/LobbyServiceImpl", () => {
             .mockReturnValue(otherMemberCards);
 
         lobbyService.leaveMember(member.id, lobby.id);
-        expect(timeoutSchedulerMock.schedule).toBeCalledWith(TaskType.Lobby, lobby.id, lobbyLifetimeMs / 1000, anyFunction());
+        expect(timeoutSchedulerMock.schedule).toBeCalledWith(TaskType.Lobby, lobby.id, LOBBY_LIFETIME_SEC, anyFunction());
     });
 
     it("leaveMember should throw an exception if the member doesn't exist", () => {
@@ -611,7 +612,7 @@ describe("service/common-service/impl/LobbyServiceImpl", () => {
             .mockReturnValue(Object.values(members));
 
         lobbyService.startPoker(lobby.id, theme);
-        expect(timeoutSchedulerMock.schedule).toBeCalledWith(TaskType.Lobby, lobby.id, lobbyLifetimeMs / 1000, anyFunction());
+        expect(timeoutSchedulerMock.schedule).toBeCalledWith(TaskType.Lobby, lobby.id, LOBBY_LIFETIME_SEC, anyFunction());
     });
 
     it("startPoker should dispatch PokerResultWasChanged event", () => {

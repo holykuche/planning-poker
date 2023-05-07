@@ -1,5 +1,5 @@
 import { container } from "config/inversify";
-import { COMMON_DAO_TYPES, LobbyDAO, MemberCardXrefDAO, MemberDAO, MemberLobbyXrefDAO } from "data/api";
+import { DAO_TYPES, LobbyDAO, MemberCardXrefDAO, MemberDAO, MemberLobbyXrefDAO } from "data/api";
 import LobbyState from "data/enum/LobbyState";
 
 import { COMMON_SERVICE_TYPES, SubscriptionService } from "../../api";
@@ -58,10 +58,10 @@ export default function (target: Object, propertyKey: string, descriptor: TypedP
         const result = method.apply(this, args);
 
         const dependencies: Dependencies = {
-            memberLobbyXrefDAO: container.get<MemberLobbyXrefDAO>(COMMON_DAO_TYPES.MemberLobbyXrefDAO),
-            memberCardXrefDAO: container.get<MemberCardXrefDAO>(COMMON_DAO_TYPES.MemberCardXrefDAO),
-            memberDAO: container.get<MemberDAO>(COMMON_DAO_TYPES.MemberDAO),
-            lobbyDAO: container.get<LobbyDAO>(COMMON_DAO_TYPES.LobbyDAO),
+            memberLobbyXrefDAO: container.get<MemberLobbyXrefDAO>(DAO_TYPES.MemberLobbyXrefDAO),
+            memberCardXrefDAO: container.get<MemberCardXrefDAO>(DAO_TYPES.MemberCardXrefDAO),
+            memberDAO: container.get<MemberDAO>(DAO_TYPES.MemberDAO),
+            lobbyDAO: container.get<LobbyDAO>(DAO_TYPES.LobbyDAO),
             subscriptionService: container.get<SubscriptionService>(COMMON_SERVICE_TYPES.SubscriptionService),
         };
 

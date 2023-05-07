@@ -1,6 +1,6 @@
 import { inject, injectable } from "inversify";
 
-import { COMMON_DAO_TYPES, LobbyDAO, MemberCardXrefDAO, MemberDAO, MemberLobbyXrefDAO } from "data/api";
+import { DAO_TYPES, LobbyDAO, MemberCardXrefDAO, MemberDAO, MemberLobbyXrefDAO } from "data/api";
 import { Lobby } from "data/entity";
 import { LobbyState } from "data/enum";
 
@@ -18,10 +18,10 @@ import { DispatchMembers, DispatchPokerResult, LobbyId, MemberId, ResetLobbyLife
 @injectable()
 export default class LobbyServiceImpl implements LobbyService {
 
-    @inject(COMMON_DAO_TYPES.LobbyDAO) private readonly lobbyDAO: LobbyDAO;
-    @inject(COMMON_DAO_TYPES.MemberDAO) private readonly memberDAO: MemberDAO;
-    @inject(COMMON_DAO_TYPES.MemberLobbyXrefDAO) private readonly memberLobbyXrefDAO: MemberLobbyXrefDAO;
-    @inject(COMMON_DAO_TYPES.MemberCardXrefDAO) private readonly memberCardXrefDAO: MemberCardXrefDAO;
+    @inject(DAO_TYPES.LobbyDAO) private readonly lobbyDAO: LobbyDAO;
+    @inject(DAO_TYPES.MemberDAO) private readonly memberDAO: MemberDAO;
+    @inject(DAO_TYPES.MemberLobbyXrefDAO) private readonly memberLobbyXrefDAO: MemberLobbyXrefDAO;
+    @inject(DAO_TYPES.MemberCardXrefDAO) private readonly memberCardXrefDAO: MemberCardXrefDAO;
     @inject(COMMON_SERVICE_TYPES.SubscriptionService) private readonly subscriptionService: SubscriptionService;
 
     getById(id: number): Promise<Lobby> {
