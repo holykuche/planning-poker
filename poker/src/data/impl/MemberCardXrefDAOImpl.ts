@@ -1,40 +1,39 @@
 import { injectable } from "inversify";
 
-import { AbstractInMemoryDAOImpl } from "data/base-data/in-memory-impl";
-
 import { MemberCardXrefDAO } from "../api";
 import { MemberCardXref } from "../entity";
-import { CardCode } from "../enum";
+import { CardCode, TableName } from "../enum";
+
+import AbstractDAOImpl from "./AbstractDAOImpl";
 
 @injectable()
-export default class MemberCardXrefDAOImpl extends AbstractInMemoryDAOImpl<MemberCardXref> implements MemberCardXrefDAO {
+export default class MemberCardXrefDAOImpl extends AbstractDAOImpl<MemberCardXref> implements MemberCardXrefDAO {
 
     constructor() {
-        super({
-            indexBy: [ "memberId" ],
-        });
+        super(TableName.MemberCardXref);
     }
 
-    getCardByMemberId(memberId: number): CardCode {
-        return this.find("memberId", memberId)?.cardCode || null;
+    getCardByMemberId(memberId: number): Promise<CardCode> {
+        return this.find("memberId", memberId)
+            .then(xref => xref?.cardCode || null);
     }
 
-    getCardsByMemberIds(memberIds: number[]): MemberCardXref[] {
-        return memberIds
-            .map(mId => this.find("memberId", mId))
-            .filter(xref => !!xref);
+    getCardsByMemberIds(memberIds: number[]): Promise<MemberCardXref[]> {
+        return Promise.all(memberIds.map(mId => this.find("memberId", mId)))
+            .then(xrefs => xrefs.filter(xref => !!xref));
     }
 
-    put(memberId: number, cardCode: CardCode): void {
-        this.save({ memberId, cardCode });
+    put(memberId: number, cardCode: CardCode): Promise<MemberCardXref> {
+        return this.save({ memberId, cardCode });
     }
 
-    removeByMemberId(memberId: number): void {
-        this.delete("memberId", memberId);
+    removeByMemberId(memberId: number): Promise<void> {
+        return this.delete("memberId", memberId);
     }
 
-    removeByMemberIds(memberIds: number[]): void {
-        memberIds.forEach(memberId => this.removeByMemberId(memberId));
+    removeByMemberIds(memberIds: number[]): Promise<void> {
+        return Promise.all(memberIds.map(memberId => this.removeByMemberId(memberId)))
+            .then();
     }
 
 }

@@ -1,46 +1,38 @@
 import { injectable } from "inversify";
 
-import { AbstractInMemoryDAOImpl } from "data/base-data/in-memory-impl";
-
 import { MemberDAO } from "../api";
 import { Member } from "../entity";
+import { TableName } from "../enum";
+
+import AbstractDAOImpl from "./AbstractDAOImpl";
 
 @injectable()
-export default class MemberDAOImpl implements MemberDAO {
+export default class MemberDAOImpl extends AbstractDAOImpl<Member> implements MemberDAO {
 
     constructor() {
-        super({
-            indexBy: [ "name" ],
-            primaryKey: "id",
-            initialPrimaryKeyValue: 1,
-            getNextPrimaryKeyValue: current => current + 1,
-        });
+        super(TableName.Member);
     }
 
-    getById(id: number): Member {
+    getById(id: number): Promise<Member> {
         return this.find("id", id);
     }
 
-    getByIds(ids: number[]): Member[] {
-        return ids
-            .map(id => this.getById(id))
-            .filter(m => !!m);
+    getByIds(ids: number[]): Promise<Member[]> {
+        return Promise.all(ids.map(id => this.getById(id)))
+            .then(members => members.filter(m => !!m));
     }
 
-    save(member: Member): Member {
-        return undefined;
-    }
-
-    getByName(name: string): Member {
+    getByName(name: string): Promise<Member> {
         return this.find("name", name);
     }
 
-    deleteById(id: number): void {
-        this.delete("id", id);
+    deleteById(id: number): Promise<void> {
+        return this.delete("id", id);
     }
 
-    deleteByIds(ids: number[]): void {
-        ids.forEach(id => this.deleteById(id));
+    deleteByIds(ids: number[]): Promise<void> {
+        return Promise.all(ids.map(id => this.deleteById(id)))
+            .then();
     }
 
 }

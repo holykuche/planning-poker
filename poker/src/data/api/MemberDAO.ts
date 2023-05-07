@@ -2,16 +2,16 @@ import { Member } from "../entity";
 
 export default interface MemberDAO {
 
-    getById(id: number): Member;
+    getById(id: number): Promise<Member>;
 
-    getByIds(ids: number[]): Member[];
+    getByIds(ids: number[]): Promise<Member[]>;
 
-    getByName(name: string): Member;
+    getByName(name: string): Promise<Member>;
 
-    save(member: Member): Member;
+    save(member: Member): Promise<Member>;
 
-    deleteById(id: number): void;
+    deleteById(id: number): Promise<void>;
 
-    deleteByIds(ids: number[]): void;
+    deleteByIds(ids: number[]): Promise<void>;
 
 }

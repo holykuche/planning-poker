@@ -24,83 +24,105 @@ export default class LobbyServiceImpl implements LobbyService {
     @inject(COMMON_DAO_TYPES.MemberCardXrefDAO) private readonly memberCardXrefDAO: MemberCardXrefDAO;
     @inject(COMMON_SERVICE_TYPES.SubscriptionService) private readonly subscriptionService: SubscriptionService;
 
-    getById(id: number): Lobby {
+    getById(id: number): Promise<Lobby> {
         return this.lobbyDAO.getById(id);
     }
 
-    getByName(name: string): Lobby {
+    getByName(name: string): Promise<Lobby> {
         return this.lobbyDAO.getByName(name);
     }
 
-    createLobby(name: string): Lobby {
-        if (this.lobbyDAO.isExists(name)) {
-            throw new LobbyAlreadyExists(name);
-        }
-
-        const createdLobby = this.lobbyDAO.save({ name, state: LobbyState.Waiting });
-        this.subscriptionService.register(createdLobby.id);
-        return createdLobby;
+    createLobby(name: string): Promise<Lobby> {
+        return this.lobbyDAO.isExists(name)
+            .then(isExists => {
+                if (isExists) {
+                    throw new LobbyAlreadyExists(name);
+                }
+            })
+            .then(() => this.lobbyDAO.save({ name, state: LobbyState.Waiting }))
+            .then(createdLobby => {
+                this.subscriptionService.register(createdLobby.id);
+                return createdLobby;
+            });
     }
 
-    getMembersLobby(memberId: number): Lobby {
-        const lobbyId = this.memberLobbyXrefDAO.getMembersBinding(memberId);
-        return this.lobbyDAO.getById(lobbyId);
-    }
-
-    @ResetLobbyLifetime
-    @DispatchPokerResult
-    @DispatchMembers
-    enterMember(@MemberId memberId: number, lobbyId: number): void {
-        if (this.memberLobbyXrefDAO.isMemberBound(memberId)) {
-            const member = this.memberDAO.getById(memberId);
-            throw new MemberIsAlreadyInLobbyError(member.name);
-        }
-
-        this.memberLobbyXrefDAO.bindMember(memberId, lobbyId);
+    getMembersLobby(memberId: number): Promise<Lobby> {
+        return this.memberLobbyXrefDAO.getMembersBinding(memberId)
+            .then(lobbyId => this.lobbyDAO.getById(lobbyId));
     }
 
     @ResetLobbyLifetime
     @DispatchPokerResult
     @DispatchMembers
-    leaveMember(memberId: number, @LobbyId lobbyId: number): void {
-        const member = this.memberDAO.getById(memberId);
-
-        if (!member) {
-            throw new UnknownMemberError();
-        }
-
-        if (lobbyId !== this.memberLobbyXrefDAO.getMembersBinding(memberId)) {
-            throw new MemberIsNotInLobbyError(member.name);
-        }
-
-        this.memberLobbyXrefDAO.unbindMember(memberId);
-        this.memberCardXrefDAO.removeByMemberId(memberId);
-        this.subscriptionService.unsubscribe(memberId);
+    enterMember(@MemberId memberId: number, lobbyId: number): Promise<void> {
+        return this.memberLobbyXrefDAO.isMemberBound(memberId)
+            .then(isMemberBound => {
+                return isMemberBound
+                    ? this.memberDAO.getById(memberId)
+                        .then(member => {
+                            throw new MemberIsAlreadyInLobbyError(member.name);
+                        })
+                    : Promise.resolve();
+            })
+            .then(() => this.memberLobbyXrefDAO.bindMember(memberId, lobbyId))
+            .then();
     }
 
     @ResetLobbyLifetime
     @DispatchPokerResult
-    startPoker(@LobbyId lobbyId: number, theme: string): void {
-        const lobby = this.lobbyDAO.getById(lobbyId);
-
-        if (lobby.state === LobbyState.Playing) {
-            throw new PokerIsAlreadyStartedError(lobby);
-        }
-
-        this.lobbyDAO.save({ ...lobby, currentTheme: theme, state: LobbyState.Playing });
+    @DispatchMembers
+    leaveMember(memberId: number, @LobbyId lobbyId: number): Promise<void> {
+        return this.memberDAO.getById(memberId)
+            .then(member => {
+                if (!member) {
+                    throw new UnknownMemberError();
+                }
+                return member;
+            })
+            .then(member => {
+                return this.memberLobbyXrefDAO.getMembersBinding(memberId)
+                    .then(membersLobbyId => {
+                        if (lobbyId !== membersLobbyId) {
+                            throw new MemberIsNotInLobbyError(member.name);
+                        }
+                    })
+            })
+            .then(() => Promise.all([
+                this.memberLobbyXrefDAO.unbindMember(memberId),
+                this.memberCardXrefDAO.removeByMemberId(memberId)
+            ]))
+            .then(() => this.subscriptionService.unsubscribe(memberId));
     }
 
     @ResetLobbyLifetime
-    cancelPoker(@LobbyId lobbyId: number): void {
-        const lobby = this.lobbyDAO.getById(lobbyId);
+    @DispatchPokerResult
+    startPoker(@LobbyId lobbyId: number, theme: string): Promise<void> {
+        return this.lobbyDAO.getById(lobbyId)
+            .then(lobby => {
+                if (lobby.state === LobbyState.Playing) {
+                    throw new PokerIsAlreadyStartedError(lobby);
+                }
+                return lobby;
+            })
+            .then(lobby => this.lobbyDAO.save({ ...lobby, currentTheme: theme, state: LobbyState.Playing }))
+            .then();
+    }
 
-        if (lobby.state === LobbyState.Waiting) {
-            throw new PokerIsNotStartedError(lobby);
-        }
-
-        this.lobbyDAO.save({ ...lobby, currentTheme: null, state: LobbyState.Waiting });
-        const memberIds = this.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobby.id);
-        this.memberCardXrefDAO.removeByMemberIds(memberIds);
+    @ResetLobbyLifetime
+    cancelPoker(@LobbyId lobbyId: number): Promise<void> {
+        return this.lobbyDAO.getById(lobbyId)
+            .then(lobby => {
+                if (lobby.state === LobbyState.Waiting) {
+                    throw new PokerIsNotStartedError(lobby);
+                }
+                return lobby;
+            })
+            .then(lobby => Promise.all([
+                this.lobbyDAO.save({ ...lobby, currentTheme: null, state: LobbyState.Waiting }),
+                this.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobby.id)
+                    .then(memberIds => this.memberCardXrefDAO.removeByMemberIds(memberIds))
+            ]))
+            .then();
     }
 
 }

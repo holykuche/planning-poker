@@ -17,56 +17,61 @@ export default class MemberServiceImpl implements MemberService {
     @inject(COMMON_DAO_TYPES.LobbyDAO) private readonly lobbyDAO: LobbyDAO;
     @inject(COMMON_SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
 
-    getById(memberId: number): Member {
-        const member = this.memberDAO.getById(memberId);
-
-        if (!member) {
-            throw new UnknownMemberError();
-        }
-
-        return member;
+    getById(memberId: number): Promise<Member> {
+        return this.memberDAO.getById(memberId)
+            .then(member => {
+                if (!member) {
+                    throw new UnknownMemberError();
+                }
+                return member;
+            });
     }
 
-    getMembersLobbyId(memberId: number): number {
-        const lobbyId = this.memberLobbyXrefDAO.getMembersBinding(memberId);
+    getMembersLobbyId(memberId: number): Promise<number> {
+        return this.memberLobbyXrefDAO.getMembersBinding(memberId)
+            .then(lobbyId => {
+                if (!lobbyId) {
+                    return this.getById(memberId)
+                        .then(member => {
+                            throw new MemberIsNotInLobbyError(member.name);
+                        });
+                }
 
-        if (!lobbyId) {
-            throw new MemberIsNotInLobbyError(this.getById(memberId).name);
-        }
-
-        return lobbyId;
+                return lobbyId;
+            });
     }
 
-    isMemberInLobby(memberId: number): boolean {
+    isMemberInLobby(memberId: number): Promise<boolean> {
         return this.memberLobbyXrefDAO.isMemberBound(memberId);
     }
 
     @ResetLobbyLifetime
     @DispatchPokerResult
-    putCard(@MemberId memberId: number, cardCode: CardCode): void {
-        const lobbyId = this.getMembersLobbyId(memberId);
+    putCard(@MemberId memberId: number, cardCode: CardCode): Promise<void> {
+        return this.getMembersLobbyId(memberId)
+            .then(lobbyId => this.lobbyDAO.getById(lobbyId))
+            .then(lobby => {
+                if (lobby.state !== LobbyState.Playing) {
+                    throw new PokerIsNotStartedError(lobby);
+                }
+            })
+            .then(() => this.memberCardXrefDAO.put(memberId, cardCode))
+            .then();
 
-        const lobby = this.lobbyDAO.getById(lobbyId);
 
-        if (lobby.state !== LobbyState.Playing) {
-            throw new PokerIsNotStartedError(lobby);
-        }
-
-        this.memberCardXrefDAO.put(memberId, cardCode);
     }
 
     @ResetLobbyLifetime
     @DispatchPokerResult
-    removeCard(@MemberId memberId: number): void {
-        const lobbyId = this.getMembersLobbyId(memberId);
-
-        const lobby = this.lobbyDAO.getById(lobbyId);
-
-        if (lobby.state !== LobbyState.Playing) {
-            throw new PokerIsNotStartedError(lobby);
-        }
-
-        this.memberCardXrefDAO.removeByMemberId(memberId);
+    removeCard(@MemberId memberId: number): Promise<void> {
+        return this.getMembersLobbyId(memberId)
+            .then(lobbyId => this.lobbyDAO.getById(lobbyId))
+            .then(lobby => {
+                if (lobby.state !== LobbyState.Playing) {
+                    throw new PokerIsNotStartedError(lobby);
+                }
+            })
+            .then(() => this.memberCardXrefDAO.removeByMemberId(memberId));
     }
 
 }

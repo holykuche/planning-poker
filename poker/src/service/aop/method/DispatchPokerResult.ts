@@ -4,6 +4,7 @@ import LobbyState from "data/enum/LobbyState";
 
 import { COMMON_SERVICE_TYPES, SubscriptionService } from "../../api";
 import { CardDto, PokerResultItemDto } from "../../dto";
+import { PokerIsNotStartedError } from "../../error";
 import { EventType } from "../../event";
 
 import { resolveLobbyId } from "../common";
@@ -16,29 +17,38 @@ interface Dependencies {
     subscriptionService: SubscriptionService;
 }
 
-const getPokerResult = function (dependencies: Dependencies, lobbyId: number): PokerResultItemDto[] {
-    const memberIds = dependencies.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId);
-    const cards = dependencies.memberCardXrefDAO.getCardsByMemberIds(memberIds)
-        .reduce((cardsById, { memberId, cardCode }) => ({
-            ...cardsById,
-            [ memberId ]: CardDto.fromCode(cardCode),
-        }), {});
-    const members = dependencies.memberDAO.getByIds(memberIds);
-
-    return members.map(member => ({ member, card: cards[ member.id ] }));
+const getPokerResult = function (dependencies: Dependencies, lobbyId: number): Promise<PokerResultItemDto[]> {
+    return dependencies.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId)
+        .then(memberIds =>
+            dependencies.memberCardXrefDAO.getCardsByMemberIds(memberIds)
+                .then(cards => ({
+                    cards,
+                    memberIds,
+                }))
+        )
+        .then(({ cards, memberIds }) => ({
+            cards: cards
+                .reduce((cardsByMemberId, { memberId, cardCode }) => ({
+                    ...cardsByMemberId,
+                    [ memberId ]: CardDto.fromCode(cardCode),
+                }), {} as Record<number, CardDto>),
+            memberIds,
+        }))
+        .then(({ cards, memberIds }) =>
+            dependencies.memberDAO.getByIds(memberIds)
+                .then(members => members.map(member => ({ member, card: cards[ member.id ] })))
+        );
 };
 
-const finishPoker = function (dependencies: Dependencies, lobbyId: number, pokerResult: PokerResultItemDto[]): void {
-    const lobby = dependencies.lobbyDAO.getById(lobbyId);
-    dependencies.lobbyDAO.save({ ...lobby, currentTheme: null, state: LobbyState.Waiting });
-
-    dependencies.subscriptionService.dispatch(lobbyId, {
-        type: EventType.PokerWasFinished,
-        payload: { theme: lobby.currentTheme, result: pokerResult },
-    });
-
-    const memberIds = dependencies.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId);
-    dependencies.memberCardXrefDAO.removeByMemberIds(memberIds);
+const finishPoker = function (dependencies: Dependencies, lobbyId: number, pokerResult: PokerResultItemDto[]): Promise<void> {
+    return dependencies.lobbyDAO.getById(lobbyId)
+        .then(lobby => dependencies.lobbyDAO.save({ ...lobby, currentTheme: null, state: LobbyState.Waiting }))
+        .then(lobby => dependencies.subscriptionService.dispatch(lobby.id, {
+            type: EventType.PokerWasFinished,
+            payload: { theme: lobby.currentTheme, result: pokerResult },
+        }))
+        .then(() => dependencies.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId))
+        .then(memberIds => dependencies.memberCardXrefDAO.removeByMemberIds(memberIds));
 }
 
 export default function (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<Function>) {
@@ -57,21 +67,41 @@ export default function (target: Object, propertyKey: string, descriptor: TypedP
 
         const lobbyId = resolveLobbyId(dependencies, args, target, propertyKey);
 
-        const { currentTheme, state } = dependencies.lobbyDAO.getById(lobbyId);
+        return Promise.resolve(result)
+            .then(resultValue =>
+                dependencies.lobbyDAO.getById(lobbyId)
+                    .then(lobby => {
+                        if (lobby.state !== LobbyState.Playing) {
+                            throw new PokerIsNotStartedError(lobby);
+                        }
+                        return lobby;
+                    })
+                    .then(lobby =>
+                        getPokerResult(dependencies, lobbyId)
+                            .then(pokerResult => ({
+                                lobby,
+                                pokerResult,
+                            }))
+                    )
+                    .then(({ lobby, pokerResult}) => {
+                        if (pokerResult.every(item => !!item.card)) {
+                            return finishPoker(dependencies, lobbyId, pokerResult);
+                        }
 
-        if (state === LobbyState.Playing) {
-            const pokerResult = getPokerResult(dependencies, lobbyId);
-
-            if (pokerResult.every(item => !!item.card)) {
-                finishPoker(dependencies, lobbyId, pokerResult);
-            } else {
-                dependencies.subscriptionService.dispatch(lobbyId, {
-                    type: EventType.PokerResultWasChanged,
-                    payload: { theme: currentTheme, result: pokerResult },
-                });
-            }
-        }
-
-        return result;
+                        dependencies.subscriptionService.dispatch(lobbyId, {
+                            type: EventType.PokerResultWasChanged,
+                            payload: { theme: lobby.currentTheme, result: pokerResult },
+                        });
+                        return Promise.resolve();
+                    })
+                    .catch(error => {
+                        if (error instanceof PokerIsNotStartedError) {
+                            console.log(`Trying to dispatch unknown poker result: ${ error.message }`);
+                        } else {
+                            throw error;
+                        }
+                    })
+                    .then(() => resultValue)
+            );
     }
 }

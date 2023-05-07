@@ -2,20 +2,20 @@ import { Lobby } from "data/entity";
 
 export default interface LobbyService {
 
-    getById(id: number): Lobby;
+    getById(id: number): Promise<Lobby>;
 
-    getByName(name: string): Lobby;
+    getByName(name: string): Promise<Lobby>;
 
-    createLobby(lobbyName: string): Lobby;
+    createLobby(lobbyName: string): Promise<Lobby>;
 
-    getMembersLobby(memberId: number): Lobby;
+    getMembersLobby(memberId: number): Promise<Lobby>;
 
-    enterMember(memberId: number, lobbyId: number): void;
+    enterMember(memberId: number, lobbyId: number): Promise<void>;
 
-    leaveMember(memberId: number, lobbyId: number): void;
+    leaveMember(memberId: number, lobbyId: number): Promise<void>;
 
-    startPoker(lobbyId: number, theme: string): void;
+    startPoker(lobbyId: number, theme: string): Promise<void>;
 
-    cancelPoker(lobbyId: number): void;
+    cancelPoker(lobbyId: number): Promise<void>;
 
 }

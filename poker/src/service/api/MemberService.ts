@@ -3,14 +3,14 @@ import { CardCode } from "data/enum";
 
 export default interface MemberService {
 
-    getById(memberId: number): Member;
+    getById(memberId: number): Promise<Member>;
 
-    getMembersLobbyId(memberId: number): number;
+    getMembersLobbyId(memberId: number): Promise<number>;
 
-    isMemberInLobby(memberId: number): boolean;
+    isMemberInLobby(memberId: number): Promise<boolean>;
 
-    putCard(memberId: number, cardCode: CardCode): void;
+    putCard(memberId: number, cardCode: CardCode): Promise<void>;
 
-    removeCard(memberId: number): void;
+    removeCard(memberId: number): Promise<void>;
 
 }

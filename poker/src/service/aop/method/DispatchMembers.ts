@@ -14,9 +14,9 @@ interface Dependencies {
     subscriptionService: SubscriptionService;
 }
 
-const getMembers = function (dependencies: Dependencies, lobbyId: number): Member[] {
-    const memberIds = dependencies.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId);
-    return dependencies.memberDAO.getByIds(memberIds);
+const getMembers = function (dependencies: Dependencies, lobbyId: number): Promise<Member[]> {
+    return dependencies.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId)
+        .then(memberIds => dependencies.memberDAO.getByIds(memberIds));
 }
 
 export default function (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<Function>) {
@@ -33,11 +33,14 @@ export default function (target: Object, propertyKey: string, descriptor: TypedP
 
         const lobbyId = resolveLobbyId(dependencies, args, target, propertyKey);
 
-        dependencies.subscriptionService.dispatch(lobbyId, {
-            type: EventType.MembersWasChanged,
-            payload: { members: getMembers(dependencies, lobbyId) },
-        });
-
-        return result;
+        return Promise.resolve(result)
+            .then(resultValue =>
+                getMembers(dependencies, lobbyId)
+                    .then(members => dependencies.subscriptionService.dispatch(lobbyId, {
+                        type: EventType.MembersWasChanged,
+                        payload: { members },
+                    }))
+                    .then(() => resultValue)
+            );
     }
 }

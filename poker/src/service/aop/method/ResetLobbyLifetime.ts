@@ -1,8 +1,8 @@
 import { container } from "config/inversify";
 import { LOBBY_LIFETIME_SEC } from "config/app";
 import { COMMON_DAO_TYPES, LobbyDAO, MemberCardXrefDAO, MemberDAO, MemberLobbyXrefDAO } from "data/api";
-import { SCHEDULER_TYPES, TimeoutScheduler } from "../../scheduler/src/api";
-import { TaskType } from "../../scheduler/src/enum";
+import { SCHEDULER_TYPES, TimeoutScheduler } from "scheduler/api";
+import { TaskType } from "scheduler/enum";
 
 import { COMMON_SERVICE_TYPES, SubscriptionService } from "../../api";
 import { EventType } from "../../event";
@@ -18,17 +18,19 @@ interface Dependencies {
     timeoutScheduler: TimeoutScheduler;
 }
 
-const destroyLobby = function (dependencies: Dependencies, lobbyId: number, memberIds: number[]): void {
-    dependencies.subscriptionService.dispatch(lobbyId, {
-        type: EventType.LobbyWasDestroyed,
-    });
-
-    dependencies.memberCardXrefDAO.removeByMemberIds(memberIds);
-    dependencies.memberLobbyXrefDAO.unbindMembers(lobbyId);
-    dependencies.memberDAO.deleteByIds(memberIds);
-    dependencies.lobbyDAO.deleteById(lobbyId);
-
-    dependencies.subscriptionService.unregister(lobbyId);
+const destroyLobby = function (dependencies: Dependencies, lobbyId: number, memberIds: number[]): Promise<void> {
+    return Promise.all([
+        dependencies.memberCardXrefDAO.removeByMemberIds(memberIds),
+        dependencies.memberLobbyXrefDAO.unbindMembers(lobbyId),
+        dependencies.memberDAO.deleteByIds(memberIds),
+        dependencies.lobbyDAO.deleteById(lobbyId),
+    ])
+        .then(() => {
+            dependencies.subscriptionService.dispatch(lobbyId, {
+                type: EventType.LobbyWasDestroyed,
+            });
+            dependencies.subscriptionService.unregister(lobbyId);
+        });
 };
 
 export default function (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<Function>) {
@@ -48,19 +50,24 @@ export default function (target: Object, propertyKey: string, descriptor: TypedP
 
         const lobbyId = resolveLobbyId(dependencies, args, target, propertyKey);
 
-        const memberIds = dependencies.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId);
+        return Promise.resolve(result)
+            .then(resultValue =>
+                dependencies.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId)
+                    .then(memberIds => {
+                        if (!memberIds.length) {
+                            dependencies.timeoutScheduler.cancel(TaskType.Lobby, lobbyId);
+                            return destroyLobby(dependencies, lobbyId, memberIds);
+                        }
 
-        if (memberIds.length) {
-            dependencies.timeoutScheduler.schedule(
-                TaskType.Lobby,
-                lobbyId,
-                LOBBY_LIFETIME_SEC / 1000,
-                () => destroyLobby(dependencies, lobbyId, memberIds));
-        } else {
-            dependencies.timeoutScheduler.cancel(TaskType.Lobby, lobbyId);
-            destroyLobby(dependencies, lobbyId, memberIds);
-        }
+                        dependencies.timeoutScheduler.schedule(
+                            TaskType.Lobby,
+                            lobbyId,
+                            LOBBY_LIFETIME_SEC,
+                            () => destroyLobby(dependencies, lobbyId, memberIds));
 
-        return result;
+                        return Promise.resolve();
+                    })
+                    .then(() => resultValue)
+            );
     }
 };

@@ -1,15 +1,17 @@
+import { MemberLobbyXref } from "../entity";
+
 export default interface MemberLobbyXrefDAO {
 
-    getMembersBinding(memberId: number): number;
+    getMembersBinding(memberId: number): Promise<number>;
 
-    getMemberIdsByLobbyId(lobbyId: number): number[];
+    getMemberIdsByLobbyId(lobbyId: number): Promise<number[]>;
 
-    bindMember(memberId: number, lobbyId: number): void;
+    bindMember(memberId: number, lobbyId: number): Promise<MemberLobbyXref>;
 
-    unbindMember(memberId: number): void;
+    unbindMember(memberId: number): Promise<void>;
 
-    unbindMembers(lobbyId: number): void;
+    unbindMembers(lobbyId: number): Promise<void>;
 
-    isMemberBound(memberId: number): boolean;
+    isMemberBound(memberId: number): Promise<boolean>;
 
 }

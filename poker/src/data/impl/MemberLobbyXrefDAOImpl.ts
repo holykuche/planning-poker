@@ -1,42 +1,42 @@
 import { injectable } from "inversify";
 
-import { AbstractInMemoryDAOImpl } from "data/base-data/in-memory-impl";
-
 import { MemberLobbyXrefDAO } from "../api";
 import { MemberLobbyXref } from "../entity";
+import { TableName } from "../enum";
+
+import AbstractDAOImpl from "./AbstractDAOImpl";
 
 @injectable()
-export default class MemberLobbyXrefDAOImpl extends AbstractInMemoryDAOImpl<MemberLobbyXref> implements MemberLobbyXrefDAO {
+export default class MemberLobbyXrefDAOImpl extends AbstractDAOImpl<MemberLobbyXref> implements MemberLobbyXrefDAO {
 
     constructor() {
-        super({
-            indexBy: [ "memberId", "lobbyId" ],
-        });
+        super(TableName.MemberLobbyXref);
     }
 
-    getMembersBinding(memberId: number): number {
-        return this.find("memberId", memberId)?.lobbyId || null;
+    getMembersBinding(memberId: number): Promise<number> {
+        return this.find("memberId", memberId)
+            .then(xref => xref?.lobbyId || null);
     }
 
-    getMemberIdsByLobbyId(lobbyId: number): number[] {
+    getMemberIdsByLobbyId(lobbyId: number): Promise<number[]> {
         return this.findMany("lobbyId", lobbyId)
-            .map(xref => xref.memberId);
+            .then(xrefs => xrefs.map(xref => xref.memberId));
     }
 
-    bindMember(memberId: number, lobbyId: number): void {
-        this.save({ memberId, lobbyId });
+    bindMember(memberId: number, lobbyId: number): Promise<MemberLobbyXref> {
+        return this.save({ memberId, lobbyId });
     }
 
-    unbindMember(memberId: number): void {
-        this.delete("memberId", memberId);
+    unbindMember(memberId: number): Promise<void> {
+        return this.delete("memberId", memberId);
     }
 
-    isMemberBound(memberId: number): boolean {
-        return !!this.find("memberId", memberId);
+    isMemberBound(memberId: number): Promise<boolean> {
+        return this.find("memberId", memberId).then(xref => !!xref);
     }
 
-    unbindMembers(lobbyId: number): void {
-        this.delete("lobbyId", lobbyId);
+    unbindMembers(lobbyId: number): Promise<void> {
+        return this.delete("lobbyId", lobbyId);
     }
 
 }
