@@ -1,110 +1,122 @@
 import "reflect-metadata";
-import { LobbyState } from "data/enum";
+import { CalledWithMock, mock, MockProxy, mockReset } from "jest-mock-extended";
+
+import { container } from "config/inversify";
+import { LobbyState, TableName } from "data/enum";
+import { LobbyDAO, COMMON_DAO_TYPES } from "data/api";
+import { DatabaseClient, DB_CLIENT_TYPES } from "db-client/api";
+import { Lobby } from "data/entity";
+
 import LobbyDAOImpl from "data/impl/LobbyDAOImpl";
+
+import { sameObject } from "../../test-utils/customMatchers";
 
 describe("data/common-data/in-memory-impl/LobbyDAOImpl", () => {
 
-    let lobbyDAO: LobbyDAOImpl;
+    let lobbyDAO: LobbyDAO;
+
+    let dbClientMock: MockProxy<DatabaseClient>;
+
+    beforeAll(() => {
+        container.bind<LobbyDAO>(COMMON_DAO_TYPES.LobbyDAO).to(LobbyDAOImpl);
+
+        dbClientMock = mock<DatabaseClient>();
+        container.bind<DatabaseClient>(DB_CLIENT_TYPES.DatabaseClient).toConstantValue(dbClientMock);
+
+        lobbyDAO = container.get<LobbyDAO>(COMMON_DAO_TYPES.LobbyDAO);
+    });
 
     beforeEach(() => {
-        lobbyDAO = new LobbyDAOImpl();
+        mockReset(dbClientMock);
     });
 
-    it("save should return a new object", () => {
-        const storedLobby1 = lobbyDAO.save({ name: "dummy name", state: LobbyState.Waiting, currentTheme: "dummy theme" });
-        const storedLobby2 = lobbyDAO.save(storedLobby1);
+    it("save should send save query to db", () => {
+        const lobby = {
+            name: "dummy name",
+            state: LobbyState.Waiting,
+            currentTheme: "dummy theme",
+        };
 
-        expect(storedLobby2).not.toBe(storedLobby1);
+        const storedLobby = { id: 1, ...lobby };
+
+        dbClientMock.save
+            .calledWith(TableName.Lobby, sameObject(lobby))
+            .mockReturnValue(Promise.resolve(storedLobby));
+
+        lobbyDAO.save(lobby)
+            .then(returnedLobby => {
+                expect(dbClientMock.save).toBeCalledWith(TableName.Lobby, lobby);
+                expect(returnedLobby).toEqual(storedLobby);
+            });
     });
 
-    it("save should assign ID to lobby without ID", () => {
-        const storedLobby = lobbyDAO.save({ name: "dummy name", state: LobbyState.Waiting, currentTheme: "dummy theme" });
+    it("getById should send find query to db", () => {
+        const lobby = {
+            id: 1,
+            name: "dummy name 1",
+            state: LobbyState.Waiting,
+            currentTheme: "dummy theme 1",
+        };
 
-        expect(storedLobby.id).toBeDefined();
+        (dbClientMock.find as CalledWithMock<Promise<Lobby>, [ string, string, number ]>)
+            .calledWith(TableName.Lobby, "id", lobby.id)
+            .mockReturnValue(Promise.resolve(lobby));
+
+        lobbyDAO.getById(lobby.id)
+            .then(returnedLobby => {
+                expect(dbClientMock.find).toBeCalledWith(TableName.Lobby, "id", lobby.id);
+                expect(returnedLobby).toEqual(lobby);
+            })
     });
 
-    it("save should return lobby with the same property values", () => {
-        const lobby = { name: "dummy name", state: LobbyState.Waiting, currentTheme: "dummy theme" };
-        const storedLobby = lobbyDAO.save(lobby);
+    it("getByName should send find query to db", () => {
+        const lobby = {
+            id: 1,
+            name: "dummy name 1",
+            state: LobbyState.Waiting,
+            currentTheme: "dummy theme 1",
+        };
 
-        expect(storedLobby.name).toBe(lobby.name);
-        expect(storedLobby.state).toBe(lobby.state);
-        expect(storedLobby.currentTheme).toBe(lobby.currentTheme);
+        (dbClientMock.find as CalledWithMock<Promise<Lobby>, [ string, string, string ]>)
+            .calledWith(TableName.Lobby, "name", lobby.name)
+            .mockReturnValue(Promise.resolve(lobby));
+
+        lobbyDAO.getByName(lobby.name)
+            .then(returnedLobby => {
+                expect(dbClientMock.find).toBeCalledWith(TableName.Lobby, "name", lobby.name);
+                expect(returnedLobby).toEqual(lobby);
+            })
     });
 
-    it("getById should return stored lobby", () => {
-        const lobbies = [
-            { name: "dummy name 1", state: LobbyState.Waiting, currentTheme: "dummy theme 1" },
-            { name: "dummy name 2", state: LobbyState.Waiting, currentTheme: "dummy theme 2" },
-            { name: "dummy name 3", state: LobbyState.Waiting, currentTheme: "dummy theme 3" },
-            { name: "dummy name 4", state: LobbyState.Waiting, currentTheme: "dummy theme 4" },
-            { name: "dummy name 5", state: LobbyState.Waiting, currentTheme: "dummy theme 5" },
-        ];
+    it("deleteById should send delete query to db", () => {
+        const lobbyId = 1;
 
-        lobbies
-            .map(lobby => lobbyDAO.save(lobby))
-            .map(storedLobby => [ storedLobby, lobbyDAO.getById(storedLobby.id) ])
-            .forEach(([ storedLobby, receivedLobby ]) => expect(receivedLobby).toEqual(storedLobby));
+        (dbClientMock.delete as CalledWithMock<Promise<void>, [ string, string, number ]>)
+            .calledWith(TableName.Lobby, "id", lobbyId)
+            .mockReturnValue(Promise.resolve());
+
+        lobbyDAO.deleteById(lobbyId)
+            .then(() => {
+                expect(dbClientMock.delete).toBeCalledWith(TableName.Lobby, "id", lobbyId);
+            });
     });
 
-    it("getById should return a new object", () => {
-        const storedLobby = lobbyDAO.save({ name: "dummy name", state: LobbyState.Waiting });
-        const receivedLobby = lobbyDAO.getById(storedLobby.id);
+    it("isExists should send find query to db", async () => {
+        const lobby = {
+            id: 1,
+            name: "dummy name 1",
+            state: LobbyState.Waiting,
+            currentTheme: "dummy theme 1",
+        };
 
-        expect(receivedLobby).not.toBe(storedLobby);
-    });
+        (dbClientMock.find as CalledWithMock<Promise<Lobby>, [ string, string, string ]>)
+            .calledWith(TableName.Lobby, "name", lobby.name)
+            .mockReturnValue(Promise.resolve(lobby));
 
-    it("getById shouldn't return not stored lobby", () => {
-        const receivedLobby = lobbyDAO.getById(1);
-
-        expect(receivedLobby).toBeNull();
-    });
-
-    it("getByName should return stored lobby", () => {
-        const lobbies = [
-            { name: "dummy name 1", state: LobbyState.Waiting, currentTheme: "dummy theme 1" },
-            { name: "dummy name 2", state: LobbyState.Waiting, currentTheme: "dummy theme 2" },
-            { name: "dummy name 3", state: LobbyState.Waiting, currentTheme: "dummy theme 3" },
-            { name: "dummy name 4", state: LobbyState.Waiting, currentTheme: "dummy theme 4" },
-            { name: "dummy name 5", state: LobbyState.Waiting, currentTheme: "dummy theme 5" },
-        ];
-
-        lobbies
-            .map(lobby => lobbyDAO.save(lobby))
-            .map(storedLobby => [ storedLobby, lobbyDAO.getByName(storedLobby.name) ])
-            .forEach(([ storedLobby, receivedLobby ]) => expect(receivedLobby).toEqual(storedLobby));
-    });
-
-    it("getByName shouldn't return not stored lobby", () => {
-        const receivedLobby = lobbyDAO.getByName("dummy name");
-
-        expect(receivedLobby).toBeNull();
-    });
-
-    it("getByName should return a new object", () => {
-        const storedLobby = lobbyDAO.save({ name: "dummy name", state: LobbyState.Waiting });
-        const receivedLobby = lobbyDAO.getByName(storedLobby.name);
-
-        expect(receivedLobby).not.toBe(storedLobby);
-    });
-
-    it("deleteById should delete stored lobby", () => {
-        const storedLobby = lobbyDAO.save({ name: "dummy name", state: LobbyState.Waiting });
-        lobbyDAO.deleteById(storedLobby.id);
-        const receivedLobby = lobbyDAO.getById(storedLobby.id);
-
-        expect(receivedLobby).toBeNull();
-    });
-
-    it("isExists should return true for stored lobby", () => {
-        const storedLobby = lobbyDAO.save({ name: "dummy name", state: LobbyState.Waiting });
-
-        expect(lobbyDAO.isExists(storedLobby.name)).toBeTruthy();
-    });
-
-    it("isExists should return false for not stored lobby", () => {
-        const notStoredLobbyName = "dummy name";
-
-        expect(lobbyDAO.isExists(notStoredLobbyName)).toBeFalsy();
+        lobbyDAO.isExists(lobby.name)
+            .then(isExists => {
+                expect(dbClientMock.find).toBeCalledWith(TableName.Lobby, "name", lobby.name);
+                expect(isExists).toBe(true);
+            });
     });
 });
