@@ -34,22 +34,27 @@ export default class DatabaseImpl implements Database {
 
     find(tableName: string, key: string, value: string): Entity {
         this.checkTableExistence(tableName);
-        return (this.tables.get(tableName) as Table).find(key, value);
+        return this.tables.get(tableName).find(key, value);
     }
 
     findMany(tableName: string, key: string, value: string): Entity[] {
         this.checkTableExistence(tableName);
-        return (this.tables.get(tableName) as Table).findMany(key, value);
+        return this.tables.get(tableName).findMany(key, value);
+    }
+    
+    findAll(tableName: string): Entity[] {
+        this.checkTableExistence(tableName);
+        return this.tables.get(tableName).findAll();
     }
 
     save(tableName: string, entity: Entity): Entity {
         this.checkTableExistence(tableName);
-        return (this.tables.get(tableName) as Table).save(entity);
+        return this.tables.get(tableName).save(entity);
     }
 
     delete(tableName: string, key: string, value: string): void {
         this.checkTableExistence(tableName);
-        return (this.tables.get(tableName) as Table).delete(key, value);
+        return this.tables.get(tableName).delete(key, value);
     }
 
     private checkTableExistence(tableName: string): void {

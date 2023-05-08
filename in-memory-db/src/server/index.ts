@@ -30,7 +30,7 @@ const protoDescriptor = loadPackageDefinition(packageDefinition);
 
 const database = container.get<Database>(CORE_TYPES.Database);
 
-function createTable(call: ServerUnaryCall<CreateTableRequest, void>, callback: sendUnaryData<void>) {
+const createTable = (call: ServerUnaryCall<CreateTableRequest, void>, callback: sendUnaryData<void>) => {
     const { tableName, definition } = call.request;
 
     let error: Error = null;
@@ -42,9 +42,9 @@ function createTable(call: ServerUnaryCall<CreateTableRequest, void>, callback: 
     }
 
     callback(error);
-}
+};
 
-function dropTable(call: ServerUnaryCall<TableRequest, void>, callback: sendUnaryData<void>) {
+const dropTable = (call: ServerUnaryCall<TableRequest, void>, callback: sendUnaryData<void>) => {
     const { tableName } = call.request;
 
     let error: Error = null;
@@ -56,9 +56,9 @@ function dropTable(call: ServerUnaryCall<TableRequest, void>, callback: sendUnar
     }
 
     callback(error);
-}
+};
 
-function isTableExists(call: ServerUnaryCall<TableRequest, BoolResponse>, callback: sendUnaryData<BoolResponse>) {
+const isTableExists = (call: ServerUnaryCall<TableRequest, BoolResponse>, callback: sendUnaryData<BoolResponse>) => {
     const { tableName } = call.request;
 
     let response: BoolResponse = null;
@@ -71,9 +71,9 @@ function isTableExists(call: ServerUnaryCall<TableRequest, BoolResponse>, callba
     }
 
     callback(error, response);
-}
+};
 
-function find(call: ServerUnaryCall<TableFieldRequest, EntityResponse>, callback: sendUnaryData<EntityResponse>) {
+const find = (call: ServerUnaryCall<TableFieldRequest, EntityResponse>, callback: sendUnaryData<EntityResponse>) => {
     const { tableName, key, value } = call.request;
 
     let response: EntityResponse = null;
@@ -86,9 +86,9 @@ function find(call: ServerUnaryCall<TableFieldRequest, EntityResponse>, callback
     }
 
     callback(error, response);
-}
+};
 
-function findMany(call: ServerUnaryCall<TableFieldRequest, EntitiesResponse>, callback: sendUnaryData<EntitiesResponse>) {
+const findMany = (call: ServerUnaryCall<TableFieldRequest, EntitiesResponse>, callback: sendUnaryData<EntitiesResponse>) => {
     const { tableName, key, value } = call.request;
 
     let response: EntitiesResponse = null;
@@ -101,9 +101,24 @@ function findMany(call: ServerUnaryCall<TableFieldRequest, EntitiesResponse>, ca
     }
 
     callback(error, response);
-}
+};
 
-function save(call: ServerUnaryCall<EntityRequest, EntityResponse>, callback: sendUnaryData<EntityResponse>) {
+const findAll = (call: ServerUnaryCall<TableRequest, EntitiesResponse>, callback: sendUnaryData<EntitiesResponse>) => {
+    const { tableName } = call.request;
+
+    let response: EntitiesResponse = null;
+    let error: Error = null;
+
+    try {
+        response = { result: database.findAll(tableName) };
+    } catch (e) {
+        error = e;
+    }
+
+    callback(error, response);
+};
+
+const save = (call: ServerUnaryCall<EntityRequest, EntityResponse>, callback: sendUnaryData<EntityResponse>) => {
     const { tableName, entity } = call.request;
 
     let response: EntityResponse = null;
@@ -116,9 +131,9 @@ function save(call: ServerUnaryCall<EntityRequest, EntityResponse>, callback: se
     }
 
     callback(error, response);
-}
+};
 
-function del(call: ServerUnaryCall<TableFieldRequest, void>, callback: sendUnaryData<void>) {
+const del = (call: ServerUnaryCall<TableFieldRequest, void>, callback: sendUnaryData<void>) => {
     const { tableName, key, value } = call.request;
 
     let error: Error = null;
@@ -130,9 +145,9 @@ function del(call: ServerUnaryCall<TableFieldRequest, void>, callback: sendUnary
     }
 
     callback(error);
-}
+};
 
-export default function () {
+export default () => {
     const server = new Server();
 
     server.addService((protoDescriptor.Database as ServiceClientConstructor).service, {
@@ -141,9 +156,10 @@ export default function () {
         isTableExists,
         find,
         findMany,
+        findAll,
         save,
         delete: del,
     });
 
     return server;
-}
+};

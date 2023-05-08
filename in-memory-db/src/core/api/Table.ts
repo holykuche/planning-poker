@@ -6,6 +6,8 @@ export default interface Table {
 
     findMany(key: string, value: string): Entity[];
 
+    findAll(): Entity[];
+
     save(entity: Entity): Entity;
 
     delete(key: string, value: string): void;

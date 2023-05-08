@@ -12,6 +12,8 @@ export default interface Database {
 
     findMany(tableName: string, key: string, value: string): Entity[];
 
+    findAll(tableName: string): Entity[];
+
     save(tableName: string, entity: Entity): Entity;
 
     delete(tableName: string, key: string, value: string): void;

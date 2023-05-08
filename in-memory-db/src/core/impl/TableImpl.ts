@@ -37,8 +37,8 @@ export default class TableImpl implements Table {
                 if (columnDefinition.type !== ColumnDataType.Number) {
                     throw new TableInitializeError(
                         tableName,
-                        `Primary key with type "${columnDefinition.type}" isn't supported.`
-                        + ` It should be "${ColumnDataType.Number}".`
+                        `Primary key with type "${ columnDefinition.type }" isn't supported.`
+                        + ` It should be "${ ColumnDataType.Number }".`,
                     );
                 }
 
@@ -49,7 +49,7 @@ export default class TableImpl implements Table {
             default:
                 throw new TableInitializeError(
                     tableName,
-                    `It's found more than 1 primary keys: ${primaryKeys.map(([ key ]) => key).join(", ")}.`
+                    `It's found more than 1 primary keys: ${ primaryKeys.map(([ key ]) => key).join(", ") }.`,
                 );
         }
 
@@ -90,6 +90,11 @@ export default class TableImpl implements Table {
         return this.data
             .filter((e, idx) => !this.isIndexFree(idx) && e[ key ] === value)
             .map(e => ({ ...e }));
+    }
+
+    findAll(): Entity[] {
+        return this.data
+            .filter((e, idx) => !this.freeIndexes.has(idx));
     }
 
     save(entity: Entity): Entity {
@@ -215,7 +220,7 @@ export default class TableImpl implements Table {
             throw new ValidationError(
                 this.tableName,
                 entity,
-                `Unexpected required null fields: ${requiredNullFields.map(([ key ]) => key).join(", ")}.`
+                `Unexpected required null fields: ${ requiredNullFields.map(([ key ]) => key).join(", ") }.`,
             );
         }
 
@@ -224,13 +229,13 @@ export default class TableImpl implements Table {
 
         if (incompatibleTypeFields.length) {
             const incompatibleTypeFieldsStr = incompatibleTypeFields
-                .map(([ key, value ]) => `${key}=${value} (must be ${this.columnDefinitions[ key ].type})`)
+                .map(([ key, value ]) => `${ key }=${ value } (must be ${ this.columnDefinitions[ key ].type })`)
                 .join(", ");
 
             throw new ValidationError(
                 this.tableName,
                 entity,
-                `Incompatible field's type(s): ${incompatibleTypeFieldsStr}`
+                `Incompatible field's type(s): ${ incompatibleTypeFieldsStr }`,
             );
         }
     }

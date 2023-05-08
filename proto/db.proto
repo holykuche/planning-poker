@@ -1,37 +1,39 @@
 syntax = "proto3";
 
 service Database {
-  rpc CreateTable (CreateTableRequest) returns (EmptyResponse);
+  rpc CreateTable (TableDefinitionRequest) returns (EmptyResponse);
   rpc DropTable (TableRequest) returns (EmptyResponse);
   rpc IsTableExists (TableRequest) returns (BoolResponse);
   rpc find (TableFieldRequest) returns (EntityResponse);
   rpc findMany (TableFieldRequest) returns (EntitiesResponse);
-  rpc save (SaveRequest) returns (EntityResponse);
+  rpc findAll (TableRequest) returns (EntitiesResponse);
+  rpc save (EntityRequest) returns (EntityResponse);
   rpc delete (TableFieldRequest) returns (EmptyResponse);
 }
 
 message EmptyResponse {}
 
-message CreateTableRequest {
-  string tableName = 1;
-  TableDefinition definition = 2;
-}
-
-message TableDefinition {
-  repeated string indexBy = 1;
-  string primaryKey = 2;
-}
-
-message ColumnDefinition {
-  ColumnDataType type = 1;
-  bool required = 2;
-  bool primaryKey = 3;
-}
-
 enum ColumnDataType {
   Number = 0;
   String = 1;
   Boolean = 2;
+}
+
+message ColumnDefinition {
+  string name = 1;
+  ColumnDataType type = 2;
+  bool required = 3;
+  bool primaryKey = 4;
+}
+
+message TableDefinition {
+  repeated string indexBy = 1;
+  map<string, ColumnDefinition> columns = 2;
+}
+
+message TableDefinitionRequest {
+  string tableName = 1;
+  TableDefinition definition = 2;
 }
 
 message TableRequest {
@@ -48,24 +50,20 @@ message BoolResponse {
   bool result = 1;
 }
 
-message Entity {
-  repeated EntityFieldEntry fields = 1;
-}
-
 message EntityFieldEntry {
   string key = 1;
   string value = 2;
 }
 
 message EntityResponse {
-  Entity result = 1;
+  map<string, string> result = 1;
 }
 
 message EntitiesResponse {
-  repeated Entity result = 1;
+  repeated EntityResponse result = 1;
 }
 
-message SaveRequest {
+message EntityRequest {
   string tableName = 1;
-  Entity entity = 2;
+  map<string, string> entity = 2;
 }
