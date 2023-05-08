@@ -4,11 +4,11 @@ service Database {
   rpc CreateTable (TableDefinitionRequest) returns (EmptyResponse);
   rpc DropTable (TableRequest) returns (EmptyResponse);
   rpc IsTableExists (TableRequest) returns (BoolResponse);
-  rpc find (TableFieldRequest) returns (EntityResponse);
-  rpc findMany (TableFieldRequest) returns (EntitiesResponse);
-  rpc findAll (TableRequest) returns (EntitiesResponse);
-  rpc save (EntityRequest) returns (EntityResponse);
-  rpc delete (TableFieldRequest) returns (EmptyResponse);
+  rpc Find (TableFieldRequest) returns (EntityResponse);
+  rpc FindMany (TableFieldRequest) returns (EntitiesResponse);
+  rpc FindAll (TableRequest) returns (EntitiesResponse);
+  rpc Save (EntityRequest) returns (EntityResponse);
+  rpc Delete (TableFieldRequest) returns (EmptyResponse);
 }
 
 message EmptyResponse {}

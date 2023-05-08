@@ -33,7 +33,8 @@ module.exports = {
                 {
                     from: path.resolve(__dirname, "src", "migration", "scripts"),
                     to: path.resolve(__dirname, "dist", "migration-scripts"),
-                }
+                },
+                path.resolve(__dirname, "proto"),
             ],
         }),
     ],
