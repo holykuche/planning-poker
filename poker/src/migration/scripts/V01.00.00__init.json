@@ -1,0 +1,56 @@
+[
+  {
+    "operation": "CreateTable",
+    "args": {
+      "tableName": "lobby",
+      "definition": {
+        "columns": {
+          "id": { "type": "Number", "primaryKey": true },
+          "name": { "type": "String", "required": true },
+          "currentTheme": { "type": "String" },
+          "state": { "type": "String", "required": true }
+        },
+        "indexBy": [ "name" ]
+      }
+    }
+  },
+  {
+    "operation": "CreateTable",
+    "args": {
+      "tableName": "member",
+      "definition": {
+        "columns": {
+          "id": { "type": "Number", "primaryKey": true },
+          "name": { "type": "String", "required": true }
+        },
+        "indexBy": [ "name" ]
+      }
+    }
+  },
+  {
+    "operation": "CreateTable",
+    "args": {
+      "tableName": "member_lobby_xref",
+      "definition": {
+        "columns": {
+          "memberId": { "type": "Number", "required": true },
+          "lobbyId": { "type": "Number", "required": true }
+        },
+        "indexBy": [ "memberId", "lobbyId" ]
+      }
+    }
+  },
+  {
+    "operation": "CreateTable",
+    "args": {
+      "tableName": "member_card_xref",
+      "definition": {
+        "columns": {
+          "memberId": { "type": "Number", "required": true },
+          "cardCode": { "type": "String", "required": true }
+        },
+        "indexBy": [ "memberId" ]
+      }
+    }
+  }
+]
