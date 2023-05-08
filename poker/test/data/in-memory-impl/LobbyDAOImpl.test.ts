@@ -43,7 +43,7 @@ describe("data/impl/LobbyDAOImpl", () => {
             .calledWith(TableName.Lobby, sameObject(lobby))
             .mockReturnValue(Promise.resolve(storedLobby));
 
-        lobbyDAO.save(lobby)
+        return lobbyDAO.save(lobby)
             .then(returnedLobby => {
                 expect(dbClientMock.save).toBeCalledWith(TableName.Lobby, lobby);
                 expect(returnedLobby).toEqual(storedLobby);
@@ -62,7 +62,7 @@ describe("data/impl/LobbyDAOImpl", () => {
             .calledWith(TableName.Lobby, "id", lobby.id)
             .mockReturnValue(Promise.resolve(lobby));
 
-        lobbyDAO.getById(lobby.id)
+        return lobbyDAO.getById(lobby.id)
             .then(returnedLobby => {
                 expect(dbClientMock.find).toBeCalledWith(TableName.Lobby, "id", lobby.id);
                 expect(returnedLobby).toEqual(lobby);
@@ -81,7 +81,7 @@ describe("data/impl/LobbyDAOImpl", () => {
             .calledWith(TableName.Lobby, "name", lobby.name)
             .mockReturnValue(Promise.resolve(lobby));
 
-        lobbyDAO.getByName(lobby.name)
+        return lobbyDAO.getByName(lobby.name)
             .then(returnedLobby => {
                 expect(dbClientMock.find).toBeCalledWith(TableName.Lobby, "name", lobby.name);
                 expect(returnedLobby).toEqual(lobby);
@@ -95,7 +95,7 @@ describe("data/impl/LobbyDAOImpl", () => {
             .calledWith(TableName.Lobby, "id", lobbyId)
             .mockReturnValue(Promise.resolve());
 
-        lobbyDAO.deleteById(lobbyId)
+        return lobbyDAO.deleteById(lobbyId)
             .then(() => {
                 expect(dbClientMock.delete).toBeCalledWith(TableName.Lobby, "id", lobbyId);
             });
@@ -113,7 +113,7 @@ describe("data/impl/LobbyDAOImpl", () => {
             .calledWith(TableName.Lobby, "name", lobby.name)
             .mockReturnValue(Promise.resolve(lobby));
 
-        lobbyDAO.isExists(lobby.name)
+        return lobbyDAO.isExists(lobby.name)
             .then(isExists => {
                 expect(dbClientMock.find).toBeCalledWith(TableName.Lobby, "name", lobby.name);
                 expect(isExists).toBe(true);

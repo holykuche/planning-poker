@@ -37,7 +37,7 @@ describe("data/impl/MemberCardXrefDAOImpl", () => {
             .calledWith(TableName.MemberCardXref, sameObject(xref))
             .mockReturnValue(Promise.resolve(xref));
 
-        memberCardXrefDAO.put(xref.memberId, xref.cardCode)
+        return memberCardXrefDAO.put(xref.memberId, xref.cardCode)
             .then(() => {
                 expect(dbClientMock.save)
                     .toBeCalledWith(TableName.MemberCardXref, xref);
@@ -51,7 +51,7 @@ describe("data/impl/MemberCardXrefDAOImpl", () => {
             .calledWith(TableName.MemberCardXref, "memberId", xref.memberId)
             .mockReturnValue(Promise.resolve(xref));
 
-        memberCardXrefDAO.getCardByMemberId(xref.memberId)
+        return memberCardXrefDAO.getCardByMemberId(xref.memberId)
             .then(card => {
                 expect(dbClientMock.find)
                     .toBeCalledWith(TableName.MemberCardXref, "memberId", xref.memberId);
@@ -77,7 +77,7 @@ describe("data/impl/MemberCardXrefDAOImpl", () => {
                     .mockReturnValue(Promise.resolve(xref));
             });
 
-        memberCardXrefDAO.getCardsByMemberIds(memberIds)
+        return memberCardXrefDAO.getCardsByMemberIds(memberIds)
             .then(receivedXrefs => {
                 receivedXrefs
                     .forEach(xref => {
@@ -95,7 +95,7 @@ describe("data/impl/MemberCardXrefDAOImpl", () => {
             .calledWith(TableName.MemberCardXref, "memberId", xref.memberId)
             .mockReturnValue(Promise.resolve());
 
-        memberCardXrefDAO.removeByMemberId(xref.memberId)
+        return memberCardXrefDAO.removeByMemberId(xref.memberId)
             .then(() => {
                 expect(dbClientMock.delete)
                     .toBeCalledWith(TableName.MemberCardXref, "memberId", xref.memberId);
@@ -120,7 +120,7 @@ describe("data/impl/MemberCardXrefDAOImpl", () => {
                     .mockReturnValue(Promise.resolve());
             });
 
-        memberCardXrefDAO.removeByMemberIds(memberIds)
+        return memberCardXrefDAO.removeByMemberIds(memberIds)
             .then(() => {
                 xrefs
                     .forEach(xref => {

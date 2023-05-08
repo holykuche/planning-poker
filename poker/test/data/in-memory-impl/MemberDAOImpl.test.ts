@@ -38,7 +38,7 @@ describe("data/impl/MemberDAOImpl", () => {
             .calledWith(TableName.Member, sameObject(member))
             .mockReturnValue(Promise.resolve(storedMember));
 
-        memberDAO.save(member)
+        return memberDAO.save(member)
             .then(returnedMember => {
                 expect(dbClientMock.save).toBeCalledWith(TableName.Member, member);
                 expect(returnedMember).toEqual(storedMember);
@@ -52,7 +52,7 @@ describe("data/impl/MemberDAOImpl", () => {
             .calledWith(TableName.Member, "id", member.id)
             .mockReturnValue(Promise.resolve(member));
 
-        memberDAO.getById(member.id)
+        return memberDAO.getById(member.id)
             .then(returnedMember => {
                 expect(dbClientMock.find).toBeCalledWith(TableName.Member, "id", member.id);
                 expect(returnedMember).toEqual(member);
@@ -76,7 +76,7 @@ describe("data/impl/MemberDAOImpl", () => {
                     .mockReturnValue(Promise.resolve(member));
             });
 
-        memberDAO.getByIds(members.map(m => m.id))
+        return memberDAO.getByIds(members.map(m => m.id))
             .then(returnedMembers => {
                 members
                     .forEach((member, idx) => {
@@ -93,7 +93,7 @@ describe("data/impl/MemberDAOImpl", () => {
             .calledWith(TableName.Member, "name", member.name)
             .mockReturnValue(Promise.resolve(member));
 
-        memberDAO.getByName(member.name)
+        return memberDAO.getByName(member.name)
             .then(returnedMember => {
                 expect(dbClientMock.find).toBeCalledWith(TableName.Member, "name", member.name);
                 expect(returnedMember).toEqual(member);
@@ -107,7 +107,7 @@ describe("data/impl/MemberDAOImpl", () => {
             .calledWith(TableName.Member, "id", member.id)
             .mockReturnValue(Promise.resolve());
 
-        memberDAO.deleteById(member.id)
+        return memberDAO.deleteById(member.id)
             .then(() => {
                 expect(dbClientMock.delete).toBeCalledWith(TableName.Member, "id", member.id);
             });
@@ -130,7 +130,7 @@ describe("data/impl/MemberDAOImpl", () => {
                     .mockReturnValue(Promise.resolve());
             });
 
-        memberDAO.deleteByIds(members.map(m => m.id))
+        return memberDAO.deleteByIds(members.map(m => m.id))
             .then(() => {
                 members
                     .forEach((member) => {
