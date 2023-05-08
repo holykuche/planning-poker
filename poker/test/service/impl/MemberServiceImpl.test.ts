@@ -8,9 +8,9 @@ import { MemberService, LobbyService, COMMON_SERVICE_TYPES, SubscriptionService 
 import { MemberIsNotInLobbyError, PokerIsNotStartedError, UnknownMemberError } from "service/error";
 import { SCHEDULER_TYPES, TimeoutScheduler } from "scheduler/api";
 
-import MemberServiceImpl from "service/impl/MemberServiceImpl";
+import { sameArray, sameObject } from "../../test-utils/customMatchers";
 
-import { sameArray } from "../../test-utils/customMatchers";
+import MemberServiceImpl from "service/impl/MemberServiceImpl";
 
 describe("service/common-service/impl/MemberServiceImpl", () => {
 
@@ -63,17 +63,23 @@ describe("service/common-service/impl/MemberServiceImpl", () => {
         const dummyMember = { id: 1, name: "dummy" };
         memberDAOMock.getById
             .calledWith(dummyMember.id)
-            .mockReturnValue(dummyMember);
+            .mockReturnValue(Promise.resolve(dummyMember));
 
-        expect(memberService.getById(dummyMember.id)).toBe(dummyMember);
+        return memberService.getById(dummyMember.id)
+            .then(returnedMember => {
+                expect(returnedMember).toBe(dummyMember);
+            });
     });
 
     it("getById should throw an error if it was called with ID of not existed member", () => {
         memberDAOMock.getById
             .calledWith(anyNumber())
-            .mockReturnValue(null);
+            .mockReturnValue(Promise.resolve(null));
 
-        expect(() => memberService.getById(1)).toThrowError(UnknownMemberError);
+        return memberService.getById(1)
+            .catch(error => {
+                expect(error).toBeInstanceOf(UnknownMemberError);
+            });
     });
 
     it("getMembersLobbyId should return a lobby ID if it was called with member's ID who id involved into a lobby", () => {
@@ -81,38 +87,50 @@ describe("service/common-service/impl/MemberServiceImpl", () => {
         const membersLobbyId = 2;
         memberLobbyXrefDAOMock.getMembersBinding
             .calledWith(memberId)
-            .mockReturnValue(membersLobbyId);
+            .mockReturnValue(Promise.resolve(membersLobbyId));
 
-        expect(memberService.getMembersLobbyId(memberId)).toBe(membersLobbyId);
+        return memberService.getMembersLobbyId(memberId)
+            .then(returnedLobbyId => {
+                expect(returnedLobbyId).toBe(membersLobbyId);
+            });
     });
 
     it("getMembersLobbyId should throw an error if it was called with member's ID who isn't involved into any lobby", () => {
         memberDAOMock.getById
             .calledWith(anyNumber())
-            .mockReturnValue({ id: 1, name: "dummy" });
+            .mockReturnValue(Promise.resolve({ id: 1, name: "dummy" }));
         memberLobbyXrefDAOMock.getMembersBinding
             .calledWith(anyNumber())
-            .mockReturnValue(null);
+            .mockReturnValue(Promise.resolve(null));
 
-        expect(() => memberService.getMembersLobbyId(1)).toThrowError(MemberIsNotInLobbyError);
+        return memberService.getMembersLobbyId(1)
+            .catch(error => {
+                expect(error).toBeInstanceOf(MemberIsNotInLobbyError);
+            });
     });
 
     it("isMemberInLobby should return true if it was called with member's ID who is involved into a lobby", () => {
         const memberId = 1;
         memberLobbyXrefDAOMock.isMemberBound
             .calledWith(memberId)
-            .mockReturnValue(true);
+            .mockReturnValue(Promise.resolve(true));
 
-        expect(memberService.isMemberInLobby(memberId)).toBe(true);
+        return memberService.isMemberInLobby(memberId)
+            .then(returnedIsMemberInLobby => {
+                expect(returnedIsMemberInLobby).toBe(true);
+            });
     });
 
     it("isMemberInLobby should return false if it was called with member's ID who isn't involved into any lobby", () => {
         const memberId = 1;
         memberLobbyXrefDAOMock.isMemberBound
             .calledWith(memberId)
-            .mockReturnValue(false);
+            .mockReturnValue(Promise.resolve(false));
 
-        expect(memberService.isMemberInLobby(memberId)).toBe(false);
+        return memberService.isMemberInLobby(memberId)
+            .then(returnedIsMemberInLobby => {
+                expect(returnedIsMemberInLobby).toBe(false);
+            });
     });
 
     it("putCard should store member's card if poker was started in the member's lobby", () => {
@@ -122,23 +140,28 @@ describe("service/common-service/impl/MemberServiceImpl", () => {
 
         memberLobbyXrefDAOMock.getMembersBinding
             .calledWith(memberId)
-            .mockReturnValue(dummyLobby.id);
+            .mockReturnValue(Promise.resolve(dummyLobby.id));
         memberLobbyXrefDAOMock.getMemberIdsByLobbyId
             .calledWith(dummyLobby.id)
-            .mockReturnValue([ memberId ]);
+            .mockReturnValue(Promise.resolve([ memberId ]));
         memberCardXrefDAOMock.getCardsByMemberIds
             .calledWith(sameArray([ memberId ]))
-            .mockReturnValue([ { memberId, cardCode } ]);
+            .mockReturnValue(Promise.resolve([ { memberId, cardCode } ]));
         lobbyDAOMock.getById
             .calledWith(dummyLobby.id)
-            .mockReturnValue(dummyLobby);
+            .mockReturnValue(Promise.resolve(dummyLobby));
         memberDAOMock.getByIds
             .calledWith(sameArray([ memberId ]))
-            .mockReturnValue([ { id: memberId, name: "dummy member name" } ]);
+            .mockReturnValue(Promise.resolve([ { id: memberId, name: "dummy member name" } ]));
+        lobbyDAOMock.save
+            .calledWith(sameObject({ ...dummyLobby, currentTheme: null, state: LobbyState.Waiting }))
+            .mockReturnValue(Promise.resolve({ ...dummyLobby, currentTheme: null, state: LobbyState.Waiting }));
 
-        memberService.putCard(memberId, cardCode);
-        expect(memberCardXrefDAOMock.put).toBeCalledTimes(1);
-        expect(memberCardXrefDAOMock.put).toBeCalledWith(memberId, cardCode);
+        return memberService.putCard(memberId, cardCode)
+            .then(() => {
+                expect(memberCardXrefDAOMock.put).toBeCalledTimes(1);
+                expect(memberCardXrefDAOMock.put).toBeCalledWith(memberId, cardCode);
+            });
     });
 
     it("putCard should throw an error if poker wasn't started in the member's lobby", () => {
@@ -148,14 +171,17 @@ describe("service/common-service/impl/MemberServiceImpl", () => {
 
         memberLobbyXrefDAOMock.getMembersBinding
             .calledWith(memberId)
-            .mockReturnValue(dummyLobby.id);
+            .mockReturnValue(Promise.resolve(dummyLobby.id));
         lobbyDAOMock.getById
             .calledWith(dummyLobby.id)
-            .mockReturnValue(dummyLobby);
+            .mockReturnValue(Promise.resolve(dummyLobby));
 
-        expect(() => memberService.putCard(memberId, cardCode)).toThrowError(PokerIsNotStartedError);
-        expect(memberCardXrefDAOMock.put).not.toBeCalled();
-        expect(memberCardXrefDAOMock.put).not.toBeCalled();
+        return memberService.putCard(memberId, cardCode)
+            .catch(error => {
+                expect(error).toBeInstanceOf(PokerIsNotStartedError);
+                expect(memberCardXrefDAOMock.put).not.toBeCalled();
+                expect(memberCardXrefDAOMock.put).not.toBeCalled();
+            });
     });
 
     it("removeCard should remove member's card from storage if poker was started in the member's lobby", () => {
@@ -164,23 +190,25 @@ describe("service/common-service/impl/MemberServiceImpl", () => {
 
         memberLobbyXrefDAOMock.getMembersBinding
             .calledWith(memberId)
-            .mockReturnValue(dummyLobby.id);
+            .mockReturnValue(Promise.resolve(dummyLobby.id));
         memberLobbyXrefDAOMock.getMemberIdsByLobbyId
             .calledWith(dummyLobby.id)
-            .mockReturnValue([ memberId ]);
+            .mockReturnValue(Promise.resolve([ memberId ]));
         memberCardXrefDAOMock.getCardsByMemberIds
             .calledWith(sameArray([ memberId ]))
-            .mockReturnValue([ { memberId, cardCode: null } ]);
+            .mockReturnValue(Promise.resolve([ { memberId, cardCode: null } ]));
         lobbyDAOMock.getById
             .calledWith(dummyLobby.id)
-            .mockReturnValue(dummyLobby);
+            .mockReturnValue(Promise.resolve(dummyLobby));
         memberDAOMock.getByIds
             .calledWith(sameArray([ memberId ]))
-            .mockReturnValue([ { id: memberId, name: "dummy member name" } ]);
+            .mockReturnValue(Promise.resolve([ { id: memberId, name: "dummy member name" } ]));
 
-        memberService.removeCard(memberId);
-        expect(memberCardXrefDAOMock.removeByMemberId).toBeCalledTimes(1);
-        expect(memberCardXrefDAOMock.removeByMemberId).toBeCalledWith(memberId);
+        return memberService.removeCard(memberId)
+            .then(() => {
+                expect(memberCardXrefDAOMock.removeByMemberId).toBeCalledTimes(1);
+                expect(memberCardXrefDAOMock.removeByMemberId).toBeCalledWith(memberId);
+            });
     });
 
     it("removeCard should throw an error if poker wasn't started in the member's lobby", () => {
@@ -189,13 +217,16 @@ describe("service/common-service/impl/MemberServiceImpl", () => {
 
         memberLobbyXrefDAOMock.getMembersBinding
             .calledWith(memberId)
-            .mockReturnValue(dummyLobby.id);
+            .mockReturnValue(Promise.resolve(dummyLobby.id));
         lobbyDAOMock.getById
             .calledWith(dummyLobby.id)
-            .mockReturnValue(dummyLobby);
+            .mockReturnValue(Promise.resolve(dummyLobby));
 
-        expect(() => memberService.removeCard(memberId)).toThrowError(PokerIsNotStartedError);
-        expect(memberCardXrefDAOMock.removeByMemberId).not.toBeCalled();
-        expect(memberCardXrefDAOMock.removeByMemberId).not.toBeCalled();
+        return memberService.removeCard(memberId)
+            .catch(error => {
+                expect(error).toBeInstanceOf(PokerIsNotStartedError);
+                expect(memberCardXrefDAOMock.removeByMemberId).not.toBeCalled();
+                expect(memberCardXrefDAOMock.removeByMemberId).not.toBeCalled();
+            });
     });
 });
