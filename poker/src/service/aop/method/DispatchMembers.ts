@@ -31,12 +31,17 @@ export default function (target: Object, propertyKey: string, descriptor: TypedP
             subscriptionService: container.get<SubscriptionService>(COMMON_SERVICE_TYPES.SubscriptionService),
         };
 
-        const lobbyId = resolveLobbyId(dependencies, args, target, propertyKey);
-
         return Promise.resolve(result)
             .then(resultValue =>
-                getMembers(dependencies, lobbyId)
-                    .then(members => dependencies.subscriptionService.dispatch(lobbyId, {
+                resolveLobbyId(dependencies, args, target, propertyKey)
+                    .then(lobbyId =>
+                        getMembers(dependencies, lobbyId)
+                            .then(members => ({
+                                lobbyId,
+                                members,
+                            }))
+                    )
+                    .then(({ lobbyId, members }) => dependencies.subscriptionService.dispatch(lobbyId, {
                         type: EventType.MembersWasChanged,
                         payload: { members },
                     }))

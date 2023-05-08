@@ -65,11 +65,10 @@ export default function (target: Object, propertyKey: string, descriptor: TypedP
             subscriptionService: container.get<SubscriptionService>(COMMON_SERVICE_TYPES.SubscriptionService),
         };
 
-        const lobbyId = resolveLobbyId(dependencies, args, target, propertyKey);
-
         return Promise.resolve(result)
             .then(resultValue =>
-                dependencies.lobbyDAO.getById(lobbyId)
+                resolveLobbyId(dependencies, args, target, propertyKey)
+                    .then(lobbyId => dependencies.lobbyDAO.getById(lobbyId))
                     .then(lobby => {
                         if (lobby.state !== LobbyState.Playing) {
                             throw new PokerIsNotStartedError(lobby);
@@ -77,7 +76,7 @@ export default function (target: Object, propertyKey: string, descriptor: TypedP
                         return lobby;
                     })
                     .then(lobby =>
-                        getPokerResult(dependencies, lobbyId)
+                        getPokerResult(dependencies, lobby.id)
                             .then(pokerResult => ({
                                 lobby,
                                 pokerResult,
@@ -85,21 +84,17 @@ export default function (target: Object, propertyKey: string, descriptor: TypedP
                     )
                     .then(({ lobby, pokerResult}) => {
                         if (pokerResult.every(item => !!item.card)) {
-                            return finishPoker(dependencies, lobbyId, pokerResult);
+                            return finishPoker(dependencies, lobby.id, pokerResult);
                         }
 
-                        dependencies.subscriptionService.dispatch(lobbyId, {
+                        dependencies.subscriptionService.dispatch(lobby.id, {
                             type: EventType.PokerResultWasChanged,
                             payload: { theme: lobby.currentTheme, result: pokerResult },
                         });
                         return Promise.resolve();
                     })
                     .catch(error => {
-                        if (error instanceof PokerIsNotStartedError) {
-                            console.log(`Trying to dispatch unknown poker result: ${ error.message }`);
-                        } else {
-                            throw error;
-                        }
+                        if (!(error instanceof PokerIsNotStartedError)) throw error;
                     })
                     .then(() => resultValue)
             );

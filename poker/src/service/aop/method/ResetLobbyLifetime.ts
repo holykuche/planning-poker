@@ -48,12 +48,17 @@ export default function (target: Object, propertyKey: string, descriptor: TypedP
             timeoutScheduler: container.get<TimeoutScheduler>(SCHEDULER_TYPES.TimeoutScheduler),
         };
 
-        const lobbyId = resolveLobbyId(dependencies, args, target, propertyKey);
-
         return Promise.resolve(result)
             .then(resultValue =>
-                dependencies.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId)
-                    .then(memberIds => {
+                resolveLobbyId(dependencies, args, target, propertyKey)
+                    .then(lobbyId =>
+                        dependencies.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId)
+                            .then(memberIds => ({
+                                lobbyId,
+                                memberIds,
+                            }))
+                    )
+                    .then(({ lobbyId, memberIds }) => {
                         if (!memberIds.length) {
                             dependencies.timeoutScheduler.cancel(TaskType.Lobby, lobbyId);
                             return destroyLobby(dependencies, lobbyId, memberIds);

@@ -78,14 +78,14 @@ export default class LobbyServiceImpl implements LobbyService {
                 }
                 return member;
             })
-            .then(member => {
-                return this.memberLobbyXrefDAO.getMembersBinding(memberId)
+            .then(member =>
+                this.memberLobbyXrefDAO.getMembersBinding(memberId)
                     .then(membersLobbyId => {
                         if (lobbyId !== membersLobbyId) {
                             throw new MemberIsNotInLobbyError(member.name);
                         }
                     })
-            })
+            )
             .then(() => Promise.all([
                 this.memberLobbyXrefDAO.unbindMember(memberId),
                 this.memberCardXrefDAO.removeByMemberId(memberId)
