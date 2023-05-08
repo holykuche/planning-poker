@@ -1,7 +1,10 @@
 import "reflect-metadata";
+import { resolve } from "path";
+
 import { container } from "config/inversify";
 import { MIGRATION_TYPES, MigrationsExecutor } from "./api";
 
-await container.get<MigrationsExecutor>(MIGRATION_TYPES.MigrationsExecutor)
-    .execute("migration-scripts")
-    .then(() => console.log("Migration completed successfully"));
+container.get<MigrationsExecutor>(MIGRATION_TYPES.MigrationsExecutor)
+    .execute(resolve(__dirname, "migration-scripts"))
+    .then(() => console.log("Migration completed successfully"))
+    .catch(error => console.error(error));

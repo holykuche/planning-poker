@@ -1,26 +1,27 @@
-import { injectable, inject } from "inversify";
+import { inject, injectable } from "inversify";
 import { readdir } from "fs/promises";
 import { createHash } from "crypto";
 import { readFileSync } from "fs";
-import { fork } from "child_process";
+import { resolve } from "path";
 
 import { DatabaseClient, DB_CLIENT_TYPES } from "db-client/api";
 import { ColumnDataType } from "db-client/enum";
 
 import { MigrationsExecutor } from "../api";
-import { TableName } from "../enum";
+import { TableName, MigrationOperation } from "../enum";
 import {
-    MigrationHistoryTableAlreadyExistsError,
-    UnsuccessfulMigrationsExistError,
-    UnknownMigrationsError,
     IncompatibleMigrationsError,
+    MigrationHistoryTableAlreadyExistsError,
+    UnknownMigrationsError,
+    UnsuccessfulMigrationsExistError,
+    UnsupportedMigrationOperation,
 } from "../error";
-import { MigrationHistoryRecord, RecordsAndFilenames, RecordsAndFilenamesAndHashes } from "../dto";
+import { MigrationHistoryRecord, MigrationInstance, RecordsAndFilenames, RecordsAndFilenamesAndHashes } from "../dto";
 
 @injectable()
 export default class MigrationsExecutorImpl implements MigrationsExecutor {
 
-    @inject(DB_CLIENT_TYPES.DatabaseClient) private readonly DbClient: DatabaseClient
+    @inject(DB_CLIENT_TYPES.DatabaseClient) private readonly dbClient: DatabaseClient;
 
     execute(migrationsDirname: string): Promise<void> {
         return this.initializeMigrationHistoryTable()
@@ -32,24 +33,23 @@ export default class MigrationsExecutorImpl implements MigrationsExecutor {
                     throw reason;
                 }
             })
-            .then(this.prepareRecords)
+            .then(() => this.prepareRecords())
             .then(MigrationsExecutorImpl.validateSuccess)
             .then(records => MigrationsExecutorImpl.prepareFilenames(migrationsDirname, records))
             .then(MigrationsExecutorImpl.validateExisting)
-            .then(MigrationsExecutorImpl.prepareHashes)
+            .then(recordsAndFilenames => MigrationsExecutorImpl.prepareHashes(migrationsDirname, recordsAndFilenames))
             .then(MigrationsExecutorImpl.validateHashes)
-            .then(this.executeMigrations)
-            .catch(console.error);
+            .then(recordsAndFilenamesAndHashes => this.executeMigrations(migrationsDirname, recordsAndFilenamesAndHashes));
     }
 
     private async initializeMigrationHistoryTable() {
-        return this.DbClient.isTableExists(TableName.MigrationHistory)
+        return this.dbClient.isTableExists(TableName.MigrationHistory)
             .then(isExists => {
                 if (isExists) {
                     throw new MigrationHistoryTableAlreadyExistsError();
                 }
 
-                return this.DbClient.createTable(TableName.MigrationHistory, {
+                return this.dbClient.createTable(TableName.MigrationHistory, {
                     columns: {
                         id: { type: ColumnDataType.Number, primaryKey: true },
                         file_name: { type: ColumnDataType.String, required: true },
@@ -62,21 +62,21 @@ export default class MigrationsExecutorImpl implements MigrationsExecutor {
     }
 
     private async prepareRecords() {
-        return this.DbClient.findAll<MigrationHistoryRecord>(TableName.MigrationHistory);
+        return this.dbClient.findAll<MigrationHistoryRecord>(TableName.MigrationHistory);
     }
 
     private static async prepareFilenames(migrationsDirname: string, records: MigrationHistoryRecord[]) {
         return readdir(migrationsDirname).then(filenames => ({ records, filenames }));
     }
 
-    private static prepareHashes(recordsAndFilenames: RecordsAndFilenames) {
+    private static prepareHashes(dirname: string, recordsAndFilenames: RecordsAndFilenames) {
         return {
             ...recordsAndFilenames,
             hashes: recordsAndFilenames.filenames
-                .reduce((hashes, fn) => ({
+                .reduce((hashes, filename) => ({
                     ...hashes,
-                    [ fn ]: createHash("md5")
-                        .update(readFileSync(fn))
+                    [ filename ]: createHash("md5")
+                        .update(readFileSync(resolve(dirname, filename)))
                         .digest("hex"),
                 }), {} as Record<string, string>),
         };
@@ -113,31 +113,25 @@ export default class MigrationsExecutorImpl implements MigrationsExecutor {
         return recordsAndFilenamesAndHashes;
     }
 
-    private static executeMigration(filename: string) {
-        return new Promise<void>(((resolve, reject) => {
-            let invoked = false;
-            const process = fork(filename);
+    private executeMigration(fullFilename: string) {
+        const migration: MigrationInstance = require(fullFilename);
+        const { operation, args } = migration;
 
-            process.on("error", error => {
-                if (invoked) return;
-                invoked = true;
-                reject(error);
-            });
-
-            process.on("exit", code => {
-                if (invoked) return;
-                invoked = true;
-
-                if (code === 0) {
-                    resolve();
-                } else {
-                    reject(new Error(`Exit code: ${ code }`))
-                }
-            })
-        }));
+        switch (operation) {
+            case MigrationOperation.CreateTable:
+                return this.dbClient.createTable(args.tableName, args.definition);
+            case MigrationOperation.DropTable:
+                return this.dbClient.dropTable(args.tableName);
+            case MigrationOperation.Save:
+                return this.dbClient.save(args.tableName, args.entity);
+            case MigrationOperation.Delete:
+                return this.dbClient.delete<Record<string, any>, any>(args.tableName, args.key, args.value);
+            default:
+                return Promise.reject(new UnsupportedMigrationOperation(operation));
+        }
     }
 
-    private async executeMigrations(recordsAndFilenamesAndHashes: RecordsAndFilenamesAndHashes) {
+    private async executeMigrations(dirname: string, recordsAndFilenamesAndHashes: RecordsAndFilenamesAndHashes) {
         const { records, filenames, hashes } = recordsAndFilenamesAndHashes;
 
         const sortedFilenames = filenames.sort((left, right) => left.localeCompare(right));
@@ -150,7 +144,7 @@ export default class MigrationsExecutorImpl implements MigrationsExecutor {
             let failureReason: string;
 
             try {
-                await MigrationsExecutorImpl.executeMigration(filename);
+                await this.executeMigration(resolve(dirname, filename));
                 console.log(`Migration ${ filename } successfully applied`);
             } catch (error) {
                 if (error instanceof Error) {
@@ -163,7 +157,7 @@ export default class MigrationsExecutorImpl implements MigrationsExecutor {
                 console.log(`Migration ${ filename } executed with error: ${ failureReason }`);
             }
 
-            await this.DbClient.save<MigrationHistoryRecord>(TableName.MigrationHistory, {
+            await this.dbClient.save<MigrationHistoryRecord>(TableName.MigrationHistory, {
                 file_name: filename,
                 hash: hashes[ filename ],
                 success: !failureReason,

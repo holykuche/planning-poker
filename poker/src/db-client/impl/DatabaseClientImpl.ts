@@ -12,7 +12,7 @@ interface Result<T> {
 @injectable()
 export default class DatabaseClientImpl implements DatabaseClient {
 
-    private readonly stub;
+    private readonly stub: InstanceType<ServiceClientConstructor>;
 
     constructor() {
         const PROTO_PATH = __dirname + "/db.proto";

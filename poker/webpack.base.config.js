@@ -1,5 +1,6 @@
 const path = require("path");
 const CopyPlugin = require("copy-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 
 module.exports = {
     target: "node",
@@ -37,5 +38,6 @@ module.exports = {
                 path.resolve(__dirname, "proto"),
             ],
         }),
+        new CleanWebpackPlugin(),
     ],
 };
