@@ -11,7 +11,7 @@ import { sameObject } from "../../test-utils/customMatchers";
 
 import LobbyDAOImpl from "data/impl/LobbyDAOImpl";
 
-describe("data/common-data/in-memory-impl/LobbyDAOImpl", () => {
+describe("data/impl/LobbyDAOImpl", () => {
 
     let lobbyDAO: LobbyDAO;
 

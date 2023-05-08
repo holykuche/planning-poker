@@ -11,7 +11,7 @@ import { sameObject } from "../../test-utils/customMatchers";
 
 import MemberCardXrefDAOImpl from "data/impl/MemberCardXrefDAOImpl";
 
-describe("data/common-data/in-memory-impl/MemberCardXrefDAOImpl", () => {
+describe("data/impl/MemberCardXrefDAOImpl", () => {
 
     let memberCardXrefDAO: MemberCardXrefDAO;
 

@@ -1,143 +1,141 @@
 import "reflect-metadata";
+import { CalledWithMock, mock, MockProxy, mockReset } from "jest-mock-extended";
+
+import { container } from "config/inversify";
+import { MemberDAO, DAO_TYPES } from "data/api";
 import { Member } from "data/entity";
+import { TableName } from "data/enum";
+import { DatabaseClient, DB_CLIENT_TYPES } from "db-client/api";
+
+import { sameObject } from "../../test-utils/customMatchers";
+
 import MemberDAOImpl from "data/impl/MemberDAOImpl";
 
-describe("data/common-data/in-memory-impl/MemberDAOImpl", () => {
+describe("data/impl/MemberDAOImpl", () => {
 
-    let memberDAO: MemberDAOImpl;
+    let memberDAO: MemberDAO;
+
+    let dbClient: MockProxy<DatabaseClient>;
+
+    beforeAll(() => {
+        container.bind<MemberDAO>(DAO_TYPES.MemberDAO).to(MemberDAOImpl);
+
+        dbClient = mock<DatabaseClient>();
+        container.bind<DatabaseClient>(DB_CLIENT_TYPES.DatabaseClient).toConstantValue(dbClient);
+
+        memberDAO = container.get<MemberDAO>(DAO_TYPES.MemberDAO);
+    });
 
     beforeEach(() => {
-        memberDAO = new MemberDAOImpl();
+        mockReset(dbClient);
     });
 
-    it("save should return a new object", () => {
-        const storedMember1 = memberDAO.save({ name: "dummy name" });
-        const storedMember2 = memberDAO.save(storedMember1);
+    it("save should send save query to db", () => {
+        const member: Member = { name: "dummy name" };
+        const storedMember: Member = { id: 1, ...member };
 
-        expect(storedMember2).not.toBe(storedMember1);
-    });
+        dbClient.save
+            .calledWith(TableName.Member, sameObject(member))
+            .mockReturnValue(Promise.resolve(storedMember));
 
-    it("save should assign ID to member without ID", () => {
-        const storedMember = memberDAO.save({ name: "dummy name" });
-
-        expect(storedMember.id).toBeDefined();
-    });
-
-    it("save should return member with the same property values", () => {
-        const member = { name: "dummy name" };
-        const storedMember = memberDAO.save(member);
-
-        expect(storedMember.name).toBe(member.name);
-    });
-
-    it("getById should return stored member", () => {
-        const members = [
-            { name: "dummy name 1" },
-            { name: "dummy name 2" },
-            { name: "dummy name 3" },
-            { name: "dummy name 4" },
-            { name: "dummy name 5" },
-        ];
-
-        members
-            .map(member => memberDAO.save(member))
-            .map(storedMember => [ storedMember, memberDAO.getById(storedMember.id) ])
-            .forEach(([ storedMember, receivedMember ]) => expect(receivedMember).toEqual(storedMember));
-    });
-
-    it("getById should return a new object", () => {
-        const storedMember = memberDAO.save({ name: "dummy name" });
-        const receivedMember = memberDAO.getById(storedMember.id);
-
-        expect(receivedMember).not.toBe(storedMember);
-    });
-
-    it("getById shouldn't return not stored member", () => {
-        const receivedMember = memberDAO.getById(1);
-
-        expect(receivedMember).toBeNull();
-    });
-
-    it("getByIds should return stored members", () => {
-        const members = [
-            { name: "dummy name 1" },
-            { name: "dummy name 2" },
-            { name: "dummy name 3" },
-            { name: "dummy name 4" },
-            { name: "dummy name 5" },
-        ];
-
-        const storedMembers: [ number, Member ][] = members
-            .map(member => memberDAO.save(member))
-            .reduce((memberTuples, storedMember) => [
-                ...memberTuples,
-                [ storedMember.id, storedMember ],
-            ], []);
-        memberDAO.getByIds(storedMembers.map(([ id ]) => id))
-            .forEach(receivedMember => {
-                const storedMember = storedMembers
-                    .map(([ , sm ]) => sm)
-                    .find(sm => sm.id === receivedMember.id);
-                expect(receivedMember).toEqual(storedMember);
+        memberDAO.save(member)
+            .then(returnedMember => {
+                expect(dbClient.save).toBeCalledWith(TableName.Member, member);
+                expect(returnedMember).toEqual(storedMember);
             });
     });
 
-    it("getByIds should return empty array for not existed IDs", () => {
-        const notExistedMemberIds = [ 1, 2, 3, 4, 5 ];
+    it("getById should send find query to db", () => {
+        const member: Member = { id: 1, name: "dummy name" };
 
-        expect(memberDAO.getByIds(notExistedMemberIds).length).toBe(0);
+        (dbClient.find as CalledWithMock<Promise<Member>, [ TableName, string, number ]>)
+            .calledWith(TableName.Member, "id", member.id)
+            .mockReturnValue(Promise.resolve(member));
+
+        memberDAO.getById(member.id)
+            .then(returnedMember => {
+                expect(dbClient.find).toBeCalledWith(TableName.Member, "id", member.id);
+                expect(returnedMember).toEqual(member);
+            })
     });
 
-    it("getByName should return stored member", () => {
-        const members = [
-            { name: "dummy name 1" },
-            { name: "dummy name 2" },
-            { name: "dummy name 3" },
-            { name: "dummy name 4" },
-            { name: "dummy name 5" },
+    // todo: it needs to make DatabaseClient able to send bulk find queries
+    it("getByIds should send find query to db many times", () => {
+        const members: Member[] = [
+            { id: 1, name: "dummy name 1" },
+            { id: 2, name: "dummy name 2" },
+            { id: 3, name: "dummy name 3" },
+            { id: 4, name: "dummy name 4" },
+            { id: 5, name: "dummy name 5" },
         ];
 
         members
-            .map(member => memberDAO.save(member))
-            .map(storedMember => [ storedMember, memberDAO.getByName(storedMember.name) ])
-            .forEach(([ storedMember, receivedMember ]) => expect(receivedMember).toEqual(storedMember));
+            .forEach(member => {
+                (dbClient.find as CalledWithMock<Promise<Member>, [ TableName, string, number ]>)
+                    .calledWith(TableName.Member, "id", member.id)
+                    .mockReturnValue(Promise.resolve(member));
+            });
+
+        memberDAO.getByIds(members.map(m => m.id))
+            .then(returnedMembers => {
+                members
+                    .forEach((member, idx) => {
+                        expect(dbClient.find).toBeCalledWith(TableName.Member, "id", member.id);
+                        expect(returnedMembers[ idx ]).toEqual(member);
+                    });
+            });
     });
 
-    it("getByName shouldn't return not stored member", () => {
-        const receivedMember = memberDAO.getByName("dummy name");
+    it("getByName should send find query to db", () => {
+        const member: Member = { id: 1, name: "dummy name" };
 
-        expect(receivedMember).toBeNull();
+        (dbClient.find as CalledWithMock<Promise<Member>, [ TableName, string, string ]>)
+            .calledWith(TableName.Member, "name", member.name)
+            .mockReturnValue(Promise.resolve(member));
+
+        memberDAO.getByName(member.name)
+            .then(returnedMember => {
+                expect(dbClient.find).toBeCalledWith(TableName.Member, "name", member.name);
+                expect(returnedMember).toEqual(member);
+            });
     });
 
-    it("getByName should return a new object", () => {
-        const storedMember = memberDAO.save({ name: "dummy name" });
-        const receivedMember = memberDAO.getByName(storedMember.name);
+    it("deleteById should send delete query to db", () => {
+        const member: Member = { id: 1, name: "dummy name" };
 
-        expect(receivedMember).not.toBe(storedMember);
+        (dbClient.delete as CalledWithMock<Promise<void>, [ TableName, string, number ]>)
+            .calledWith(TableName.Member, "id", member.id)
+            .mockReturnValue(Promise.resolve());
+
+        memberDAO.deleteById(member.id)
+            .then(() => {
+                expect(dbClient.delete).toBeCalledWith(TableName.Member, "id", member.id);
+            });
     });
 
-    it("deleteById should delete stored member", () => {
-        const storedMember = memberDAO.save({ name: "dummy name" });
-        memberDAO.deleteById(storedMember.id);
-        const receivedMember = memberDAO.getById(storedMember.id);
-
-        expect(receivedMember).toBeNull();
-    });
-
-    it("deleteByIds should delete stored members", () => {
-        const members = [
-            { name: "dummy name 1" },
-            { name: "dummy name 2" },
-            { name: "dummy name 3" },
-            { name: "dummy name 4" },
-            { name: "dummy name 5" },
+    // todo: it needs to make DatabaseClient able to send bulk delete queries
+    it("deleteByIds should send delete query to db many times", () => {
+        const members: Member[] = [
+            { id: 1, name: "dummy name 1" },
+            { id: 2, name: "dummy name 2" },
+            { id: 3, name: "dummy name 3" },
+            { id: 4, name: "dummy name 4" },
+            { id: 5, name: "dummy name 5" },
         ];
 
-        const storedMemberIds = members
-            .map(member => memberDAO.save(member))
-            .map(storedMember => storedMember.id);
-        memberDAO.deleteByIds(storedMemberIds);
+        members
+            .forEach(member => {
+                (dbClient.delete as CalledWithMock<Promise<void>, [ TableName, string, number ]>)
+                    .calledWith(TableName.Member, "id", member.id)
+                    .mockReturnValue(Promise.resolve());
+            });
 
-        expect(memberDAO.getByIds(storedMemberIds).length).toBe(0);
+        memberDAO.deleteByIds(members.map(m => m.id))
+            .then(() => {
+                members
+                    .forEach((member) => {
+                        expect(dbClient.delete).toBeCalledWith(TableName.Member, "id", member.id);
+                    });
+            });
     });
 });
