@@ -64,8 +64,7 @@ export default class LobbyServiceImpl implements LobbyService {
                         })
                     : Promise.resolve();
             })
-            .then(() => this.memberLobbyXrefDAO.bindMember(memberId, lobbyId))
-            .then();
+            .then(() => this.memberLobbyXrefDAO.bindMember(memberId, lobbyId));
     }
 
     @ResetLobbyLifetime

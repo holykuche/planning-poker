@@ -15,32 +15,32 @@ describe("data/impl/MemberDAOImpl", () => {
 
     let memberDAO: MemberDAO;
 
-    let dbClient: MockProxy<DatabaseClient>;
+    let dbClientMock: MockProxy<DatabaseClient>;
 
     beforeAll(() => {
         container.bind<MemberDAO>(DAO_TYPES.MemberDAO).to(MemberDAOImpl);
 
-        dbClient = mock<DatabaseClient>();
-        container.bind<DatabaseClient>(DB_CLIENT_TYPES.DatabaseClient).toConstantValue(dbClient);
+        dbClientMock = mock<DatabaseClient>();
+        container.bind<DatabaseClient>(DB_CLIENT_TYPES.DatabaseClient).toConstantValue(dbClientMock);
 
         memberDAO = container.get<MemberDAO>(DAO_TYPES.MemberDAO);
     });
 
     beforeEach(() => {
-        mockReset(dbClient);
+        mockReset(dbClientMock);
     });
 
     it("save should send save query to db", () => {
         const member: Member = { name: "dummy name" };
         const storedMember: Member = { id: 1, ...member };
 
-        dbClient.save
+        dbClientMock.save
             .calledWith(TableName.Member, sameObject(member))
             .mockReturnValue(Promise.resolve(storedMember));
 
         memberDAO.save(member)
             .then(returnedMember => {
-                expect(dbClient.save).toBeCalledWith(TableName.Member, member);
+                expect(dbClientMock.save).toBeCalledWith(TableName.Member, member);
                 expect(returnedMember).toEqual(storedMember);
             });
     });
@@ -48,13 +48,13 @@ describe("data/impl/MemberDAOImpl", () => {
     it("getById should send find query to db", () => {
         const member: Member = { id: 1, name: "dummy name" };
 
-        (dbClient.find as CalledWithMock<Promise<Member>, [ TableName, string, number ]>)
+        (dbClientMock.find as CalledWithMock<Promise<Member>, [ TableName, string, number ]>)
             .calledWith(TableName.Member, "id", member.id)
             .mockReturnValue(Promise.resolve(member));
 
         memberDAO.getById(member.id)
             .then(returnedMember => {
-                expect(dbClient.find).toBeCalledWith(TableName.Member, "id", member.id);
+                expect(dbClientMock.find).toBeCalledWith(TableName.Member, "id", member.id);
                 expect(returnedMember).toEqual(member);
             })
     });
@@ -71,7 +71,7 @@ describe("data/impl/MemberDAOImpl", () => {
 
         members
             .forEach(member => {
-                (dbClient.find as CalledWithMock<Promise<Member>, [ TableName, string, number ]>)
+                (dbClientMock.find as CalledWithMock<Promise<Member>, [ TableName, string, number ]>)
                     .calledWith(TableName.Member, "id", member.id)
                     .mockReturnValue(Promise.resolve(member));
             });
@@ -80,7 +80,7 @@ describe("data/impl/MemberDAOImpl", () => {
             .then(returnedMembers => {
                 members
                     .forEach((member, idx) => {
-                        expect(dbClient.find).toBeCalledWith(TableName.Member, "id", member.id);
+                        expect(dbClientMock.find).toBeCalledWith(TableName.Member, "id", member.id);
                         expect(returnedMembers[ idx ]).toEqual(member);
                     });
             });
@@ -89,13 +89,13 @@ describe("data/impl/MemberDAOImpl", () => {
     it("getByName should send find query to db", () => {
         const member: Member = { id: 1, name: "dummy name" };
 
-        (dbClient.find as CalledWithMock<Promise<Member>, [ TableName, string, string ]>)
+        (dbClientMock.find as CalledWithMock<Promise<Member>, [ TableName, string, string ]>)
             .calledWith(TableName.Member, "name", member.name)
             .mockReturnValue(Promise.resolve(member));
 
         memberDAO.getByName(member.name)
             .then(returnedMember => {
-                expect(dbClient.find).toBeCalledWith(TableName.Member, "name", member.name);
+                expect(dbClientMock.find).toBeCalledWith(TableName.Member, "name", member.name);
                 expect(returnedMember).toEqual(member);
             });
     });
@@ -103,13 +103,13 @@ describe("data/impl/MemberDAOImpl", () => {
     it("deleteById should send delete query to db", () => {
         const member: Member = { id: 1, name: "dummy name" };
 
-        (dbClient.delete as CalledWithMock<Promise<void>, [ TableName, string, number ]>)
+        (dbClientMock.delete as CalledWithMock<Promise<void>, [ TableName, string, number ]>)
             .calledWith(TableName.Member, "id", member.id)
             .mockReturnValue(Promise.resolve());
 
         memberDAO.deleteById(member.id)
             .then(() => {
-                expect(dbClient.delete).toBeCalledWith(TableName.Member, "id", member.id);
+                expect(dbClientMock.delete).toBeCalledWith(TableName.Member, "id", member.id);
             });
     });
 
@@ -125,7 +125,7 @@ describe("data/impl/MemberDAOImpl", () => {
 
         members
             .forEach(member => {
-                (dbClient.delete as CalledWithMock<Promise<void>, [ TableName, string, number ]>)
+                (dbClientMock.delete as CalledWithMock<Promise<void>, [ TableName, string, number ]>)
                     .calledWith(TableName.Member, "id", member.id)
                     .mockReturnValue(Promise.resolve());
             });
@@ -134,7 +134,7 @@ describe("data/impl/MemberDAOImpl", () => {
             .then(() => {
                 members
                     .forEach((member) => {
-                        expect(dbClient.delete).toBeCalledWith(TableName.Member, "id", member.id);
+                        expect(dbClientMock.delete).toBeCalledWith(TableName.Member, "id", member.id);
                     });
             });
     });

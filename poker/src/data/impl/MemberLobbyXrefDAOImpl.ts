@@ -23,20 +23,22 @@ export default class MemberLobbyXrefDAOImpl extends AbstractDAOImpl<MemberLobbyX
             .then(xrefs => xrefs.map(xref => xref.memberId));
     }
 
-    bindMember(memberId: number, lobbyId: number): Promise<MemberLobbyXref> {
-        return this.save({ memberId, lobbyId });
+    bindMember(memberId: number, lobbyId: number): Promise<void> {
+        return this.save({ memberId, lobbyId })
+            .then();
     }
 
     unbindMember(memberId: number): Promise<void> {
         return this.delete("memberId", memberId);
     }
 
-    isMemberBound(memberId: number): Promise<boolean> {
-        return this.find("memberId", memberId).then(xref => !!xref);
-    }
-
     unbindMembers(lobbyId: number): Promise<void> {
         return this.delete("lobbyId", lobbyId);
+    }
+
+    isMemberBound(memberId: number): Promise<boolean> {
+        return this.find("memberId", memberId)
+            .then(xref => !!xref);
     }
 
 }
