@@ -5,12 +5,15 @@ module.exports = {
   moduleFileExtensions: [ "js", "ts" ],
   collectCoverage: true,
   collectCoverageFrom: [
-    '<rootDir>/src/**',
-    '!<rootDir>/src/**/*.d.ts',
-    '!<rootDir>/node_modules/**',
+    "<rootDir>/src/**",
+    "!<rootDir>/src/**/*.d.ts",
+    "!<rootDir>/node_modules/**",
   ],
   coveragePathIgnorePatterns: [
       "index.ts",
       "types.ts",
+  ],
+  setupFiles: [
+      "<rootDir>/test/setEnvVars.ts",
   ],
 };

@@ -23,7 +23,7 @@ import LobbyServiceImpl from "service/impl/LobbyServiceImpl";
 
 import { sameArray, sameObject } from "../../test-utils/customMatchers";
 
-describe("service/common-service/impl/LobbyServiceImpl", () => {
+describe("service/impl/LobbyServiceImpl", () => {
 
     let lobbyService: LobbyService;
 
@@ -72,16 +72,23 @@ describe("service/common-service/impl/LobbyServiceImpl", () => {
 
         lobbyDAOMock.getById
             .calledWith(lobby.id)
-            .mockReturnValue(lobby);
+            .mockReturnValue(Promise.resolve(lobby));
 
-        expect(lobbyService.getById(lobby.id)).toEqual(lobby);
+        return lobbyService.getById(lobby.id)
+            .then(returnedLobby => {
+                expect(returnedLobby).toEqual(lobby);
+            });
     });
 
     it("getById shouldn't return not existed lobby", () => {
         lobbyDAOMock.getById
             .calledWith(anyNumber())
-            .mockReturnValue(null);
-        expect(lobbyService.getById(1)).toBeNull();
+            .mockReturnValue(Promise.resolve(null));
+        
+        return lobbyService.getById(1)
+            .then(returnedLobby => {
+                expect(returnedLobby).toBeNull();
+            });
     });
 
     it("getByName should return an existed lobby", () => {
@@ -89,16 +96,23 @@ describe("service/common-service/impl/LobbyServiceImpl", () => {
 
         lobbyDAOMock.getByName
             .calledWith(lobby.name)
-            .mockReturnValue(lobby);
+            .mockReturnValue(Promise.resolve(lobby));
 
-        expect(lobbyService.getByName(lobby.name)).toEqual(lobby);
+        return lobbyService.getByName(lobby.name)
+            .then(returnedLobby => {
+                expect(returnedLobby).toEqual(lobby);
+            });
     });
 
     it("getByName shouldn't return not existed lobby", () => {
         lobbyDAOMock.getByName
             .calledWith(anyString())
-            .mockReturnValue(null);
-        expect(lobbyService.getByName("dummy name")).toBeNull();
+            .mockReturnValue(Promise.resolve(null));
+
+        return lobbyService.getByName("dummy name")
+            .then(returnedLobby => {
+                expect(returnedLobby).toBeNull();
+            });
     });
 
     it("createLobby should create new lobby in Waiting status if lobby with the same name doesn't exist yet", () => {
@@ -106,13 +120,15 @@ describe("service/common-service/impl/LobbyServiceImpl", () => {
 
         lobbyDAOMock.isExists
             .calledWith(lobby.name)
-            .mockReturnValue(false);
+            .mockReturnValue(Promise.resolve(false));
         lobbyDAOMock.save
             .calledWith(sameObject({ name: lobby.name, state: lobby.state }))
-            .mockReturnValue(lobby);
+            .mockReturnValue(Promise.resolve(lobby));
 
-        lobbyService.createLobby(lobby.name);
-        expect(lobbyDAOMock.save).toBeCalledWith({ name: lobby.name, state: lobby.state });
+        return lobbyService.createLobby(lobby.name)
+            .then(() => {
+                expect(lobbyDAOMock.save).toBeCalledWith({ name: lobby.name, state: lobby.state });
+            });
     });
 
     it("createLobby should register new lobby for subscriptions", () => {
@@ -120,13 +136,15 @@ describe("service/common-service/impl/LobbyServiceImpl", () => {
 
         lobbyDAOMock.isExists
             .calledWith(lobby.name)
-            .mockReturnValue(false);
+            .mockReturnValue(Promise.resolve(false));
         lobbyDAOMock.save
             .calledWith(sameObject({ name: lobby.name, state: lobby.state }))
-            .mockReturnValue(lobby);
+            .mockReturnValue(Promise.resolve(lobby));
 
-        lobbyService.createLobby(lobby.name);
-        expect(subscriptionServiceMock.register).toBeCalledWith(lobby.id);
+        return lobbyService.createLobby(lobby.name)
+            .then(() => {
+                expect(subscriptionServiceMock.register).toBeCalledWith(lobby.id);
+            });
     });
 
     it("createLobby should return new lobby", () => {
@@ -134,12 +152,15 @@ describe("service/common-service/impl/LobbyServiceImpl", () => {
 
         lobbyDAOMock.isExists
             .calledWith(lobby.name)
-            .mockReturnValue(false);
+            .mockReturnValue(Promise.resolve(false));
         lobbyDAOMock.save
             .calledWith(sameObject({ name: lobby.name, state: lobby.state }))
-            .mockReturnValue(lobby);
+            .mockReturnValue(Promise.resolve(lobby));
 
-        expect(lobbyService.createLobby(lobby.name)).toEqual(lobby);
+        return lobbyService.createLobby(lobby.name)
+            .then(returnedLobby => {
+                expect(returnedLobby).toEqual(lobby);
+            });
     });
 
     it("createLobby should throw an error if lobby with the same name already exists", () => {
@@ -147,9 +168,12 @@ describe("service/common-service/impl/LobbyServiceImpl", () => {
 
         lobbyDAOMock.isExists
             .calledWith(lobbyName)
-            .mockReturnValue(true);
+            .mockReturnValue(Promise.resolve(true));
 
-        expect(() => lobbyService.createLobby(lobbyName)).toThrowError(LobbyAlreadyExists);
+        return lobbyService.createLobby(lobbyName)
+            .catch(error => {
+                expect(error).toBeInstanceOf(LobbyAlreadyExists);
+            });
     });
 
     it("getMembersLobby should return a lobby by its member", () => {
@@ -158,23 +182,29 @@ describe("service/common-service/impl/LobbyServiceImpl", () => {
 
         memberLobbyXrefDAOMock.getMembersBinding
             .calledWith(memberId)
-            .mockReturnValue(lobby.id);
+            .mockReturnValue(Promise.resolve(lobby.id));
         lobbyDAOMock.getById
             .calledWith(lobby.id)
-            .mockReturnValue(lobby);
+            .mockReturnValue(Promise.resolve(lobby));
 
-        expect(lobbyService.getMembersLobby(memberId)).toEqual(lobby);
+        return lobbyService.getMembersLobby(memberId)
+            .then(returnedLobby => {
+                expect(returnedLobby).toEqual(lobby);
+            });
     });
 
     it("getMembersLobby shouldn't return a lobby by not existed member", () => {
         memberLobbyXrefDAOMock.getMembersBinding
             .calledWith(anyNumber())
-            .mockReturnValue(null);
+            .mockReturnValue(Promise.resolve(null));
         lobbyDAOMock.getById
             .calledWith(null)
-            .mockReturnValue(null);
+            .mockReturnValue(Promise.resolve(null));
 
-        expect(lobbyService.getMembersLobby(10)).toBeNull();
+        return lobbyService.getMembersLobby(10)
+            .then(returnedLobby => {
+                expect(returnedLobby).toBeNull();
+            });
     });
 
     it("enterMember should bind member to an existed lobby", () => {
@@ -183,22 +213,24 @@ describe("service/common-service/impl/LobbyServiceImpl", () => {
 
         memberLobbyXrefDAOMock.isMemberBound
             .calledWith(memberId)
-            .mockReturnValue(false);
+            .mockReturnValue(Promise.resolve(false));
         memberLobbyXrefDAOMock.getMemberIdsByLobbyId
             .calledWith(lobby.id)
-            .mockReturnValue([ memberId ]);
+            .mockReturnValue(Promise.resolve([ memberId ]));
         memberLobbyXrefDAOMock.getMembersBinding
             .calledWith(memberId)
-            .mockReturnValue(lobby.id);
+            .mockReturnValue(Promise.resolve(lobby.id));
         lobbyDAOMock.getByName
             .calledWith(lobby.name)
-            .mockReturnValue(lobby);
+            .mockReturnValue(Promise.resolve(lobby));
         lobbyDAOMock.getById
             .calledWith(lobby.id)
-            .mockReturnValue(lobby);
+            .mockReturnValue(Promise.resolve(lobby));
 
-        lobbyService.enterMember(memberId, lobby.id);
-        expect(memberLobbyXrefDAOMock.bindMember).toBeCalledWith(memberId, lobby.id);
+        return lobbyService.enterMember(memberId, lobby.id)
+            .then(() => {
+                expect(memberLobbyXrefDAOMock.bindMember).toBeCalledWith(memberId, lobby.id);
+            });
     });
 
     it("enterMember should throw an exception if member is already in a lobby", () => {
@@ -207,12 +239,15 @@ describe("service/common-service/impl/LobbyServiceImpl", () => {
 
         memberLobbyXrefDAOMock.isMemberBound
             .calledWith(member.id)
-            .mockReturnValue(true);
+            .mockReturnValue(Promise.resolve(true));
         memberDAOMock.getById
             .calledWith(member.id)
-            .mockReturnValue(member);
+            .mockReturnValue(Promise.resolve(member));
 
-        expect(() => lobbyService.enterMember(member.id, lobbyId)).toThrowError(MemberIsAlreadyInLobbyError);
+        return lobbyService.enterMember(member.id, lobbyId)
+            .catch(error => {
+                expect(error).toBeInstanceOf(MemberIsAlreadyInLobbyError);
+            });
     });
 
     it("enterMember should schedule lobby destruction", () => {
@@ -221,22 +256,24 @@ describe("service/common-service/impl/LobbyServiceImpl", () => {
 
         memberLobbyXrefDAOMock.isMemberBound
             .calledWith(memberId)
-            .mockReturnValue(false);
+            .mockReturnValue(Promise.resolve(false));
         memberLobbyXrefDAOMock.getMemberIdsByLobbyId
             .calledWith(lobby.id)
-            .mockReturnValue([ memberId ]);
+            .mockReturnValue(Promise.resolve([ memberId ]));
         memberLobbyXrefDAOMock.getMembersBinding
             .calledWith(memberId)
-            .mockReturnValue(lobby.id);
+            .mockReturnValue(Promise.resolve(lobby.id));
         lobbyDAOMock.getByName
             .calledWith(lobby.name)
-            .mockReturnValue(lobby);
+            .mockReturnValue(Promise.resolve(lobby));
         lobbyDAOMock.getById
             .calledWith(lobby.id)
-            .mockReturnValue(lobby);
+            .mockReturnValue(Promise.resolve(lobby));
 
-        lobbyService.enterMember(memberId, lobby.id);
-        expect(timeoutSchedulerMock.schedule).toBeCalledWith(TaskType.Lobby, lobby.id, LOBBY_LIFETIME_SEC, anyFunction());
+        return lobbyService.enterMember(memberId, lobby.id)
+            .then(() => {
+                expect(timeoutSchedulerMock.schedule).toBeCalledWith(TaskType.Lobby, lobby.id, LOBBY_LIFETIME_SEC, anyFunction());
+            });
     });
 
     it("enterMember should dispatch MembersWasChanged event", () => {
@@ -252,28 +289,30 @@ describe("service/common-service/impl/LobbyServiceImpl", () => {
 
         memberLobbyXrefDAOMock.isMemberBound
             .calledWith(memberId)
-            .mockReturnValue(false);
+            .mockReturnValue(Promise.resolve(false));
         memberLobbyXrefDAOMock.getMemberIdsByLobbyId
             .calledWith(lobby.id)
-            .mockReturnValue(memberIds);
+            .mockReturnValue(Promise.resolve(memberIds));
         memberLobbyXrefDAOMock.getMembersBinding
             .calledWith(memberId)
-            .mockReturnValue(lobby.id);
+            .mockReturnValue(Promise.resolve(lobby.id));
         memberDAOMock.getByIds
             .calledWith(sameArray(memberIds))
-            .mockReturnValue(members);
+            .mockReturnValue(Promise.resolve(members));
         lobbyDAOMock.getByName
             .calledWith(lobby.name)
-            .mockReturnValue(lobby);
+            .mockReturnValue(Promise.resolve(lobby));
         lobbyDAOMock.getById
             .calledWith(lobby.id)
-            .mockReturnValue(lobby);
+            .mockReturnValue(Promise.resolve(lobby));
 
-        lobbyService.enterMember(memberId, lobby.id);
-        expect(subscriptionServiceMock.dispatch).toBeCalledWith(lobby.id, {
-            type: EventType.MembersWasChanged,
-            payload: { members },
-        });
+        return lobbyService.enterMember(memberId, lobby.id)
+            .then(() => {
+                expect(subscriptionServiceMock.dispatch).toBeCalledWith(lobby.id, {
+                    type: EventType.MembersWasChanged,
+                    payload: { members },
+                });
+            });
     });
 
     it("enterMember should dispatch PokerResultWasChanged event if lobby state is Playing", () => {
@@ -300,31 +339,33 @@ describe("service/common-service/impl/LobbyServiceImpl", () => {
 
         memberLobbyXrefDAOMock.isMemberBound
             .calledWith(memberId)
-            .mockReturnValue(false);
+            .mockReturnValue(Promise.resolve(false));
         memberLobbyXrefDAOMock.getMemberIdsByLobbyId
             .calledWith(lobby.id)
-            .mockReturnValue(memberIds);
+            .mockReturnValue(Promise.resolve(memberIds));
         memberLobbyXrefDAOMock.getMembersBinding
             .calledWith(memberId)
-            .mockReturnValue(lobby.id);
+            .mockReturnValue(Promise.resolve(lobby.id));
         memberCardXrefDAOMock.getCardsByMemberIds
             .calledWith(sameArray(memberIds))
-            .mockReturnValue(memberCardXrefs);
+            .mockReturnValue(Promise.resolve(memberCardXrefs));
         memberDAOMock.getByIds
             .calledWith(sameArray(memberIds))
-            .mockReturnValue(Object.values(members));
+            .mockReturnValue(Promise.resolve(Object.values(members)));
         lobbyDAOMock.getByName
             .calledWith(lobby.name)
-            .mockReturnValue(lobby);
+            .mockReturnValue(Promise.resolve(lobby));
         lobbyDAOMock.getById
             .calledWith(lobby.id)
-            .mockReturnValue(lobby);
+            .mockReturnValue(Promise.resolve(lobby));
 
-        lobbyService.enterMember(memberId, lobby.id);
-        expect(subscriptionServiceMock.dispatch).toHaveBeenNthCalledWith(2, lobby.id, {
-            type: EventType.PokerResultWasChanged,
-            payload: { theme: lobby.currentTheme, result: pokerResult },
-        });
+        return lobbyService.enterMember(memberId, lobby.id)
+            .then(() => {
+                expect(subscriptionServiceMock.dispatch).toHaveBeenNthCalledWith(2, lobby.id, {
+                    type: EventType.PokerResultWasChanged,
+                    payload: { theme: lobby.currentTheme, result: pokerResult },
+                });
+            });
     });
 
     it("enterMember shouldn't dispatch PokerResultWasChanged event if lobby state isn't Playing", () => {
@@ -351,31 +392,33 @@ describe("service/common-service/impl/LobbyServiceImpl", () => {
 
         memberLobbyXrefDAOMock.isMemberBound
             .calledWith(memberId)
-            .mockReturnValue(false);
+            .mockReturnValue(Promise.resolve(false));
         memberLobbyXrefDAOMock.getMemberIdsByLobbyId
             .calledWith(lobby.id)
-            .mockReturnValue(memberIds);
+            .mockReturnValue(Promise.resolve(memberIds));
         memberLobbyXrefDAOMock.getMembersBinding
             .calledWith(memberId)
-            .mockReturnValue(lobby.id);
+            .mockReturnValue(Promise.resolve(lobby.id));
         memberCardXrefDAOMock.getCardsByMemberIds
             .calledWith(sameArray(memberIds))
-            .mockReturnValue(memberCardXrefs);
+            .mockReturnValue(Promise.resolve(memberCardXrefs));
         memberDAOMock.getByIds
             .calledWith(sameArray(memberIds))
-            .mockReturnValue(Object.values(members));
+            .mockReturnValue(Promise.resolve(Object.values(members)));
         lobbyDAOMock.getByName
             .calledWith(lobby.name)
-            .mockReturnValue(lobby);
+            .mockReturnValue(Promise.resolve(lobby));
         lobbyDAOMock.getById
             .calledWith(lobby.id)
-            .mockReturnValue(lobby);
+            .mockReturnValue(Promise.resolve(lobby));
 
-        lobbyService.enterMember(memberId, lobby.id);
-        expect(subscriptionServiceMock.dispatch).not.toBeCalledWith(lobby.id, {
-            type: EventType.PokerResultWasChanged,
-            payload: { result: pokerResult },
-        });
+        return lobbyService.enterMember(memberId, lobby.id)
+            .then(() => {
+                expect(subscriptionServiceMock.dispatch).not.toBeCalledWith(lobby.id, {
+                    type: EventType.PokerResultWasChanged,
+                    payload: { result: pokerResult },
+                });
+            });
     });
 
     it("leaveMember should unbind a member from his lobby", () => {
@@ -384,30 +427,32 @@ describe("service/common-service/impl/LobbyServiceImpl", () => {
 
         memberDAOMock.getById
             .calledWith(member.id)
-            .mockReturnValue(member);
+            .mockReturnValue(Promise.resolve(member));
         memberLobbyXrefDAOMock.isMemberBound
             .calledWith(member.id)
-            .mockReturnValue(true);
+            .mockReturnValue(Promise.resolve(true));
         memberLobbyXrefDAOMock.getMembersBinding
             .calledWith(member.id)
-            .mockReturnValue(lobby.id);
+            .mockReturnValue(Promise.resolve(lobby.id));
         memberLobbyXrefDAOMock.getMemberIdsByLobbyId
             .calledWith(lobby.id)
-            .mockReturnValue([]);
+            .mockReturnValue(Promise.resolve([]));
         memberDAOMock.getByIds
             .calledWith(sameArray([]))
-            .mockReturnValue([]);
+            .mockReturnValue(Promise.resolve([]));
         lobbyDAOMock.getById
             .calledWith(lobby.id)
-            .mockReturnValue(lobby);
+            .mockReturnValue(Promise.resolve(lobby));
         memberCardXrefDAOMock.getCardsByMemberIds
             .calledWith(sameArray([]))
-            .mockReturnValue([]);
+            .mockReturnValue(Promise.resolve([]));
 
-        lobbyService.leaveMember(member.id, lobby.id);
-        expect(memberLobbyXrefDAOMock.unbindMember).toBeCalledWith(member.id);
-        expect(memberCardXrefDAOMock.removeByMemberId).toBeCalledWith(member.id);
-        expect(subscriptionServiceMock.unsubscribe).toBeCalledWith(member.id);
+        return lobbyService.leaveMember(member.id, lobby.id)
+            .then(() => {
+                expect(memberLobbyXrefDAOMock.unbindMember).toBeCalledWith(member.id);
+                expect(memberCardXrefDAOMock.removeByMemberId).toBeCalledWith(member.id);
+                expect(subscriptionServiceMock.unsubscribe).toBeCalledWith(member.id);
+            });
     });
 
     it("leaveMember should dispatch MembersWasChanged event", () => {
@@ -423,31 +468,33 @@ describe("service/common-service/impl/LobbyServiceImpl", () => {
 
         memberDAOMock.getById
             .calledWith(member.id)
-            .mockReturnValue(member);
+            .mockReturnValue(Promise.resolve(member));
         memberLobbyXrefDAOMock.isMemberBound
             .calledWith(member.id)
-            .mockReturnValue(true);
+            .mockReturnValue(Promise.resolve(true));
         memberLobbyXrefDAOMock.getMembersBinding
             .calledWith(member.id)
-            .mockReturnValue(lobby.id);
+            .mockReturnValue(Promise.resolve(lobby.id));
         memberLobbyXrefDAOMock.getMemberIdsByLobbyId
             .calledWith(lobby.id)
-            .mockReturnValue(otherMemberIds);
+            .mockReturnValue(Promise.resolve(otherMemberIds));
         memberDAOMock.getByIds
             .calledWith(sameArray(otherMemberIds))
-            .mockReturnValue(otherMembers);
+            .mockReturnValue(Promise.resolve(otherMembers));
         lobbyDAOMock.getById
             .calledWith(lobby.id)
-            .mockReturnValue(lobby);
+            .mockReturnValue(Promise.resolve(lobby));
         memberCardXrefDAOMock.getCardsByMemberIds
             .calledWith(sameArray(otherMemberIds))
-            .mockReturnValue(otherMemberCards);
+            .mockReturnValue(Promise.resolve(otherMemberCards));
 
-        lobbyService.leaveMember(member.id, lobby.id);
-        expect(subscriptionServiceMock.dispatch).toBeCalledWith(lobby.id, {
-            type: EventType.MembersWasChanged,
-            payload: { members: otherMembers },
-        });
+        return lobbyService.leaveMember(member.id, lobby.id)
+            .then(() => {
+                expect(subscriptionServiceMock.dispatch).toBeCalledWith(lobby.id, {
+                    type: EventType.MembersWasChanged,
+                    payload: { members: otherMembers },
+                });
+            });
     });
 
     it("leaveMember should destroy lobby if it was called with a last member", () => {
@@ -456,36 +503,38 @@ describe("service/common-service/impl/LobbyServiceImpl", () => {
 
         memberDAOMock.getById
             .calledWith(member.id)
-            .mockReturnValue(member);
+            .mockReturnValue(Promise.resolve(member));
         memberLobbyXrefDAOMock.isMemberBound
             .calledWith(member.id)
-            .mockReturnValue(true);
+            .mockReturnValue(Promise.resolve(true));
         memberLobbyXrefDAOMock.getMembersBinding
             .calledWith(member.id)
-            .mockReturnValue(lobby.id);
+            .mockReturnValue(Promise.resolve(lobby.id));
         memberLobbyXrefDAOMock.getMemberIdsByLobbyId
             .calledWith(lobby.id)
-            .mockReturnValue([]);
+            .mockReturnValue(Promise.resolve([]));
         memberDAOMock.getByIds
             .calledWith(sameArray([]))
-            .mockReturnValue([]);
+            .mockReturnValue(Promise.resolve([]));
         lobbyDAOMock.getById
             .calledWith(lobby.id)
-            .mockReturnValue(lobby);
+            .mockReturnValue(Promise.resolve(lobby));
         memberCardXrefDAOMock.getCardsByMemberIds
             .calledWith(sameArray([]))
-            .mockReturnValue([]);
+            .mockReturnValue(Promise.resolve([]));
 
-        lobbyService.leaveMember(member.id, lobby.id);
-        expect(timeoutSchedulerMock.cancel).toBeCalledWith(TaskType.Lobby, lobby.id);
-        expect(memberCardXrefDAOMock.removeByMemberIds).toBeCalledWith(sameArray([]));
-        expect(memberLobbyXrefDAOMock.unbindMembers).toBeCalledWith(lobby.id);
-        expect(memberDAOMock.deleteByIds).toBeCalledWith(sameArray([]));
-        expect(lobbyDAOMock.deleteById).toBeCalledWith(lobby.id);
-        expect(subscriptionServiceMock.unregister).toBeCalledWith(lobby.id);
-        expect(subscriptionServiceMock.dispatch).toBeCalledWith(lobby.id, {
-            type: EventType.LobbyWasDestroyed,
-        });
+        return lobbyService.leaveMember(member.id, lobby.id)
+            .then(() => {
+                expect(timeoutSchedulerMock.cancel).toBeCalledWith(TaskType.Lobby, lobby.id);
+                expect(memberCardXrefDAOMock.removeByMemberIds).toBeCalledWith(sameArray([]));
+                expect(memberLobbyXrefDAOMock.unbindMembers).toBeCalledWith(lobby.id);
+                expect(memberDAOMock.deleteByIds).toBeCalledWith(sameArray([]));
+                expect(lobbyDAOMock.deleteById).toBeCalledWith(lobby.id);
+                expect(subscriptionServiceMock.unregister).toBeCalledWith(lobby.id);
+                expect(subscriptionServiceMock.dispatch).toBeCalledWith(lobby.id, {
+                    type: EventType.LobbyWasDestroyed,
+                });
+            });
     });
 
     it("leaveMember should schedule lobby destruction if it was called with a not last member", () => {
@@ -501,36 +550,41 @@ describe("service/common-service/impl/LobbyServiceImpl", () => {
 
         memberDAOMock.getById
             .calledWith(member.id)
-            .mockReturnValue(member);
+            .mockReturnValue(Promise.resolve(member));
         memberLobbyXrefDAOMock.isMemberBound
             .calledWith(member.id)
-            .mockReturnValue(true);
+            .mockReturnValue(Promise.resolve(true));
         memberLobbyXrefDAOMock.getMembersBinding
             .calledWith(member.id)
-            .mockReturnValue(lobby.id);
+            .mockReturnValue(Promise.resolve(lobby.id));
         memberLobbyXrefDAOMock.getMemberIdsByLobbyId
             .calledWith(lobby.id)
-            .mockReturnValue(otherMemberIds);
+            .mockReturnValue(Promise.resolve(otherMemberIds));
         memberDAOMock.getByIds
             .calledWith(sameArray(otherMemberIds))
-            .mockReturnValue(otherMembers);
+            .mockReturnValue(Promise.resolve(otherMembers));
         lobbyDAOMock.getById
             .calledWith(lobby.id)
-            .mockReturnValue(lobby);
+            .mockReturnValue(Promise.resolve(lobby));
         memberCardXrefDAOMock.getCardsByMemberIds
             .calledWith(sameArray(otherMemberIds))
-            .mockReturnValue(otherMemberCards);
+            .mockReturnValue(Promise.resolve(otherMemberCards));
 
-        lobbyService.leaveMember(member.id, lobby.id);
-        expect(timeoutSchedulerMock.schedule).toBeCalledWith(TaskType.Lobby, lobby.id, LOBBY_LIFETIME_SEC, anyFunction());
+        return lobbyService.leaveMember(member.id, lobby.id)
+            .then(() => {
+                expect(timeoutSchedulerMock.schedule).toBeCalledWith(TaskType.Lobby, lobby.id, LOBBY_LIFETIME_SEC, anyFunction());
+            });
     });
 
     it("leaveMember should throw an exception if the member doesn't exist", () => {
         memberDAOMock.getById
             .calledWith(anyNumber())
-            .mockReturnValue(null);
+            .mockReturnValue(Promise.resolve(null));
 
-        expect(() => lobbyService.leaveMember(1, 10)).toThrowError(UnknownMemberError);
+        return lobbyService.leaveMember(1, 10)
+            .catch(error => {
+                expect(error).toBeInstanceOf(UnknownMemberError);
+            });
     });
 
     it("leaveMember should throw an exception if the member isn't includes into lobby", () => {
@@ -539,12 +593,15 @@ describe("service/common-service/impl/LobbyServiceImpl", () => {
 
         memberDAOMock.getById
             .calledWith(member.id)
-            .mockReturnValue(member);
-        memberLobbyXrefDAOMock.isMemberBound
+            .mockReturnValue(Promise.resolve(member));
+        memberLobbyXrefDAOMock.getMembersBinding
             .calledWith(member.id)
-            .mockReturnValue(false);
+            .mockReturnValue(Promise.resolve(null));
 
-        expect(() => lobbyService.leaveMember(member.id, lobbyId)).toThrowError(MemberIsNotInLobbyError);
+        return lobbyService.leaveMember(member.id, lobbyId)
+            .catch(error => {
+                expect(error).toBeInstanceOf(MemberIsNotInLobbyError);
+            });
     });
 
     it("startPoker should change current poker theme and lobby state", () => {
@@ -566,19 +623,21 @@ describe("service/common-service/impl/LobbyServiceImpl", () => {
 
         lobbyDAOMock.getById
             .calledWith(lobby.id)
-            .mockReturnValue(lobby);
+            .mockReturnValue(Promise.resolve(lobby));
         memberLobbyXrefDAOMock.getMemberIdsByLobbyId
             .calledWith(lobby.id)
-            .mockReturnValue(memberIds);
+            .mockReturnValue(Promise.resolve(memberIds));
         memberCardXrefDAOMock.getCardsByMemberIds
             .calledWith(sameArray(memberIds))
-            .mockReturnValue(memberCardXrefs);
+            .mockReturnValue(Promise.resolve(memberCardXrefs));
         memberDAOMock.getByIds
             .calledWith(sameArray(memberIds))
-            .mockReturnValue(Object.values(members));
+            .mockReturnValue(Promise.resolve(Object.values(members)));
 
-        lobbyService.startPoker(lobby.id, theme);
-        expect(lobbyDAOMock.save).toBeCalledWith({ ...lobby, currentTheme: theme, state: LobbyState.Playing });
+        return lobbyService.startPoker(lobby.id, theme)
+            .then(() => {
+                expect(lobbyDAOMock.save).toBeCalledWith({ ...lobby, currentTheme: theme, state: LobbyState.Playing });
+            });
     });
 
     it("startPoker should schedule lobby destruction", () => {
@@ -600,19 +659,21 @@ describe("service/common-service/impl/LobbyServiceImpl", () => {
 
         lobbyDAOMock.getById
             .calledWith(lobby.id)
-            .mockReturnValue(lobby);
+            .mockReturnValue(Promise.resolve(lobby));
         memberLobbyXrefDAOMock.getMemberIdsByLobbyId
             .calledWith(lobby.id)
-            .mockReturnValue(memberIds);
+            .mockReturnValue(Promise.resolve(memberIds));
         memberCardXrefDAOMock.getCardsByMemberIds
             .calledWith(sameArray(memberIds))
-            .mockReturnValue(memberCardXrefs);
+            .mockReturnValue(Promise.resolve(memberCardXrefs));
         memberDAOMock.getByIds
             .calledWith(sameArray(memberIds))
-            .mockReturnValue(Object.values(members));
+            .mockReturnValue(Promise.resolve(Object.values(members)));
 
-        lobbyService.startPoker(lobby.id, theme);
-        expect(timeoutSchedulerMock.schedule).toBeCalledWith(TaskType.Lobby, lobby.id, LOBBY_LIFETIME_SEC, anyFunction());
+        return lobbyService.startPoker(lobby.id, theme)
+            .then(() => {
+                expect(timeoutSchedulerMock.schedule).toBeCalledWith(TaskType.Lobby, lobby.id, LOBBY_LIFETIME_SEC, anyFunction());
+            });
     });
 
     it("startPoker should dispatch PokerResultWasChanged event", () => {
@@ -639,23 +700,25 @@ describe("service/common-service/impl/LobbyServiceImpl", () => {
 
         lobbyDAOMock.getById
             .calledWith(lobby.id)
-            .mockReturnValueOnce(lobby)
-            .mockReturnValueOnce({ ...lobby, currentTheme: theme, state: LobbyState.Playing });
+            .mockReturnValueOnce(Promise.resolve(lobby))
+            .mockReturnValueOnce(Promise.resolve({ ...lobby, currentTheme: theme, state: LobbyState.Playing }));
         memberLobbyXrefDAOMock.getMemberIdsByLobbyId
             .calledWith(lobby.id)
-            .mockReturnValue(memberIds);
+            .mockReturnValue(Promise.resolve(memberIds));
         memberCardXrefDAOMock.getCardsByMemberIds
             .calledWith(sameArray(memberIds))
-            .mockReturnValue(memberCardXrefs);
+            .mockReturnValue(Promise.resolve(memberCardXrefs));
         memberDAOMock.getByIds
             .calledWith(sameArray(memberIds))
-            .mockReturnValue(Object.values(members));
+            .mockReturnValue(Promise.resolve(Object.values(members)));
 
-        lobbyService.startPoker(lobby.id, theme);
-        expect(subscriptionServiceMock.dispatch).toBeCalledWith(lobby.id, {
-            type: EventType.PokerResultWasChanged,
-            payload: { theme, result: pokerResult },
-        });
+        return lobbyService.startPoker(lobby.id, theme)
+            .then(() => {
+                expect(subscriptionServiceMock.dispatch).toBeCalledWith(lobby.id, {
+                    type: EventType.PokerResultWasChanged,
+                    payload: { theme, result: pokerResult },
+                });
+            });
     });
 
     it("startPoker should throw an error if poker have been already started", () => {
@@ -669,8 +732,11 @@ describe("service/common-service/impl/LobbyServiceImpl", () => {
 
         lobbyDAOMock.getById
             .calledWith(lobby.id)
-            .mockReturnValue(lobby);
+            .mockReturnValue(Promise.resolve(lobby));
 
-        expect(() => lobbyService.startPoker(lobby.id, theme)).toThrowError(PokerIsAlreadyStartedError);
+        return lobbyService.startPoker(lobby.id, theme)
+            .catch(error => {
+                expect(error).toBeInstanceOf(PokerIsAlreadyStartedError);
+            });
     });
 });
