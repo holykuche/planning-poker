@@ -1,21 +1,21 @@
-import { Entity, TableDefinition } from "../dto";
+import { TableDefinition } from "../dto";
 
 export default interface Database {
 
-    createTable(tableName: string, definition: TableDefinition): void;
+    createTable<T extends object>(tableName: string, definition: TableDefinition<T>): void;
 
     dropTable(tableName: string): void;
 
     isTableExists(tableName: string): boolean;
 
-    find(tableName: string, key: string, value: string): Entity;
+    find<T extends object, K extends keyof T>(tableName: string, key: K, value: T[ K ]): T;
 
-    findMany(tableName: string, key: string, value: string): Entity[];
+    findMany<T extends object, K extends keyof T>(tableName: string, key: K, value: T[ K ]): T[];
 
-    findAll(tableName: string): Entity[];
+    findAll<T extends object>(tableName: string): T[];
 
-    save(tableName: string, entity: Entity): Entity;
+    save<T extends object>(tableName: string, entity: T): T;
 
-    delete(tableName: string, key: string, value: string): void;
+    delete<T extends object, K extends keyof T>(tableName: string, key: K, value: T[ K ]): void;
 
 }

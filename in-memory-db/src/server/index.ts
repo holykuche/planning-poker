@@ -19,6 +19,7 @@ import {
     TableFieldRequest,
     TableRequest,
 } from "./dto";
+import { fromEntityToProtobufEntity, fromProtobufEntityToEntity } from "./util";
 
 const PROTO_PATH = __dirname + "/db.proto";
 
@@ -30,13 +31,16 @@ const protoDescriptor = loadPackageDefinition(packageDefinition);
 
 const database = container.get<Database>(CORE_TYPES.Database);
 
-const createTable = (call: ServerUnaryCall<CreateTableRequest, void>, callback: sendUnaryData<void>) => {
-    const { tableName, definition } = call.request;
+const createTable = <T extends object>(
+    call: ServerUnaryCall<CreateTableRequest<T>, void>,
+    callback: sendUnaryData<void>
+) => {
+    const { table_name, definition } = call.request;
 
     let error: Error = null;
 
     try {
-        database.createTable(tableName, definition);
+        database.createTable(table_name, definition);
     } catch (e) {
         error = e;
     }
@@ -44,13 +48,16 @@ const createTable = (call: ServerUnaryCall<CreateTableRequest, void>, callback: 
     callback(error);
 };
 
-const dropTable = (call: ServerUnaryCall<TableRequest, void>, callback: sendUnaryData<void>) => {
-    const { tableName } = call.request;
+const dropTable = (
+    call: ServerUnaryCall<TableRequest, void>,
+    callback: sendUnaryData<void>
+) => {
+    const { table_name } = call.request;
 
     let error: Error = null;
 
     try {
-        database.dropTable(tableName);
+        database.dropTable(table_name);
     } catch (e) {
         error = e;
     }
@@ -58,14 +65,19 @@ const dropTable = (call: ServerUnaryCall<TableRequest, void>, callback: sendUnar
     callback(error);
 };
 
-const isTableExists = (call: ServerUnaryCall<TableRequest, BoolResponse>, callback: sendUnaryData<BoolResponse>) => {
-    const { tableName } = call.request;
+const isTableExists = (
+    call: ServerUnaryCall<TableRequest, BoolResponse>,
+    callback: sendUnaryData<BoolResponse>
+) => {
+    const { table_name } = call.request;
 
     let response: BoolResponse = null;
     let error: Error = null;
 
     try {
-        response = { result: database.isTableExists(tableName) };
+        response = {
+            result: database.isTableExists(table_name),
+        };
     } catch (e) {
         error = e;
     }
@@ -73,14 +85,19 @@ const isTableExists = (call: ServerUnaryCall<TableRequest, BoolResponse>, callba
     callback(error, response);
 };
 
-const find = (call: ServerUnaryCall<TableFieldRequest, EntityResponse>, callback: sendUnaryData<EntityResponse>) => {
-    const { tableName, key, value } = call.request;
+const find = <T extends object, K extends keyof T>(
+    call: ServerUnaryCall<TableFieldRequest<T, K>, EntityResponse<T>>,
+    callback: sendUnaryData<EntityResponse<T>>
+) => {
+    const { table_name, key, value } = call.request;
 
-    let response: EntityResponse = null;
+    let response: EntityResponse<T> = null;
     let error: Error = null;
 
     try {
-        response = { result: database.find(tableName, key, value) };
+        response = {
+            result: fromEntityToProtobufEntity(database.find(table_name, key, value)),
+        };
     } catch (e) {
         error = e;
     }
@@ -88,14 +105,20 @@ const find = (call: ServerUnaryCall<TableFieldRequest, EntityResponse>, callback
     callback(error, response);
 };
 
-const findMany = (call: ServerUnaryCall<TableFieldRequest, EntitiesResponse>, callback: sendUnaryData<EntitiesResponse>) => {
-    const { tableName, key, value } = call.request;
+const findMany = <T extends object, K extends keyof T>(
+    call: ServerUnaryCall<TableFieldRequest<T, K>, EntitiesResponse<T>>,
+    callback: sendUnaryData<EntitiesResponse<T>>
+) => {
+    const { table_name, key, value } = call.request;
 
-    let response: EntitiesResponse = null;
+    let response: EntitiesResponse<T> = null;
     let error: Error = null;
 
     try {
-        response = { result: database.findMany(tableName, key, value) };
+        response = {
+            result: database.findMany(table_name, key, value)
+                .map(entity => ({ result: fromEntityToProtobufEntity(entity) })),
+        };
     } catch (e) {
         error = e;
     }
@@ -103,14 +126,20 @@ const findMany = (call: ServerUnaryCall<TableFieldRequest, EntitiesResponse>, ca
     callback(error, response);
 };
 
-const findAll = (call: ServerUnaryCall<TableRequest, EntitiesResponse>, callback: sendUnaryData<EntitiesResponse>) => {
-    const { tableName } = call.request;
+const findAll = <T extends object>(
+    call: ServerUnaryCall<TableRequest, EntitiesResponse<T>>,
+    callback: sendUnaryData<EntitiesResponse<T>>
+) => {
+    const { table_name } = call.request;
 
-    let response: EntitiesResponse = null;
+    let response: EntitiesResponse<T> = null;
     let error: Error = null;
 
     try {
-        response = { result: database.findAll(tableName) };
+        response = {
+            result: database.findAll<T>(table_name)
+                .map(entity => ({ result: fromEntityToProtobufEntity(entity) })),
+        };
     } catch (e) {
         error = e;
     }
@@ -118,14 +147,19 @@ const findAll = (call: ServerUnaryCall<TableRequest, EntitiesResponse>, callback
     callback(error, response);
 };
 
-const save = (call: ServerUnaryCall<EntityRequest, EntityResponse>, callback: sendUnaryData<EntityResponse>) => {
-    const { tableName, entity } = call.request;
+const save = <T extends object>(
+    call: ServerUnaryCall<EntityRequest<T>, EntityResponse<T>>,
+    callback: sendUnaryData<EntityResponse<T>>
+) => {
+    const { table_name, entity } = call.request;
 
-    let response: EntityResponse = null;
+    let response: EntityResponse<T> = null;
     let error: Error = null;
 
     try {
-        response = { result: database.save(tableName, entity) };
+        response = {
+            result: fromEntityToProtobufEntity(database.save(table_name, fromProtobufEntityToEntity(entity))),
+        };
     } catch (e) {
         error = e;
     }
@@ -133,13 +167,16 @@ const save = (call: ServerUnaryCall<EntityRequest, EntityResponse>, callback: se
     callback(error, response);
 };
 
-const del = (call: ServerUnaryCall<TableFieldRequest, void>, callback: sendUnaryData<void>) => {
-    const { tableName, key, value } = call.request;
+const del = <T extends object, K extends keyof T>(
+    call: ServerUnaryCall<TableFieldRequest<T, K>, void>,
+    callback: sendUnaryData<void>
+) => {
+    const { table_name, key, value } = call.request;
 
     let error: Error = null;
 
     try {
-        database.delete(tableName, key, value);
+        database.delete(table_name, key, value);
     } catch (e) {
         error = e;
     }

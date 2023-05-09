@@ -1,30 +1,31 @@
-import { ColumnDefinition, Entity, TableDefinition } from "../dto";
+import { ColumnDefinition, TableDefinition } from "../dto";
 import { ColumnDataType } from "../enum";
-import { ValidationError, TableInitializeError } from "../error";
+import { TableInitializeError, ValidationError } from "../error";
 import { Table } from "../api";
 
-type IndexMaps = Record<string, Map<string, number[]>>;
+type IndexMap<T extends object> = Map<T[ keyof T ], number[]>;
+type IndexMaps<T extends object> = Record<keyof T, IndexMap<T>>;
 
-export default class TableImpl implements Table {
+export default class TableImpl<T extends object> implements Table<T> {
 
-    private static readonly DEFAULT_DEFINITION: Partial<TableDefinition> = {
-        indexBy: [],
+    private static readonly DEFAULT_DEFINITION: Partial<TableDefinition<object>> = {
+        index_by: [],
     };
 
     private readonly tableName: string;
-    private readonly data: Entity[];
+    private readonly data: T[];
     private currentFreeIndex: number;
     private readonly freeIndexes: Map<number/*current*/, number/*previous*/>;
-    private readonly indexMaps: IndexMaps;
+    private readonly indexMaps: IndexMaps<T>;
     private readonly primaryKey?: string;
     private nextPrimaryKeyValue?: number;
-    private readonly columnDefinitions: Record<string, ColumnDefinition>;
+    private readonly columnDefinitions: Record<keyof T, ColumnDefinition>;
 
-    constructor(tableName: string, definition: TableDefinition) {
-        const { indexBy, columns } = { ...TableImpl.DEFAULT_DEFINITION, ...definition };
+    constructor(tableName: string, definition: TableDefinition<T>) {
+        const { index_by, columns } = { ...TableImpl.DEFAULT_DEFINITION, ...definition };
 
-        const primaryKeys = Object.entries(columns)
-            .filter(([ , def ]) => def.primaryKey);
+        const primaryKeys = Object.entries<ColumnDefinition>(columns)
+            .filter(([ , def ]) => def.primary_key);
 
         switch (primaryKeys.length) {
             case 0:
@@ -61,15 +62,15 @@ export default class TableImpl implements Table {
         this.currentFreeIndex = null;
         this.freeIndexes = new Map<number, number>();
 
-        this.indexMaps = (this.primaryKey ? [ this.primaryKey, ...indexBy ] : indexBy)
+        this.indexMaps = (this.primaryKey ? [ this.primaryKey, ...index_by ] : index_by)
             .filter(TableImpl.distinct)
             .reduce((idxMaps, key) => ({
                 ...idxMaps,
-                [ key ]: new Map<string, number[]>(),
-            }), {} as IndexMaps);
+                [ key ]: new Map<T[ keyof T ], number[]>(),
+            }), {} as IndexMaps<T>);
     }
 
-    find(key: string, value: string): Entity {
+    find<K extends keyof T>(key: K, value: T[ K ]): T {
         if (this.indexMaps[ key ]) {
             const firstIdx = this.indexMaps[ key ].get(value)?.[ 0 ];
             return this.data[ firstIdx ] ? { ...this.data[ firstIdx ] } : null;
@@ -80,7 +81,7 @@ export default class TableImpl implements Table {
         return entity ? { ...entity } : null;
     }
 
-    findMany(key: string, value: string): Entity[] {
+    findMany<K extends keyof T>(key: K, value: T[ K ]): T[] {
         if (this.indexMaps[ key ]) {
             return this.indexMaps[ key ].get(value)
                     ?.map(idx => ({ ...this.data[ idx ] }))
@@ -92,16 +93,16 @@ export default class TableImpl implements Table {
             .map(e => ({ ...e }));
     }
 
-    findAll(): Entity[] {
+    findAll(): T[] {
         return this.data
             .filter((e, idx) => !this.freeIndexes.has(idx));
     }
 
-    save(entity: Entity): Entity {
+    save(entity: T): T {
         this.validate(entity);
 
         let idx: number;
-        let storedEntity: Entity;
+        let storedEntity: T;
 
         if (this.primaryKey) {
             if (entity[ this.primaryKey ]) {
@@ -122,7 +123,7 @@ export default class TableImpl implements Table {
         const existedEntity = this.data[ idx ];
         this.data[ idx ] = storedEntity;
 
-        Object.entries<Map<string, number[]>>(this.indexMaps)
+        Object.entries<IndexMap<T>>(this.indexMaps)
             .forEach(([ key, indexMap ]) => {
                 if (existedEntity) {
                     const indexes = indexMap.get(existedEntity[ key ]) || [];
@@ -146,7 +147,7 @@ export default class TableImpl implements Table {
         return { ...storedEntity };
     }
 
-    delete(key: string, value: string): void {
+    delete<K extends keyof T>(key: K, value: T[ K ]): void {
         let indexes: number[];
 
         if (this.indexMaps[ key ]) {
@@ -163,9 +164,9 @@ export default class TableImpl implements Table {
         }
 
         indexes
-            .map(idx => [ idx, this.data[ idx ] ] as [ number, Entity ])
+            .map(idx => [ idx, this.data[ idx ] ] as [ number, T ])
             .forEach(([ idx, entity ]) => {
-                Object.entries<Map<string, number[]>>(this.indexMaps)
+                Object.entries<IndexMap<T>>(this.indexMaps)
                     .forEach(([ f, indexMap ]) => {
                         const indexes = indexMap.get(entity[ f ]);
                         const storedIndexes = indexes
@@ -209,8 +210,19 @@ export default class TableImpl implements Table {
         return String(availablePrimaryKeyValue);
     }
 
-    private validate(entity: Entity): void {
-        const entityFields = Object.entries(entity);
+    private validate(entity: T): void {
+        const entityFields = Object.entries(entity) as [ keyof T & string, T[ keyof T ]][];
+
+        const incompatibleFields = entityFields
+            .filter(([ key ]) => !this.columnDefinitions[ key ]);
+
+        if (incompatibleFields.length) {
+            throw new ValidationError(
+                this.tableName,
+                entity,
+                `Unexpected fields: ${ incompatibleFields.map(([ key ]) => key).join(", ") }`,
+            );
+        }
 
         const requiredNullFields = entityFields
             .filter(([ key ]) => this.columnDefinitions[ key ].required && this.primaryKey !== key)
@@ -240,14 +252,16 @@ export default class TableImpl implements Table {
         }
     }
 
-    private static isFieldTypeValid(type: ColumnDataType, value: string): boolean {
+    private static isFieldTypeValid(type: ColumnDataType, value: any): boolean {
         switch (type) {
             case ColumnDataType.Number:
-                return /^-?\d+(\.\d*)?$/.test(value);
+                return typeof value === "number";
             case ColumnDataType.Boolean:
-                return /^true|false$/.test(value);
+                return typeof value === "boolean";
+            case ColumnDataType.String:
+                return typeof value === "string";
             default:
-                return true;
+                return false;
         }
     }
 
