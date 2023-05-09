@@ -2,54 +2,54 @@
   {
     "operation": "CreateTable",
     "args": {
-      "tableName": "lobby",
+      "table_name": "lobby",
       "definition": {
         "columns": {
-          "id": { "type": "Number", "primaryKey": true },
+          "id": { "type": "Number", "primary_key": true },
           "name": { "type": "String", "required": true },
-          "currentTheme": { "type": "String" },
+          "current_theme": { "type": "String" },
           "state": { "type": "String", "required": true }
         },
-        "indexBy": [ "name" ]
+        "index_by": [ "name" ]
       }
     }
   },
   {
     "operation": "CreateTable",
     "args": {
-      "tableName": "member",
+      "table_name": "member",
       "definition": {
         "columns": {
-          "id": { "type": "Number", "primaryKey": true },
+          "id": { "type": "Number", "primary_key": true },
           "name": { "type": "String", "required": true }
         },
-        "indexBy": [ "name" ]
+        "index_by": [ "name" ]
       }
     }
   },
   {
     "operation": "CreateTable",
     "args": {
-      "tableName": "member_lobby_xref",
+      "table_name": "member_lobby_xref",
       "definition": {
         "columns": {
-          "memberId": { "type": "Number", "required": true },
-          "lobbyId": { "type": "Number", "required": true }
+          "member_id": { "type": "Number", "required": true },
+          "lobby_id": { "type": "Number", "required": true }
         },
-        "indexBy": [ "memberId", "lobbyId" ]
+        "index_by": [ "member_id", "lobby_id" ]
       }
     }
   },
   {
     "operation": "CreateTable",
     "args": {
-      "tableName": "member_card_xref",
+      "table_name": "member_card_xref",
       "definition": {
         "columns": {
-          "memberId": { "type": "Number", "required": true },
-          "cardCode": { "type": "String", "required": true }
+          "member_id": { "type": "Number", "required": true },
+          "card_code": { "type": "String", "required": true }
         },
-        "indexBy": [ "memberId" ]
+        "index_by": [ "member_id" ]
       }
     }
   }
