@@ -9,10 +9,10 @@ const isProtobufNumber = (value: any): value is Protobuf.IntValue => {
 };
 
 const isProtobufBoolean = (value: any): value is Protobuf.BoolValue => {
-    return typeof value.string_value === "boolean";
+    return typeof value.bool_value === "boolean";
 };
 
-export const fromEntityToProtobufEntity = <T extends object>(entity: T): Protobuf.Entity<T> => {
+export const serializeEntity = <T extends object>(entity: T): Protobuf.Entity<T> => {
     return Object.entries(entity)
         .reduce((pe, [ key, value ]) => ({
             ...pe,
@@ -24,7 +24,7 @@ export const fromEntityToProtobufEntity = <T extends object>(entity: T): Protobu
         }), {} as Protobuf.Entity<T>);
 };
 
-export const fromProtobufEntityToEntity = <T extends object>(protobufEntity: Protobuf.Entity<T>): T => {
+export const deserializeEntity = <T extends object>(protobufEntity: Protobuf.Entity<T>): T => {
     return Object.entries<Protobuf.Entity<T>[ keyof Protobuf.Entity<T> ]>(protobufEntity)
         .reduce((e, [ key, value ]) => ({
             ...e,

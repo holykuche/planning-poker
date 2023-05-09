@@ -19,7 +19,7 @@ import {
     TableFieldRequest,
     TableRequest,
 } from "./dto";
-import { fromEntityToProtobufEntity, fromProtobufEntityToEntity } from "./util";
+import { serializeEntity, deserializeEntity } from "./util";
 
 const PROTO_PATH = __dirname + "/db.proto";
 
@@ -96,7 +96,7 @@ const find = <T extends object, K extends keyof T>(
 
     try {
         response = {
-            result: fromEntityToProtobufEntity(database.find(table_name, key, value)),
+            result: serializeEntity(database.find(table_name, key, value)),
         };
     } catch (e) {
         error = e;
@@ -117,7 +117,7 @@ const findMany = <T extends object, K extends keyof T>(
     try {
         response = {
             result: database.findMany(table_name, key, value)
-                .map(entity => ({ result: fromEntityToProtobufEntity(entity) })),
+                .map(entity => ({ result: serializeEntity(entity) })),
         };
     } catch (e) {
         error = e;
@@ -138,7 +138,7 @@ const findAll = <T extends object>(
     try {
         response = {
             result: database.findAll<T>(table_name)
-                .map(entity => ({ result: fromEntityToProtobufEntity(entity) })),
+                .map(entity => ({ result: serializeEntity(entity) })),
         };
     } catch (e) {
         error = e;
@@ -158,7 +158,7 @@ const save = <T extends object>(
 
     try {
         response = {
-            result: fromEntityToProtobufEntity(database.save(table_name, fromProtobufEntityToEntity(entity))),
+            result: serializeEntity(database.save(table_name, deserializeEntity(entity))),
         };
     } catch (e) {
         error = e;
