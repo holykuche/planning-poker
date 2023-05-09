@@ -115,22 +115,24 @@ export default class MigrationsExecutorImpl implements MigrationsExecutor {
         return recordsAndFilenamesAndHashes;
     }
 
-    private executeMigration(fullFilename: string) {
-        const migration: MigrationInstance<MigrationHistoryRecord> = require(fullFilename);
-        const { operation, args } = migration;
+    private executeMigration<T extends object>(fullFilename: string) {
+        const migrationRecords: MigrationInstance<T>[] = JSON.parse(readFileSync(fullFilename, "utf8"));
 
-        switch (operation) {
-            case MigrationOperation.CreateTable:
-                return this.dbClient.createTable(args.table_name, args.definition);
-            case MigrationOperation.DropTable:
-                return this.dbClient.dropTable(args.table_name);
-            case MigrationOperation.Save:
-                return this.dbClient.save(args.table_name, args.entity);
-            case MigrationOperation.Delete:
-                return this.dbClient.delete<Record<string, any>, any>(args.table_name, args.key, args.value);
-            default:
-                return Promise.reject(new UnsupportedMigrationOperation(operation));
-        }
+        migrationRecords
+            .forEach(({ operation, args }) => {
+                switch (operation) {
+                    case MigrationOperation.CreateTable:
+                        return this.dbClient.createTable(args.table_name, args.definition);
+                    case MigrationOperation.DropTable:
+                        return this.dbClient.dropTable(args.table_name);
+                    case MigrationOperation.Save:
+                        return this.dbClient.save<T>(args.table_name, args.entity);
+                    case MigrationOperation.Delete:
+                        return this.dbClient.delete<T, keyof T>(args.table_name, args.key, args.value);
+                    default:
+                        return Promise.reject(new UnsupportedMigrationOperation(operation));
+                }
+            });
     }
 
     private async executeMigrations(dirname: string, recordsAndFilenamesAndHashes: RecordsAndFilenamesAndHashes) {
@@ -140,6 +142,7 @@ export default class MigrationsExecutorImpl implements MigrationsExecutor {
 
         for (const filename of sortedFilenames) {
             if (records.find(r => r.file_name === filename)) {
+                console.log(`Migration ${ filename } was already applied`);
                 return;
             }
 
@@ -147,7 +150,8 @@ export default class MigrationsExecutorImpl implements MigrationsExecutor {
 
             try {
                 await this.executeMigration(resolve(dirname, filename));
-                console.log(`Migration ${ filename } successfully applied`);
+                failureReason = "";
+                console.log(`New migration ${ filename } is successfully applied`);
             } catch (error) {
                 if (error instanceof Error) {
                     failureReason = error.message;
