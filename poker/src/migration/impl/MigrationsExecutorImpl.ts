@@ -8,13 +8,14 @@ import { DatabaseClient, DB_CLIENT_TYPES } from "db-client/api";
 import { ColumnDataType } from "db-client/enum";
 
 import { MigrationsExecutor } from "../api";
-import { TableName, MigrationOperation } from "../enum";
+import { MigrationOperation, TableName } from "../enum";
 import {
     IncompatibleMigrationsError,
     MigrationHistoryTableAlreadyExistsError,
     UnknownMigrationsError,
     UnsuccessfulMigrationsExistError,
     UnsupportedMigrationOperation,
+    MigrationExecutionError,
 } from "../error";
 import { MigrationHistoryRecord, MigrationInstance, RecordsAndFilenames, RecordsAndFilenamesAndHashes } from "../dto";
 
@@ -51,14 +52,15 @@ export default class MigrationsExecutorImpl implements MigrationsExecutor {
 
                 return this.dbClient.createTable(TableName.MigrationHistory, {
                     columns: {
-                        id: { type: ColumnDataType.Number, primaryKey: true },
+                        id: { type: ColumnDataType.Number, primary_key: true },
                         file_name: { type: ColumnDataType.String, required: true },
                         hash: { type: ColumnDataType.String, required: true },
                         success: { type: ColumnDataType.Boolean, required: true },
+                        failure_reason: { type: ColumnDataType.String },
                     },
-                    indexBy: [ "name", "hash" ],
+                    index_by: [ "file_name", "hash" ],
                 });
-            })
+            });
     }
 
     private async prepareRecords() {
@@ -114,18 +116,18 @@ export default class MigrationsExecutorImpl implements MigrationsExecutor {
     }
 
     private executeMigration(fullFilename: string) {
-        const migration: MigrationInstance = require(fullFilename);
+        const migration: MigrationInstance<MigrationHistoryRecord> = require(fullFilename);
         const { operation, args } = migration;
 
         switch (operation) {
             case MigrationOperation.CreateTable:
-                return this.dbClient.createTable(args.tableName, args.definition);
+                return this.dbClient.createTable(args.table_name, args.definition);
             case MigrationOperation.DropTable:
-                return this.dbClient.dropTable(args.tableName);
+                return this.dbClient.dropTable(args.table_name);
             case MigrationOperation.Save:
-                return this.dbClient.save(args.tableName, args.entity);
+                return this.dbClient.save(args.table_name, args.entity);
             case MigrationOperation.Delete:
-                return this.dbClient.delete<Record<string, any>, any>(args.tableName, args.key, args.value);
+                return this.dbClient.delete<Record<string, any>, any>(args.table_name, args.key, args.value);
             default:
                 return Promise.reject(new UnsupportedMigrationOperation(operation));
         }
@@ -154,7 +156,6 @@ export default class MigrationsExecutorImpl implements MigrationsExecutor {
                 } else {
                     failureReason = "Unknown reason";
                 }
-                console.log(`Migration ${ filename } executed with error: ${ failureReason }`);
             }
 
             await this.dbClient.save<MigrationHistoryRecord>(TableName.MigrationHistory, {
@@ -164,6 +165,7 @@ export default class MigrationsExecutorImpl implements MigrationsExecutor {
                 failure_reason: failureReason,
             });
 
+            if (failureReason) throw new MigrationExecutionError(filename, failureReason);
         }
     };
 

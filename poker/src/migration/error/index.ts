@@ -3,3 +3,4 @@ export { default as UnsuccessfulMigrationsExistError } from "./UnsuccessfulMigra
 export { default as UnknownMigrationsError } from "./UnknownMigrationsError";
 export { default as IncompatibleMigrationsError } from "./IncompatibleMigrationsError";
 export { default as UnsupportedMigrationOperation } from "./UnsupportedMigrationOperation";
+export { default as MigrationExecutionError } from "./MigrationExecutionError";

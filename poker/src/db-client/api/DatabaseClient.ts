@@ -2,7 +2,7 @@ import { TableDefinition } from "../dto";
 
 export default interface DatabaseClient {
 
-    createTable(tableName: string, definition: TableDefinition): Promise<void>;
+    createTable<T extends object>(tableName: string, definition: TableDefinition<T>): Promise<void>;
 
     dropTable(tableName: string): Promise<void>;
 

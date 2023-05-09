@@ -1,9 +1,9 @@
 import ColumnDefinition from "./ColumnDefinition";
 
-export default interface TableDefinition {
+export default interface TableDefinition<T extends object> {
 
-    columns: Record<string, ColumnDefinition>;
+    columns: Record<keyof T, ColumnDefinition>;
 
-    indexBy?: string[];
+    index_by?: (keyof T)[];
 
 }

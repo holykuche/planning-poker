@@ -6,6 +6,6 @@ export default interface ColumnDefinition {
 
     required?: boolean;
 
-    primaryKey?: boolean;
+    primary_key?: boolean;
 
 }
