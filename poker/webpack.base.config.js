@@ -1,6 +1,9 @@
+const webpack = require("webpack");
 const path = require("path");
 const CopyPlugin = require("copy-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+
+const MIGRATION_SCRIPTS_DIR = "migration-scripts";
 
 module.exports = {
     target: "node",
@@ -29,11 +32,14 @@ module.exports = {
         path: path.resolve(__dirname, "dist"),
     },
     plugins: [
+        new webpack.DefinePlugin({
+            MIGRATION_SCRIPTS_DIR: `"${ MIGRATION_SCRIPTS_DIR }"`,
+        }),
         new CopyPlugin({
             patterns: [
                 {
                     from: path.resolve(__dirname, "src", "migration", "scripts"),
-                    to: path.resolve(__dirname, "dist", "migration-scripts"),
+                    to: path.resolve(__dirname, "dist", MIGRATION_SCRIPTS_DIR),
                 },
                 path.resolve(__dirname, "proto"),
             ],

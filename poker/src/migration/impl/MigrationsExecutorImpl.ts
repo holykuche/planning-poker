@@ -8,16 +8,15 @@ import { DatabaseClient, DB_CLIENT_TYPES } from "db-client/api";
 import { ColumnDataType } from "db-client/enum";
 
 import { MigrationsExecutor } from "../api";
-import { MigrationOperation, TableName } from "../enum";
+import { TableName } from "../enum";
 import {
     IncompatibleMigrationsError,
     MigrationHistoryTableAlreadyExistsError,
     UnknownMigrationsError,
     UnsuccessfulMigrationsExistError,
-    UnsupportedMigrationOperation,
     MigrationExecutionError,
 } from "../error";
-import { MigrationHistoryRecord, MigrationInstance, RecordsAndFilenames, RecordsAndFilenamesAndHashes } from "../dto";
+import { MigrationHistoryRecord, RecordsAndFilenames, RecordsAndFilenamesAndHashes } from "../dto";
 
 @injectable()
 export default class MigrationsExecutorImpl implements MigrationsExecutor {
@@ -115,24 +114,9 @@ export default class MigrationsExecutorImpl implements MigrationsExecutor {
         return recordsAndFilenamesAndHashes;
     }
 
-    private executeMigration<T extends object>(fullFilename: string) {
-        const migrationRecords: MigrationInstance<T>[] = JSON.parse(readFileSync(fullFilename, "utf8"));
-
-        migrationRecords
-            .forEach(({ operation, args }) => {
-                switch (operation) {
-                    case MigrationOperation.CreateTable:
-                        return this.dbClient.createTable(args.table_name, args.definition);
-                    case MigrationOperation.DropTable:
-                        return this.dbClient.dropTable(args.table_name);
-                    case MigrationOperation.Save:
-                        return this.dbClient.save<T>(args.table_name, args.entity);
-                    case MigrationOperation.Delete:
-                        return this.dbClient.delete<T, keyof T>(args.table_name, args.key, args.value);
-                    default:
-                        return Promise.reject(new UnsupportedMigrationOperation(operation));
-                }
-            });
+    private executeMigration(relativeFilename: string) {
+        return import(/* webpackIgnore: true */ relativeFilename)
+            .then(({ default: run }) => run(this.dbClient));
     }
 
     private async executeMigrations(dirname: string, recordsAndFilenamesAndHashes: RecordsAndFilenamesAndHashes) {
@@ -146,11 +130,11 @@ export default class MigrationsExecutorImpl implements MigrationsExecutor {
                 return;
             }
 
-            let failureReason: string;
+            let failureReason: string = "";
 
             try {
-                await this.executeMigration(resolve(dirname, filename));
-                failureReason = "";
+                // todo: maybe there is better solution for filepath resolving
+                await this.executeMigration("file:\\\\" + resolve(dirname, filename));
                 console.log(`New migration ${ filename } is successfully applied`);
             } catch (error) {
                 if (error instanceof Error) {
