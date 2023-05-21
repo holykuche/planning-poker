@@ -12,9 +12,9 @@ namespace Protobuf {
 
     export type Value<T extends object, K extends keyof T> =
         T[ K ] extends number ? IntValue
-            : T[ K ] extends string ? StringValue
-            : T[ K ] extends boolean ? BoolValue
-                : never
+        : T[ K ] extends string ? StringValue
+        : T[ K ] extends boolean ? BoolValue
+        : never
 
 }
 

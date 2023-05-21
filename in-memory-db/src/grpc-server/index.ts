@@ -17,14 +17,14 @@ const databaseService = container.get<DatabaseGrpcService>(GRPC_SERVER_TYPES.Dat
 
 const server = new Server();
 server.addService((protoDescriptor.Database as ServiceClientConstructor).service, {
-    createTable: databaseService.createTable,
-    dropTable: databaseService.dropTable,
-    isTableExists: databaseService.isTableExists,
-    find: databaseService.find,
-    findMany: databaseService.findMany,
-    findAll: databaseService.findAll,
-    save: databaseService.save,
-    delete: databaseService.delete,
+    CreateTable: databaseService.createTable,
+    DropTable: databaseService.dropTable,
+    IsTableExists: databaseService.isTableExists,
+    Find: databaseService.find,
+    FindMany: databaseService.findMany,
+    FindAll: databaseService.findAll,
+    Save: databaseService.save,
+    Delete: databaseService.delete,
 });
 server.bindAsync(`0.0.0.0:${ process.env.DB_PORT }`, ServerCredentials.createInsecure(), () => {
     server.start();
