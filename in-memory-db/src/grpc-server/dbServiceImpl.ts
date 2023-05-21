@@ -1,11 +1,4 @@
-import {
-    loadPackageDefinition,
-    Server,
-    sendUnaryData,
-    ServerUnaryCall,
-    ServiceClientConstructor,
-} from "@grpc/grpc-js";
-import { loadSync } from "@grpc/proto-loader";
+import { sendUnaryData, ServerUnaryCall } from "@grpc/grpc-js";
 
 import { container } from "config/inversify";
 import { Database, CORE_TYPES } from "core/api";
@@ -20,14 +13,6 @@ import {
     TableRequest,
 } from "./dto";
 import { serializeEntity, deserializeEntity } from "./util";
-
-const PROTO_PATH = __dirname + "/db.proto";
-
-const packageDefinition = loadSync(PROTO_PATH, {
-    enums: String,
-    keepCase: true,
-});
-const protoDescriptor = loadPackageDefinition(packageDefinition);
 
 const database = container.get<Database>(CORE_TYPES.Database);
 
@@ -184,19 +169,13 @@ const del = <T extends object, K extends keyof T>(
     callback(error);
 };
 
-export default () => {
-    const server = new Server();
-
-    server.addService((protoDescriptor.Database as ServiceClientConstructor).service, {
-        createTable,
-        dropTable,
-        isTableExists,
-        find,
-        findMany,
-        findAll,
-        save,
-        delete: del,
-    });
-
-    return server;
+export default {
+    createTable,
+    dropTable,
+    isTableExists,
+    find,
+    findMany,
+    findAll,
+    save,
+    delete: del,
 };

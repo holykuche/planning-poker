@@ -5,7 +5,7 @@ module.exports = {
     target: "node",
     entry: [
         path.resolve(__dirname, "src", "core", "impl", "index.ts"),
-        path.resolve(__dirname, "src", "index.ts"),
+        path.resolve(__dirname, "src", "grpc-server", "index.ts"),
     ],
     module: {
         rules: [
