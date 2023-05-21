@@ -5,7 +5,7 @@ import { container } from "config/inversify";
 import { MemberCardXref } from "data/entity";
 import { CardCode, TableName } from "data/enum";
 import { MemberCardXrefDAO, DAO_TYPES } from "data/api";
-import { DatabaseClient, DB_CLIENT_TYPES } from "db-client/api";
+import { DatabaseClient, GRPC_CLIENT_TYPES } from "grpc-client/api";
 
 import { sameObject } from "../../test-utils/customMatchers";
 
@@ -21,7 +21,7 @@ describe("data/impl/MemberCardXrefDAOImpl", () => {
         container.bind<MemberCardXrefDAO>(DAO_TYPES.MemberCardXrefDAO).to(MemberCardXrefDAOImpl);
 
         dbClientMock = mock<DatabaseClient>();
-        container.bind<DatabaseClient>(DB_CLIENT_TYPES.DatabaseClient).toConstantValue(dbClientMock);
+        container.bind<DatabaseClient>(GRPC_CLIENT_TYPES.DatabaseClient).toConstantValue(dbClientMock);
 
         memberCardXrefDAO = container.get<MemberCardXrefDAO>(DAO_TYPES.MemberCardXrefDAO);
     });

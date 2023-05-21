@@ -4,7 +4,7 @@ import { CalledWithMock, mock, MockProxy, mockReset } from "jest-mock-extended";
 import { container } from "config/inversify";
 import { LobbyState, TableName } from "data/enum";
 import { LobbyDAO, DAO_TYPES } from "data/api";
-import { DatabaseClient, DB_CLIENT_TYPES } from "db-client/api";
+import { DatabaseClient, GRPC_CLIENT_TYPES } from "grpc-client/api";
 import { Lobby } from "data/entity";
 
 import { sameObject } from "../../test-utils/customMatchers";
@@ -21,7 +21,7 @@ describe("data/impl/LobbyDAOImpl", () => {
         container.bind<LobbyDAO>(DAO_TYPES.LobbyDAO).to(LobbyDAOImpl);
 
         dbClientMock = mock<DatabaseClient>();
-        container.bind<DatabaseClient>(DB_CLIENT_TYPES.DatabaseClient).toConstantValue(dbClientMock);
+        container.bind<DatabaseClient>(GRPC_CLIENT_TYPES.DatabaseClient).toConstantValue(dbClientMock);
 
         lobbyDAO = container.get<LobbyDAO>(DAO_TYPES.LobbyDAO);
     });

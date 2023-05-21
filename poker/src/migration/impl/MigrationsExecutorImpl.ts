@@ -4,8 +4,8 @@ import { createHash } from "crypto";
 import { readFileSync } from "fs";
 import { resolve } from "path";
 
-import { DatabaseClient, DB_CLIENT_TYPES } from "db-client/api";
-import { ColumnDataType } from "db-client/enum";
+import { DatabaseClient, GRPC_CLIENT_TYPES } from "grpc-client/api";
+import { ColumnDataType } from "grpc-client/enum";
 
 import { MigrationsExecutor } from "../api";
 import { TableName } from "../enum";
@@ -21,7 +21,7 @@ import { MigrationHistoryRecord, RecordsAndFilenames, RecordsAndFilenamesAndHash
 @injectable()
 export default class MigrationsExecutorImpl implements MigrationsExecutor {
 
-    @inject(DB_CLIENT_TYPES.DatabaseClient) private readonly dbClient: DatabaseClient;
+    @inject(GRPC_CLIENT_TYPES.DatabaseClient) private readonly dbClient: DatabaseClient;
 
     execute(migrationsDirname: string): Promise<void> {
         return this.initializeMigrationHistoryTable()

@@ -4,7 +4,7 @@ import { mock, mockReset, anyNumber, MockProxy } from "jest-mock-extended";
 import { container } from "config/inversify";
 import { MemberDAO, MemberCardXrefDAO, MemberLobbyXrefDAO, LobbyDAO, DAO_TYPES } from "data/api";
 import { CardCode, LobbyState } from "data/enum";
-import { MemberService, LobbyService, COMMON_SERVICE_TYPES, SubscriptionService } from "service/api";
+import { MemberService, LobbyService, SERVICE_TYPES, SubscriptionService } from "service/api";
 import { MemberIsNotInLobbyError, PokerIsNotStartedError, UnknownMemberError } from "service/error";
 import { SCHEDULER_TYPES, TimeoutScheduler } from "scheduler/api";
 
@@ -25,7 +25,7 @@ describe("service/common-service/impl/MemberServiceImpl", () => {
     let timeoutSchedulerMock: MockProxy<TimeoutScheduler>;
 
     beforeAll(() => {
-        container.bind<MemberService>(COMMON_SERVICE_TYPES.MemberService).to(MemberServiceImpl);
+        container.bind<MemberService>(SERVICE_TYPES.MemberService).to(MemberServiceImpl);
 
         memberDAOMock = mock<MemberDAO>();
         container.bind<MemberDAO>(DAO_TYPES.MemberDAO).toConstantValue(memberDAOMock);
@@ -40,15 +40,15 @@ describe("service/common-service/impl/MemberServiceImpl", () => {
         container.bind<LobbyDAO>(DAO_TYPES.LobbyDAO).toConstantValue(lobbyDAOMock);
 
         lobbyServiceMock = mock<LobbyService>();
-        container.bind<LobbyService>(COMMON_SERVICE_TYPES.LobbyService).toConstantValue(lobbyServiceMock);
+        container.bind<LobbyService>(SERVICE_TYPES.LobbyService).toConstantValue(lobbyServiceMock);
 
         subscriptionServiceMock = mock<SubscriptionService>();
-        container.bind<SubscriptionService>(COMMON_SERVICE_TYPES.SubscriptionService).toConstantValue(subscriptionServiceMock);
+        container.bind<SubscriptionService>(SERVICE_TYPES.SubscriptionService).toConstantValue(subscriptionServiceMock);
 
         timeoutSchedulerMock = mock<TimeoutScheduler>();
         container.bind<TimeoutScheduler>(SCHEDULER_TYPES.TimeoutScheduler).toConstantValue(timeoutSchedulerMock);
 
-        memberService = container.get<MemberService>(COMMON_SERVICE_TYPES.MemberService);
+        memberService = container.get<MemberService>(SERVICE_TYPES.MemberService);
     });
 
     beforeEach(() => {

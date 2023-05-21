@@ -5,14 +5,14 @@ import { Lobby } from "data/entity";
 import { LobbyState } from "data/enum";
 
 import {
-    LobbyAlreadyExists,
+    LobbyAlreadyExistsError,
     MemberIsAlreadyInLobbyError,
     MemberIsNotInLobbyError,
     PokerIsAlreadyStartedError,
     PokerIsNotStartedError,
     UnknownMemberError,
 } from "../error";
-import { LobbyService, COMMON_SERVICE_TYPES, SubscriptionService } from "../api";
+import { LobbyService, SERVICE_TYPES, SubscriptionService } from "../api";
 import { DispatchMembers, DispatchPokerResult, LobbyId, MemberId, ResetLobbyLifetime } from "../aop";
 
 @injectable()
@@ -22,7 +22,7 @@ export default class LobbyServiceImpl implements LobbyService {
     @inject(DAO_TYPES.MemberDAO) private readonly memberDAO: MemberDAO;
     @inject(DAO_TYPES.MemberLobbyXrefDAO) private readonly memberLobbyXrefDAO: MemberLobbyXrefDAO;
     @inject(DAO_TYPES.MemberCardXrefDAO) private readonly memberCardXrefDAO: MemberCardXrefDAO;
-    @inject(COMMON_SERVICE_TYPES.SubscriptionService) private readonly subscriptionService: SubscriptionService;
+    @inject(SERVICE_TYPES.SubscriptionService) private readonly subscriptionService: SubscriptionService;
 
     getById(id: number): Promise<Lobby> {
         return this.lobbyDAO.getById(id);
@@ -36,7 +36,7 @@ export default class LobbyServiceImpl implements LobbyService {
         return this.lobbyDAO.isExists(name)
             .then(isExists => {
                 if (isExists) {
-                    throw new LobbyAlreadyExists(name);
+                    throw new LobbyAlreadyExistsError(name);
                 }
             })
             .then(() => this.lobbyDAO.save({ name, state: LobbyState.Waiting }))

@@ -2,7 +2,7 @@ import { container } from "config/inversify";
 import { DAO_TYPES, LobbyDAO, MemberCardXrefDAO, MemberDAO, MemberLobbyXrefDAO } from "data/api";
 import LobbyState from "data/enum/LobbyState";
 
-import { COMMON_SERVICE_TYPES, SubscriptionService } from "../../api";
+import { SERVICE_TYPES, SubscriptionService } from "../../api";
 import { CardDto, PokerResultItemDto } from "../../dto";
 import { PokerIsNotStartedError } from "../../error";
 import { EventType } from "../../event";
@@ -62,7 +62,7 @@ export default function (target: Object, propertyKey: string, descriptor: TypedP
             memberCardXrefDAO: container.get<MemberCardXrefDAO>(DAO_TYPES.MemberCardXrefDAO),
             memberDAO: container.get<MemberDAO>(DAO_TYPES.MemberDAO),
             lobbyDAO: container.get<LobbyDAO>(DAO_TYPES.LobbyDAO),
-            subscriptionService: container.get<SubscriptionService>(COMMON_SERVICE_TYPES.SubscriptionService),
+            subscriptionService: container.get<SubscriptionService>(SERVICE_TYPES.SubscriptionService),
         };
 
         return Promise.resolve(result)

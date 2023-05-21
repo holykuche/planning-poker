@@ -3,7 +3,7 @@ import { container } from "config/inversify";
 import { DAO_TYPES, MemberDAO, MemberLobbyXrefDAO } from "data/api";
 import { Member } from "data/entity";
 
-import { COMMON_SERVICE_TYPES, SubscriptionService } from "../../api";
+import { SERVICE_TYPES, SubscriptionService } from "../../api";
 import { EventType } from "../../event";
 
 import { resolveLobbyId } from "../common";
@@ -28,7 +28,7 @@ export default function (target: Object, propertyKey: string, descriptor: TypedP
         const dependencies: Dependencies = {
             memberLobbyXrefDAO: container.get<MemberLobbyXrefDAO>(DAO_TYPES.MemberLobbyXrefDAO),
             memberDAO: container.get<MemberDAO>(DAO_TYPES.MemberDAO),
-            subscriptionService: container.get<SubscriptionService>(COMMON_SERVICE_TYPES.SubscriptionService),
+            subscriptionService: container.get<SubscriptionService>(SERVICE_TYPES.SubscriptionService),
         };
 
         return Promise.resolve(result)

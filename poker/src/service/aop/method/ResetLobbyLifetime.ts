@@ -4,7 +4,7 @@ import { DAO_TYPES, LobbyDAO, MemberCardXrefDAO, MemberDAO, MemberLobbyXrefDAO }
 import { SCHEDULER_TYPES, TimeoutScheduler } from "scheduler/api";
 import { TaskType } from "scheduler/enum";
 
-import { COMMON_SERVICE_TYPES, SubscriptionService } from "../../api";
+import { SERVICE_TYPES, SubscriptionService } from "../../api";
 import { EventType } from "../../event";
 
 import { resolveLobbyId } from "../common";
@@ -44,7 +44,7 @@ export default function (target: Object, propertyKey: string, descriptor: TypedP
             memberCardXrefDAO: container.get<MemberCardXrefDAO>(DAO_TYPES.MemberCardXrefDAO),
             memberDAO: container.get<MemberDAO>(DAO_TYPES.MemberDAO),
             lobbyDAO: container.get<LobbyDAO>(DAO_TYPES.LobbyDAO),
-            subscriptionService: container.get<SubscriptionService>(COMMON_SERVICE_TYPES.SubscriptionService),
+            subscriptionService: container.get<SubscriptionService>(SERVICE_TYPES.SubscriptionService),
             timeoutScheduler: container.get<TimeoutScheduler>(SCHEDULER_TYPES.TimeoutScheduler),
         };
 

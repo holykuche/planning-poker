@@ -11,6 +11,8 @@ module.exports = {
         path.resolve(__dirname, "src", "db-client", "impl", "index.ts"),
         path.resolve(__dirname, "src", "migration", "impl", "index.ts"),
         path.resolve(__dirname, "src", "migration", "index.ts"),
+        path.resolve(__dirname, "src", "grpc-server", "impl", "index.ts"),
+        path.resolve(__dirname, "src", "grpc-server", "index.ts"),
     ],
     module: {
         rules: [

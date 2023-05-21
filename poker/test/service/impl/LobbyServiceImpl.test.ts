@@ -7,9 +7,9 @@ import { LOBBY_LIFETIME_SEC } from "config/app";
 import { Lobby, Member, MemberCardXref } from "data/entity";
 import { LobbyState } from "data/enum";
 import { DAO_TYPES, LobbyDAO, MemberCardXrefDAO, MemberDAO, MemberLobbyXrefDAO } from "data/api";
-import { LobbyService, COMMON_SERVICE_TYPES, SubscriptionService } from "service/api";
+import { LobbyService, SERVICE_TYPES, SubscriptionService } from "service/api";
 import {
-    LobbyAlreadyExists,
+    LobbyAlreadyExistsError,
     MemberIsAlreadyInLobbyError,
     MemberIsNotInLobbyError,
     PokerIsAlreadyStartedError,
@@ -35,7 +35,7 @@ describe("service/impl/LobbyServiceImpl", () => {
     let timeoutSchedulerMock: MockProxy<TimeoutScheduler>;
 
     beforeAll(() => {
-        container.bind<LobbyService>(COMMON_SERVICE_TYPES.LobbyService).to(LobbyServiceImpl);
+        container.bind<LobbyService>(SERVICE_TYPES.LobbyService).to(LobbyServiceImpl);
 
         lobbyDAOMock = mock<LobbyDAO>();
         container.bind<LobbyDAO>(DAO_TYPES.LobbyDAO).toConstantValue(lobbyDAOMock);
@@ -50,12 +50,12 @@ describe("service/impl/LobbyServiceImpl", () => {
         container.bind<MemberDAO>(DAO_TYPES.MemberDAO).toConstantValue(memberDAOMock);
 
         subscriptionServiceMock = mock<SubscriptionService>();
-        container.bind<SubscriptionService>(COMMON_SERVICE_TYPES.SubscriptionService).toConstantValue(subscriptionServiceMock);
+        container.bind<SubscriptionService>(SERVICE_TYPES.SubscriptionService).toConstantValue(subscriptionServiceMock);
 
         timeoutSchedulerMock = mock<TimeoutScheduler>();
         container.bind<TimeoutScheduler>(SCHEDULER_TYPES.TimeoutScheduler).toConstantValue(timeoutSchedulerMock);
 
-        lobbyService = container.get<LobbyService>(COMMON_SERVICE_TYPES.LobbyService);
+        lobbyService = container.get<LobbyService>(SERVICE_TYPES.LobbyService);
     });
 
     beforeEach(() => {
@@ -172,7 +172,7 @@ describe("service/impl/LobbyServiceImpl", () => {
 
         return lobbyService.createLobby(lobbyName)
             .catch(error => {
-                expect(error).toBeInstanceOf(LobbyAlreadyExists);
+                expect(error).toBeInstanceOf(LobbyAlreadyExistsError);
             });
     });
 

@@ -5,7 +5,7 @@ import { container } from "config/inversify";
 import { MemberDAO, DAO_TYPES } from "data/api";
 import { Member } from "data/entity";
 import { TableName } from "data/enum";
-import { DatabaseClient, DB_CLIENT_TYPES } from "db-client/api";
+import { DatabaseClient, GRPC_CLIENT_TYPES } from "grpc-client/api";
 
 import { sameObject } from "../../test-utils/customMatchers";
 
@@ -21,7 +21,7 @@ describe("data/impl/MemberDAOImpl", () => {
         container.bind<MemberDAO>(DAO_TYPES.MemberDAO).to(MemberDAOImpl);
 
         dbClientMock = mock<DatabaseClient>();
-        container.bind<DatabaseClient>(DB_CLIENT_TYPES.DatabaseClient).toConstantValue(dbClientMock);
+        container.bind<DatabaseClient>(GRPC_CLIENT_TYPES.DatabaseClient).toConstantValue(dbClientMock);
 
         memberDAO = container.get<MemberDAO>(DAO_TYPES.MemberDAO);
     });
