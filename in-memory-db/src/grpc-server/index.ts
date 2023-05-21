@@ -3,7 +3,7 @@ import { loadPackageDefinition, Server, ServiceClientConstructor, ServerCredenti
 import { loadSync } from "@grpc/proto-loader";
 
 import { container } from "config/inversify";
-import { DatabaseService, GRPC_SERVER_TYPES } from "./api";
+import { DatabaseGrpcService, GRPC_SERVER_TYPES } from "./api";
 
 const PROTO_PATH = __dirname + "/db.proto";
 
@@ -13,7 +13,7 @@ const packageDefinition = loadSync(PROTO_PATH, {
 });
 const protoDescriptor = loadPackageDefinition(packageDefinition);
 
-const databaseService = container.get<DatabaseService>(GRPC_SERVER_TYPES.DatabaseService);
+const databaseService = container.get<DatabaseGrpcService>(GRPC_SERVER_TYPES.DatabaseGrpcService);
 
 const server = new Server();
 server.addService((protoDescriptor.Database as ServiceClientConstructor).service, {

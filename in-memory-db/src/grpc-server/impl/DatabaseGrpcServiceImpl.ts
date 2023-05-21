@@ -3,7 +3,7 @@ import { ServerUnaryCall, sendUnaryData } from "@grpc/grpc-js";
 
 import { Database, CORE_TYPES } from "core/api";
 
-import { DatabaseService } from "../api";
+import { DatabaseGrpcService } from "../api";
 import {
     CreateTableRequest,
     BoolResponse,
@@ -16,7 +16,7 @@ import {
 import { EntitySerializer } from "../util";
 
 @injectable()
-export default class DatabaseServiceImpl implements DatabaseService {
+export default class DatabaseGrpcServiceImpl implements DatabaseGrpcService {
     
     @inject(CORE_TYPES.Database) private readonly database: Database;
     

@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { container } from "config/inversify";
-import { DatabaseService, GRPC_SERVER_TYPES } from "../api";
-import DatabaseServiceImpl from "./DatabaseServiceImpl";
+import { DatabaseGrpcService, GRPC_SERVER_TYPES } from "../api";
+import DatabaseGrpcServiceImpl from "./DatabaseGrpcServiceImpl";
 
-container.bind<DatabaseService>(GRPC_SERVER_TYPES.DatabaseService).to(DatabaseServiceImpl);
+container.bind<DatabaseGrpcService>(GRPC_SERVER_TYPES.DatabaseGrpcService).to(DatabaseGrpcServiceImpl);

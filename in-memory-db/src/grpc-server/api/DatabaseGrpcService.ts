@@ -8,7 +8,7 @@ import {
     TableRequest,
 } from "../dto";
 
-export default interface DatabaseService {
+export default interface DatabaseGrpcService {
 
     createTable<T extends object>(
         call: ServerUnaryCall<CreateTableRequest<T>, void>,
