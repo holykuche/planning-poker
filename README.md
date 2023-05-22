@@ -2,10 +2,10 @@
 
 #### Finished microservices:
 * in-memory-db
-* poker (it left to make compatibility with Kafka and make migration layer reusable between microservices)
 
 #### Unfinished microservices:
-* telegram
+* poker (it left to make compatibility with Kafka and make migration layer reusable between microservices)
+* telegram (it left to make compatibility with Kafka, make migration layer reusable between microservices, create some implementations, fix tests)
 
 ##### Also, it needs to finally configure Docker
 
