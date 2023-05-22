@@ -8,7 +8,7 @@ const MIGRATION_SCRIPTS_DIR = "migration-scripts";
 module.exports = {
     target: "node",
     entry: [
-        path.resolve(__dirname, "src", "db-client", "impl", "index.ts"),
+        path.resolve(__dirname, "src", "grpc-client", "impl", "index.ts"),
         path.resolve(__dirname, "src", "migration", "impl", "index.ts"),
         path.resolve(__dirname, "src", "migration", "index.ts"),
         path.resolve(__dirname, "src", "grpc-server", "impl", "index.ts"),

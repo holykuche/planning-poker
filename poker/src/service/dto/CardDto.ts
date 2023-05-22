@@ -2,7 +2,7 @@ import { CardCode } from "data/enum";
 
 export default class CardDto<T extends CardCode = CardCode> {
 
-    private constructor(public readonly code: T, public readonly label: string, private readonly value?: number) {
+    private constructor(public readonly code: T, public readonly label: string, public readonly value?: number) {
     }
 
     private static readonly values: Map<CardCode, CardDto> = new Map<CardCode, CardDto>([
@@ -22,24 +22,6 @@ export default class CardDto<T extends CardCode = CardCode> {
 
     static fromCode<T extends CardCode>(code: T): CardDto<T> {
         return CardDto.values.get(code) as CardDto<T> || null;
-    }
-
-    compareTo(card: CardDto): number {
-        if (card.code === CardCode.DontKnow) {
-            return -1;
-        }
-        if (this.code === CardCode.DontKnow) {
-            return 1;
-        }
-
-        if (card.code === CardCode.Skip) {
-            return -1;
-        }
-        if (this.code === CardCode.Skip) {
-            return 1;
-        }
-
-        return this.value - card.value;
     }
 
 }

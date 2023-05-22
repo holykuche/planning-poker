@@ -4,6 +4,7 @@ import { loadSync } from "@grpc/proto-loader";
 
 import { DatabaseClient } from "../api";
 import { TableDefinition, Protobuf } from "../dto";
+import { EntitySerializer } from "../util";
 
 interface Result<T> {
     result: T;
@@ -62,7 +63,7 @@ export default class DatabaseClientImpl implements DatabaseClient {
                 DatabaseClientImpl.callbackFactory<Result<Protobuf.Entity<T>>>(resolve, reject)
             );
         })
-            .then(response => DatabaseClientImpl.deserializeEntity(response.result) || null);
+            .then(response => EntitySerializer.deserialize(response.result) || null);
     }
 
     findMany<T extends object, K extends keyof T>(table_name: string, key: K, value: T[ K ]): Promise<T[]> {
@@ -74,7 +75,7 @@ export default class DatabaseClientImpl implements DatabaseClient {
         })
             .then(response =>
                 (response?.result || [])
-                    .map(({ result }) => DatabaseClientImpl.deserializeEntity(result))
+                    .map(({ result }) => EntitySerializer.deserialize(result))
             );
     }
 
@@ -87,18 +88,18 @@ export default class DatabaseClientImpl implements DatabaseClient {
         })
             .then(response =>
                 (response?.result || [])
-                    .map(({ result }) => DatabaseClientImpl.deserializeEntity(result))
+                    .map(({ result }) => EntitySerializer.deserialize(result))
             );
     }
 
     save<T extends object>(table_name: string, entity: T): Promise<T> {
         return new Promise<Result<Protobuf.Entity<T>>>((resolve, reject) => {
             this.stub.Save(
-                { table_name, entity: DatabaseClientImpl.serializeEntity(entity) },
+                { table_name, entity: EntitySerializer.serialize(entity) },
                 DatabaseClientImpl.callbackFactory<Result<Protobuf.Entity<T>>>(resolve, reject)
             );
         })
-            .then(response => DatabaseClientImpl.deserializeEntity(response.result));
+            .then(response => EntitySerializer.deserialize(response.result));
     }
 
     delete<T extends object, K extends keyof T>(table_name: string, key: K, value: T[ K ]): Promise<void> {
@@ -109,42 +110,6 @@ export default class DatabaseClientImpl implements DatabaseClient {
 
     private static callbackFactory<T>(resolve: (value: T) => void, reject: (error: Error) => void): (error: Error, value: T) => void {
         return (error, value) => error ? reject(error) : resolve(value);
-    }
-
-    private static serializeEntity<T extends object>(entity: T): Protobuf.Entity<T> {
-        return Object.entries(entity)
-            .reduce((pe, [ key, value ]) => ({
-                ...pe,
-                [ key ]:
-                    typeof value === "string" ? { string_value: value }
-                    : typeof value === "number" ? { int_value: value }
-                    : typeof value === "boolean" ? { bool_value: value }
-                    : null,
-            }), {} as Protobuf.Entity<T>);
-    }
-
-    private static deserializeEntity<T extends object>(protobufEntity: Protobuf.Entity<T>): T {
-        return Object.entries<Protobuf.Entity<T>[ keyof Protobuf.Entity<T> ]>(protobufEntity)
-            .reduce((e, [ key, value ]) => ({
-                ...e,
-                [ key ]:
-                    DatabaseClientImpl.isProtobufString(value) ? value.string_value
-                    : DatabaseClientImpl.isProtobufNumber(value) ? value.int_value
-                    : DatabaseClientImpl.isProtobufBoolean(value) ? value.bool_value ?? false
-                    : null,
-            }), {} as T);
-    }
-
-    private static isProtobufString(value: any): value is Protobuf.StringValue {
-        return typeof value.string_value === "string";
-    }
-
-    private static isProtobufNumber(value: any): value is Protobuf.IntValue {
-        return typeof value.int_value === "number";
-    }
-
-    private static isProtobufBoolean(value: any): value is Protobuf.BoolValue {
-        return typeof value.bool_value === "boolean";
     }
 
 }
