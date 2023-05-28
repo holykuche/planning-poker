@@ -2,7 +2,7 @@ import { injectable, inject } from "inversify";
 import { Observable, Subscription } from "rxjs";
 import TelegramBot, { InlineKeyboardButton } from "node-telegram-bot-api";
 
-import { CardCode } from "data/enum";
+import { CardCode } from "grpc-client/enum";
 import { ServiceError } from "service/error";
 
 import { ButtonCommand } from "../enum";
@@ -40,7 +40,9 @@ export default abstract class AbstractSubscription<T> {
         [ ButtonCommand.RemoveCard ]: [ [ inlineKeyboardButtonFactory(ButtonCommand.RemoveCard) ] ],
     };
 
-    @inject(TELEGRAM_BOT_TYPES.TelegramBot) protected readonly bot: TelegramBot;
+    @inject(TELEGRAM_BOT_TYPES.TelegramBot)
+    protected readonly bot: TelegramBot;
+
     protected readonly observable$: Observable<T>;
 
     constructor(observable$: Observable<T>) {

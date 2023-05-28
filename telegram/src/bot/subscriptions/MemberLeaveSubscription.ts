@@ -14,17 +14,24 @@ import AbstractCallbackQuerySubscription from "./AbstractCallbackQuerySubscripti
 @injectable()
 export default class MemberLeaveSubscription extends AbstractCallbackQuerySubscription {
 
-    @inject(SERVICE_TYPES.TelegramMessageService) private readonly telegramMessageService: TelegramMessageService;
-    @inject(SERVICE_TYPES.TelegramUserService) private readonly telegramUserService: TelegramUserService;
-    @inject(SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
-    @inject(SERVICE_TYPES.MemberService) private readonly memberService: MemberService;
+    @inject(SERVICE_TYPES.TelegramMessageService)
+    private readonly telegramMessageService: TelegramMessageService;
+
+    @inject(SERVICE_TYPES.TelegramUserService)
+    private readonly telegramUserService: TelegramUserService;
+
+    @inject(SERVICE_TYPES.LobbyService)
+    private readonly lobbyService: LobbyService;
+
+    @inject(SERVICE_TYPES.MemberService)
+    private readonly memberService: MemberService;
 
     constructor(@inject(TELEGRAM_BOT_TYPES.CallbackQueries$) callbackQueries$: Observable<CallbackQuery>) {
         super(
             callbackQueries$
                 .pipe(
                     filter(callback => callback.data === ButtonCommand.Leave),
-                )
+                ),
         );
     }
 
@@ -35,7 +42,7 @@ export default class MemberLeaveSubscription extends AbstractCallbackQuerySubscr
         const lobbyMessage = await this.telegramMessageService.getMessage(
             lobbyId,
             callbackQuery.message.chat.id,
-            TelegramMessageType.Lobby
+            TelegramMessageType.Lobby,
         );
         await this.bot.editMessageReplyMarkup(null, {
             chat_id: callbackQuery.message.chat.id,
@@ -45,7 +52,7 @@ export default class MemberLeaveSubscription extends AbstractCallbackQuerySubscr
         const resultMessage = await this.telegramMessageService.getMessage(
             lobbyId,
             callbackQuery.message.chat.id,
-            TelegramMessageType.Poker
+            TelegramMessageType.Poker,
         );
         if (resultMessage) {
             await this.bot.deleteMessage(callbackQuery.message.chat.id, String(resultMessage.messageId));

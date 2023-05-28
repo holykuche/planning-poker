@@ -1,4 +1,4 @@
-import { CardCode } from "data/enum";
+import { CardCode } from "grpc-client/enum";
 import { CardDto, PokerResultItemDto, TelegramMemberDto } from "service/dto";
 
 import italic from "./italic";

@@ -1,4 +1,4 @@
-import { Member } from "data/entity";
+import { Member } from "grpc-client/entity";
 import CardDto from "./CardDto";
 
 export default interface PokerResultItemDto {

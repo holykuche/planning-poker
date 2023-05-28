@@ -13,15 +13,18 @@ import AbstractCallbackQuerySubscription from "./AbstractCallbackQuerySubscripti
 @injectable()
 export default class RemoveCardSubscription extends AbstractCallbackQuerySubscription {
 
-    @inject(SERVICE_TYPES.TelegramUserService) private readonly telegramUserService: TelegramUserService;
-    @inject(SERVICE_TYPES.MemberService) private readonly memberService: MemberService;
+    @inject(SERVICE_TYPES.TelegramUserService)
+    private readonly telegramUserService: TelegramUserService;
+
+    @inject(SERVICE_TYPES.MemberService)
+    private readonly memberService: MemberService;
 
     constructor(@inject(TELEGRAM_BOT_TYPES.CallbackQueries$) callbackQueries$: Observable<CallbackQuery>) {
         super(
             callbackQueries$
                 .pipe(
                     filter(callback => callback.data === ButtonCommand.RemoveCard),
-                )
+                ),
         );
     }
 

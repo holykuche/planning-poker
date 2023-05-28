@@ -37,10 +37,17 @@ type LobbyEventHandler = (eventContext: LobbyEventContext, payload: LobbyEvent["
 @injectable()
 export default class MemberEnterSubscription extends AbstractMessageSubscription {
 
-    @inject(SERVICE_TYPES.TelegramMessageService) private readonly telegramMessageService: TelegramMessageService;
-    @inject(SERVICE_TYPES.TelegramUserService) private readonly telegramUserService: TelegramUserService;
-    @inject(SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
-    @inject(SERVICE_TYPES.SubscriptionService) private readonly subscriptionService: SubscriptionService;
+    @inject(SERVICE_TYPES.TelegramMessageService)
+    private readonly telegramMessageService: TelegramMessageService;
+
+    @inject(SERVICE_TYPES.TelegramUserService)
+    private readonly telegramUserService: TelegramUserService;
+
+    @inject(SERVICE_TYPES.LobbyService)
+    private readonly lobbyService: LobbyService;
+
+    @inject(SERVICE_TYPES.SubscriptionService)
+    private readonly subscriptionService: SubscriptionService;
 
     constructor(@inject(TELEGRAM_BOT_TYPES.PlaintTexts$) messages$: Observable<Message>) {
         super(messages$);

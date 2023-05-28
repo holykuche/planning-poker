@@ -1,6 +1,6 @@
 import { InlineKeyboardButton } from "node-telegram-bot-api";
 
-import { CardCode } from "data/enum";
+import { CardCode } from "grpc-client/enum";
 import { CardDto } from "service/dto";
 
 import { ButtonCommand } from "../enum";

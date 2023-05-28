@@ -1,4 +1,4 @@
-import { Lobby } from "data/entity";
+import { Lobby } from "service/entity";
 import ServiceError from "./ServiceError";
 import ErrorType from "./ErrorType";
 

@@ -1,4 +1,4 @@
-import { CardCode } from "data/enum";
+import { CardCode } from "grpc-client/enum";
 
 export default interface CardDto {
     code: CardCode;

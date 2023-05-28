@@ -1,7 +1,7 @@
-import { Member } from "data/entity";
-import { CardCode } from "data/enum";
+import { Member } from "../entity";
+import { CardCode } from "../enum";
 
-export default interface MemberService {
+export default interface MemberClient {
 
     getById(memberId: number): Promise<Member>;
 

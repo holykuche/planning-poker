@@ -1,4 +1,4 @@
-import { TableDefinition } from "../dto";
+import { TableDefinition } from "../entity";
 
 export default interface DatabaseClient {
 

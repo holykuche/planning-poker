@@ -1,5 +1,5 @@
 import { CardDto } from "service/dto";
-import { CardCode } from "data/enum";
+import { CardCode } from "grpc-client/enum";
 
 export default function (left: CardDto, right: CardDto) {
     if (right.code === CardCode.DontKnow) {

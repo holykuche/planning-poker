@@ -21,6 +21,6 @@ export default function (error: ServiceError) {
         case MemberIsNotInLobbyError:
             return "You are not included into any lobby.";
         default:
-            throw Error(`Unhandled error ${error.name}`);
+            throw Error(`Unhandled error ${ error.name }`);
     }
 };

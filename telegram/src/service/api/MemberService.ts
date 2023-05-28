@@ -1,5 +1,5 @@
-import { Member } from "data/entity";
-import { CardCode } from "data/enum";
+import { Member } from "grpc-client/entity";
+import { CardCode } from "grpc-client/enum";
 
 export default interface MemberService {
 
@@ -12,9 +12,5 @@ export default interface MemberService {
     putCard(memberId: number, cardCode: CardCode): Promise<void>;
 
     removeCard(memberId: number): Promise<void>;
-
-    save(member: Member): Promise<Member>;
-
-    deleteById(memberId: number): Promise<void>;
 
 }

@@ -3,7 +3,7 @@ import { loadPackageDefinition, ServiceClientConstructor, credentials } from "@g
 import { loadSync } from "@grpc/proto-loader";
 
 import { DatabaseClient } from "../api";
-import { TableDefinition, Protobuf } from "../dto";
+import { TableDefinition, Protobuf } from "../entity";
 import { EntitySerializer } from "../util";
 
 interface Result<T> {

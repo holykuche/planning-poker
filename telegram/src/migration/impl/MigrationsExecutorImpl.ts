@@ -21,7 +21,8 @@ import { MigrationHistoryRecord, RecordsAndFilenames, RecordsAndFilenamesAndHash
 @injectable()
 export default class MigrationsExecutorImpl implements MigrationsExecutor {
 
-    @inject(GRPC_CLIENT_TYPES.DatabaseClient) private readonly dbClient: DatabaseClient;
+    @inject(GRPC_CLIENT_TYPES.DatabaseClient)
+    private readonly dbClient: DatabaseClient;
 
     execute(migrationsDirname: string): Promise<void> {
         return this.initializeMigrationHistoryTable()

@@ -6,7 +6,8 @@ import { TableName } from "../enum";
 @injectable()
 export default abstract class AbstractDAOImpl<T extends object> {
 
-    @inject(GRPC_CLIENT_TYPES.DatabaseClient) dbClient: DatabaseClient;
+    @inject(GRPC_CLIENT_TYPES.DatabaseClient)
+    dbClient: DatabaseClient;
 
     constructor(private readonly tableName: TableName) {}
 

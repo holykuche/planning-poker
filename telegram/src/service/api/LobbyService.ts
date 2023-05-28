@@ -1,4 +1,4 @@
-import { Lobby } from "data/entity";
+import { Lobby } from "../entity";
 
 export default interface LobbyService {
 

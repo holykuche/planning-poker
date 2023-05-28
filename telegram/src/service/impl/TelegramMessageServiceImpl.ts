@@ -9,7 +9,8 @@ import { TelegramMessageService } from "../api";
 @injectable()
 export default class TelegramMessageServiceImpl implements TelegramMessageService {
 
-    @inject(DAO_TYPES.TelegramMessageDAO) private readonly telegramMessageDAO: TelegramMessageDAO;
+    @inject(DAO_TYPES.TelegramMessageDAO)
+    private readonly telegramMessageDAO: TelegramMessageDAO;
 
     getMessage(lobbyId: number, chatId: number, messageType: TelegramMessageType): Promise<TelegramMessage> {
         return this.telegramMessageDAO.getMessage(lobbyId, chatId, messageType);

@@ -1,4 +1,4 @@
-import { Protobuf } from "../dto";
+import { Protobuf } from "../entity";
 
 const isProtobufString = (value: any): value is Protobuf.StringValue => {
     return typeof value.string_value === "string";

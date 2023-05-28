@@ -1,4 +1,4 @@
-import { LobbyState } from "../enum";
+import { LobbyState } from "grpc-client/enum";
 
 export default interface Lobby {
     id?: number;

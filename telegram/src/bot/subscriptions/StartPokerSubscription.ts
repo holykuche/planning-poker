@@ -11,9 +11,14 @@ import AbstractMessageSubscription from "./AbstractMessageSubscription";
 @injectable()
 export default class StartPokerSubscription extends AbstractMessageSubscription {
 
-    @inject(SERVICE_TYPES.TelegramUserService) private readonly telegramUserService: TelegramUserService;
-    @inject(SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
-    @inject(SERVICE_TYPES.MemberService) private readonly memberService: MemberService;
+    @inject(SERVICE_TYPES.TelegramUserService)
+    private readonly telegramUserService: TelegramUserService;
+
+    @inject(SERVICE_TYPES.LobbyService)
+    private readonly lobbyService: LobbyService;
+
+    @inject(SERVICE_TYPES.MemberService)
+    private readonly memberService: MemberService;
 
     constructor(@inject(TELEGRAM_BOT_TYPES.PlaintTexts$) messages$: Observable<Message>) {
         super(messages$);

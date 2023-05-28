@@ -1,6 +1,6 @@
-import { Lobby } from "data/entity";
+import { Lobby } from "../entity";
 
-export default interface LobbyService {
+export default interface LobbyClient {
 
     getById(id: number): Promise<Lobby>;
 

@@ -9,8 +9,11 @@ import { MemberIsAlreadyInLobbyError, UnknownMemberError } from "../error";
 @injectable()
 export default class TelegramUserServiceImpl implements TelegramUserService {
 
-    @inject(DAO_TYPES.TelegramUserDAO) private readonly telegramUserDAO: TelegramUserDAO;
-    @inject(SERVICE_TYPES.MemberService) private readonly memberService: MemberService;
+    @inject(DAO_TYPES.TelegramUserDAO)
+    private readonly telegramUserDAO: TelegramUserDAO;
+
+    @inject(SERVICE_TYPES.MemberService)
+    private readonly memberService: MemberService;
 
     getMemberByTelegramUserId(telegramUserId: number): Promise<TelegramMemberDto> {
         return this.telegramUserDAO.getMemberIdByTelegramUserId(telegramUserId)
@@ -43,7 +46,7 @@ export default class TelegramUserServiceImpl implements TelegramUserService {
             .then(
                 storedMember =>
                     this.telegramUserDAO.bindTelegramUserWithMember(storedMember.telegramUserId, storedMember.id)
-                        .then(() => storedMember)
+                        .then(() => storedMember),
             );
     }
 
