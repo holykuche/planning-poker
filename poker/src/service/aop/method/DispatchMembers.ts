@@ -14,15 +14,15 @@ interface Dependencies {
     subscriptionService: SubscriptionService;
 }
 
-const getMembers = function (dependencies: Dependencies, lobbyId: number): Promise<Member[]> {
+const getMembers = (dependencies: Dependencies, lobbyId: number): Promise<Member[]> => {
     return dependencies.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId)
         .then(memberIds => dependencies.memberDAO.getByIds(memberIds));
 }
 
-export default function (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<Function>) {
+export default (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<Function>) => {
     const method = descriptor.value;
 
-    descriptor.value = function (...args: any[]) {
+    descriptor.value = async (...args: any[]) => {
         const result = method.apply(this, args);
 
         const dependencies: Dependencies = {
@@ -31,21 +31,14 @@ export default function (target: Object, propertyKey: string, descriptor: TypedP
             subscriptionService: container.get<SubscriptionService>(SERVICE_TYPES.SubscriptionService),
         };
 
-        return Promise.resolve(result)
-            .then(resultValue =>
-                resolveLobbyId(dependencies, args, target, propertyKey)
-                    .then(lobbyId =>
-                        getMembers(dependencies, lobbyId)
-                            .then(members => ({
-                                lobbyId,
-                                members,
-                            }))
-                    )
-                    .then(({ lobbyId, members }) => dependencies.subscriptionService.dispatch(lobbyId, {
-                        type: EventType.MembersWasChanged,
-                        payload: { members },
-                    }))
-                    .then(() => resultValue)
-            );
+        const lobbyId = await resolveLobbyId(dependencies, args, target, propertyKey);
+        const members = await getMembers(dependencies, lobbyId);
+
+        await dependencies.subscriptionService.dispatch(lobbyId, {
+            type: EventType.MembersWasChanged,
+            payload: { members },
+        });
+
+        return result;
     }
 }

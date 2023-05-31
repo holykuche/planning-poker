@@ -1,10 +1,10 @@
 import { container } from "config/inversify";
 import { DAO_TYPES, LobbyDAO, MemberCardXrefDAO, MemberDAO, MemberLobbyXrefDAO } from "data/api";
-import LobbyState from "data/enum/LobbyState";
+import { CardCode, LobbyState } from "data/enum";
+import { Card } from "data/entity";
 
-import { SERVICE_TYPES, SubscriptionService } from "../../api";
-import { CardDto, PokerResultItemDto } from "../../dto";
-import { PokerIsNotStartedError } from "../../error";
+import { SERVICE_TYPES, SubscriptionService, CardService } from "../../api";
+import { PokerResultItemDto } from "../../dto";
 import { EventType } from "../../event";
 
 import { resolveLobbyId } from "../common";
@@ -15,32 +15,32 @@ interface Dependencies {
     memberDAO: MemberDAO;
     lobbyDAO: LobbyDAO;
     subscriptionService: SubscriptionService;
+    cardService: CardService;
 }
 
-const getPokerResult = function (dependencies: Dependencies, lobbyId: number): Promise<PokerResultItemDto[]> {
-    return dependencies.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId)
-        .then(memberIds =>
-            dependencies.memberCardXrefDAO.getCardsByMemberIds(memberIds)
-                .then(cards => ({
-                    cards,
-                    memberIds,
-                }))
-        )
-        .then(({ cards, memberIds }) => ({
-            cards: cards
-                .reduce((cardsByMemberId, { memberId, cardCode }) => ({
-                    ...cardsByMemberId,
-                    [ memberId ]: CardDto.fromCode(cardCode),
-                }), {} as Record<number, CardDto>),
-            memberIds,
-        }))
-        .then(({ cards, memberIds }) =>
-            dependencies.memberDAO.getByIds(memberIds)
-                .then(members => members.map(member => ({ member, card: cards[ member.id ] })))
+const getPokerResult = async (dependencies: Dependencies, lobbyId: number): Promise<PokerResultItemDto[]> => {
+    const memberIds = await dependencies.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId);
+    const members = await dependencies.memberDAO.getByIds(memberIds);
+    const cardXrefs = await dependencies.memberCardXrefDAO.getCardsByMemberIds(memberIds);
+    const cards = await dependencies.cardService.getAll()
+        .then(allCards => allCards
+            .reduce((cs, c) => ({
+                ...cs,
+                [ c.code ]: c,
+            }), {} as Record<CardCode, Card>),
         );
+
+    const memberCards = cardXrefs
+        .reduce((cardsByMemberId, { memberId, cardCode }) => ({
+            ...cardsByMemberId,
+            [ memberId ]: cards[ cardCode ],
+        }), {} as Record<number, Card>);
+
+    return members
+        .map(member => ({ member, card: memberCards[ member.id ] }));
 };
 
-const finishPoker = function (dependencies: Dependencies, lobbyId: number, pokerResult: PokerResultItemDto[]): Promise<void> {
+const finishPoker = (dependencies: Dependencies, lobbyId: number, pokerResult: PokerResultItemDto[]): Promise<void> => {
     return dependencies.lobbyDAO.getById(lobbyId)
         .then(lobby => dependencies.lobbyDAO.save({ ...lobby, currentTheme: null, state: LobbyState.Waiting }))
         .then(lobby => dependencies.subscriptionService.dispatch(lobby.id, {
@@ -51,10 +51,10 @@ const finishPoker = function (dependencies: Dependencies, lobbyId: number, poker
         .then(memberIds => dependencies.memberCardXrefDAO.removeByMemberIds(memberIds));
 }
 
-export default function (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<Function>) {
+export default (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<Function>) => {
     const method = descriptor.value;
 
-    descriptor.value = function (...args: any[]) {
+    descriptor.value = async (...args: any[]) => {
         const result = method.apply(this, args);
 
         const dependencies: Dependencies = {
@@ -63,40 +63,27 @@ export default function (target: Object, propertyKey: string, descriptor: TypedP
             memberDAO: container.get<MemberDAO>(DAO_TYPES.MemberDAO),
             lobbyDAO: container.get<LobbyDAO>(DAO_TYPES.LobbyDAO),
             subscriptionService: container.get<SubscriptionService>(SERVICE_TYPES.SubscriptionService),
+            cardService: container.get<CardService>(SERVICE_TYPES.CardService),
         };
 
-        return Promise.resolve(result)
-            .then(resultValue =>
-                resolveLobbyId(dependencies, args, target, propertyKey)
-                    .then(lobbyId => dependencies.lobbyDAO.getById(lobbyId))
-                    .then(lobby => {
-                        if (lobby.state !== LobbyState.Playing) {
-                            throw new PokerIsNotStartedError(lobby);
-                        }
-                        return lobby;
-                    })
-                    .then(lobby =>
-                        getPokerResult(dependencies, lobby.id)
-                            .then(pokerResult => ({
-                                lobby,
-                                pokerResult,
-                            }))
-                    )
-                    .then(({ lobby, pokerResult}) => {
-                        if (pokerResult.every(item => !!item.card)) {
-                            return finishPoker(dependencies, lobby.id, pokerResult);
-                        }
+        const lobbyId = await resolveLobbyId(dependencies, args, target, propertyKey);
+        const lobby = await dependencies.lobbyDAO.getById(lobbyId);
 
-                        dependencies.subscriptionService.dispatch(lobby.id, {
-                            type: EventType.PokerResultWasChanged,
-                            payload: { theme: lobby.currentTheme, result: pokerResult },
-                        });
-                        return Promise.resolve();
-                    })
-                    .catch(error => {
-                        if (!(error instanceof PokerIsNotStartedError)) throw error;
-                    })
-                    .then(() => resultValue)
-            );
+        if (lobby.state !== LobbyState.Playing) {
+            return;
+        }
+
+        const pokerResult = await getPokerResult(dependencies, lobby.id);
+
+        if (pokerResult.every(item => !!item.card)) {
+            await finishPoker(dependencies, lobby.id, pokerResult);
+        } else {
+            await dependencies.subscriptionService.dispatch(lobby.id, {
+                type: EventType.PokerResultWasChanged,
+                payload: { theme: lobby.currentTheme, result: pokerResult },
+            });
+        }
+
+        return result;
     }
 }

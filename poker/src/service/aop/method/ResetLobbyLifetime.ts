@@ -33,10 +33,10 @@ const destroyLobby = function (dependencies: Dependencies, lobbyId: number, memb
         });
 };
 
-export default function (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<Function>) {
+export default (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<Function>) => {
     const method = descriptor.value;
 
-    descriptor.value = function (...args: any[]) {
+    descriptor.value = async (...args: any[]) => {
         const result = method.apply(this, args);
 
         const dependencies: Dependencies = {
@@ -48,31 +48,20 @@ export default function (target: Object, propertyKey: string, descriptor: TypedP
             timeoutScheduler: container.get<TimeoutScheduler>(SCHEDULER_TYPES.TimeoutScheduler),
         };
 
-        return Promise.resolve(result)
-            .then(resultValue =>
-                resolveLobbyId(dependencies, args, target, propertyKey)
-                    .then(lobbyId =>
-                        dependencies.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId)
-                            .then(memberIds => ({
-                                lobbyId,
-                                memberIds,
-                            }))
-                    )
-                    .then(({ lobbyId, memberIds }) => {
-                        if (!memberIds.length) {
-                            dependencies.timeoutScheduler.cancel(TaskType.Lobby, lobbyId);
-                            return destroyLobby(dependencies, lobbyId, memberIds);
-                        }
+        const lobbyId = await resolveLobbyId(dependencies, args, target, propertyKey);
+        const memberIds = await dependencies.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId);
 
-                        dependencies.timeoutScheduler.schedule(
-                            TaskType.Lobby,
-                            lobbyId,
-                            LOBBY_LIFETIME_SEC,
-                            () => destroyLobby(dependencies, lobbyId, memberIds));
+        if (!memberIds.length) {
+            dependencies.timeoutScheduler.cancel(TaskType.Lobby, lobbyId);
+            await destroyLobby(dependencies, lobbyId, memberIds);
+        } else {
+            dependencies.timeoutScheduler.schedule(
+                TaskType.Lobby,
+                lobbyId,
+                LOBBY_LIFETIME_SEC,
+                () => destroyLobby(dependencies, lobbyId, memberIds));
+        }
 
-                        return Promise.resolve();
-                    })
-                    .then(() => resultValue)
-            );
+        return result;
     }
 };
