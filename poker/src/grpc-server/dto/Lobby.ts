@@ -1,4 +1,4 @@
-import { LobbyState } from "../enum";
+import { LobbyState } from "data/enum";
 
 export default interface Lobby {
     id?: number;

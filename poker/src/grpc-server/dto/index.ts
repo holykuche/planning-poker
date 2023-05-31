@@ -8,3 +8,5 @@ export { default as MemberIdCardCodeRequest } from "./MemberIdCardCodeRequest";
 export { default as MemberIdLobbyIdRequest } from "./MemberIdLobbyIdRequest";
 export { default as MemberIdRequest } from "./MemberIdRequest";
 export { default as NumberResponse } from "./NumberResponse";
+export { default as CardsResponse } from "./CardsResponse";
+export { default as CardCodeRequest } from "./CardCodeRequest";

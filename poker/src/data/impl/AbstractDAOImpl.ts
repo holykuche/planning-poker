@@ -1,4 +1,4 @@
-import { injectable, inject } from "inversify";
+import { inject, injectable } from "inversify";
 import { DatabaseClient, GRPC_CLIENT_TYPES } from "grpc-client/api";
 
 import { TableName } from "../enum";
@@ -6,7 +6,7 @@ import { TableName } from "../enum";
 @injectable()
 export default abstract class AbstractDAOImpl<T extends object> {
 
-    @inject(GRPC_CLIENT_TYPES.DatabaseClient) dbClient: DatabaseClient;
+    @inject(GRPC_CLIENT_TYPES.DatabaseClient) private readonly dbClient: DatabaseClient;
 
     constructor(private readonly tableName: TableName) {}
 

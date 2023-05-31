@@ -1,4 +1,5 @@
 enum TableName {
+    Card = "Card",
     Lobby = "lobby",
     Member = "member",
     MemberCardXref = "member_card_xref",

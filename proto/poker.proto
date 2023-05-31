@@ -5,10 +5,10 @@ service LobbyService {
   rpc GetByName (LobbyNameRequest) returns (Lobby);
   rpc CreateLobby (LobbyNameRequest) returns (Lobby);
   rpc GetMembersLobby (MemberIdRequest) returns (Lobby);
-  rpc EnterMember (MemberIdLobbyIdRequest) returns (EmptyResponse);
-  rpc LeaveMember (MemberIdLobbyIdRequest) returns (EmptyResponse);
-  rpc StartPoker (LobbyIdThemeRequest) returns (EmptyResponse);
-  rpc CancelPoker (LobbyIdRequest) returns (EmptyResponse);
+  rpc EnterMember (MemberIdLobbyIdRequest) returns (EmptyBody);
+  rpc LeaveMember (MemberIdLobbyIdRequest) returns (EmptyBody);
+  rpc StartPoker (LobbyIdThemeRequest) returns (EmptyBody);
+  rpc CancelPoker (LobbyIdRequest) returns (EmptyBody);
 }
 
 message LobbyIdRequest {
@@ -45,7 +45,7 @@ message LobbyIdThemeRequest {
   string theme = 2;
 }
 
-message EmptyResponse {}
+message EmptyBody {}
 
 
 
@@ -53,8 +53,10 @@ service MemberService {
   rpc GetById (MemberIdRequest) returns (Member);
   rpc GetMembersLobbyId (MemberIdRequest) returns (NumberResponse);
   rpc IsMemberInLobby (MemberIdRequest) returns (BoolResponse);
-  rpc PutCard (MemberIdCardCodeRequest) returns (EmptyResponse);
-  rpc RemoveCard (MemberIdRequest) returns (EmptyResponse);
+  rpc PutCard (MemberIdCardCodeRequest) returns (EmptyBody);
+  rpc RemoveCard (MemberIdRequest) returns (EmptyBody);
+  rpc Save (Member) returns (Member);
+  rpc DeleteById (MemberIdRequest) returns (EmptyBody);
 }
 
 message MemberIdCardCodeRequest {
@@ -88,4 +90,25 @@ message NumberResponse {
 
 message BoolResponse {
   bool result = 1;
+}
+
+
+
+service CardService {
+  rpc GetAll (EmptyBody) returns (Cards);
+  rpc GetByCode (CardCodeRequest) returns (Card);
+}
+
+message CardCodeRequest {
+  CardCode card_code = 1;
+}
+
+message Cards {
+  repeated Card result = 1;
+}
+
+message Card {
+  CardCode code = 1;
+  string label = 2;
+  int32 value = 3;
 }

@@ -1,3 +1,4 @@
+export { default as CardDAO } from "./CardDAO";
 export { default as LobbyDAO } from "./LobbyDAO";
 export { default as MemberDAO } from "./MemberDAO";
 export { default as MemberLobbyXrefDAO } from "./MemberLobbyXrefDAO";

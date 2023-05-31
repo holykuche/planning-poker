@@ -1,4 +1,4 @@
-import { CardCode } from "../enum";
+import { CardCode } from "data/enum";
 
 export default interface MemberIdCardCodeRequest {
     member_id: number;
