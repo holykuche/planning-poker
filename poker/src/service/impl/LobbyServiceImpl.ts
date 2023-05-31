@@ -18,11 +18,20 @@ import { DispatchMembers, DispatchPokerResult, LobbyId, MemberId, ResetLobbyLife
 @injectable()
 export default class LobbyServiceImpl implements LobbyService {
 
-    @inject(DAO_TYPES.LobbyDAO) private readonly lobbyDAO: LobbyDAO;
-    @inject(DAO_TYPES.MemberDAO) private readonly memberDAO: MemberDAO;
-    @inject(DAO_TYPES.MemberLobbyXrefDAO) private readonly memberLobbyXrefDAO: MemberLobbyXrefDAO;
-    @inject(DAO_TYPES.MemberCardXrefDAO) private readonly memberCardXrefDAO: MemberCardXrefDAO;
-    @inject(SERVICE_TYPES.SubscriptionService) private readonly subscriptionService: SubscriptionService;
+    @inject(DAO_TYPES.LobbyDAO)
+    private readonly lobbyDAO: LobbyDAO;
+
+    @inject(DAO_TYPES.MemberDAO)
+    private readonly memberDAO: MemberDAO;
+
+    @inject(DAO_TYPES.MemberLobbyXrefDAO)
+    private readonly memberLobbyXrefDAO: MemberLobbyXrefDAO;
+
+    @inject(DAO_TYPES.MemberCardXrefDAO)
+    private readonly memberCardXrefDAO: MemberCardXrefDAO;
+
+    @inject(SERVICE_TYPES.SubscriptionService)
+    private readonly subscriptionService: SubscriptionService;
 
     getById(id: number): Promise<Lobby> {
         return this.lobbyDAO.getById(id);
@@ -84,11 +93,11 @@ export default class LobbyServiceImpl implements LobbyService {
                         if (lobbyId !== membersLobbyId) {
                             throw new MemberIsNotInLobbyError(member.name);
                         }
-                    })
+                    }),
             )
             .then(() => Promise.all([
                 this.memberLobbyXrefDAO.unbindMember(memberId),
-                this.memberCardXrefDAO.removeByMemberId(memberId)
+                this.memberCardXrefDAO.removeByMemberId(memberId),
             ]))
             .then(() => this.subscriptionService.unsubscribe(memberId));
     }
@@ -119,7 +128,7 @@ export default class LobbyServiceImpl implements LobbyService {
             .then(lobby => Promise.all([
                 this.lobbyDAO.save({ ...lobby, currentTheme: null, state: LobbyState.Waiting }),
                 this.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobby.id)
-                    .then(memberIds => this.memberCardXrefDAO.removeByMemberIds(memberIds))
+                    .then(memberIds => this.memberCardXrefDAO.removeByMemberIds(memberIds)),
             ]))
             .then();
     }

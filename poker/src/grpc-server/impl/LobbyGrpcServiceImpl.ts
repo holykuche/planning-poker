@@ -1,22 +1,23 @@
-import { injectable, inject } from "inversify";
-import { ServerUnaryCall, sendUnaryData } from "@grpc/grpc-js";
+import { inject, injectable } from "inversify";
+import { sendUnaryData, ServerUnaryCall } from "@grpc/grpc-js";
 
 import { LobbyService, SERVICE_TYPES } from "service/api";
 
 import {
-    LobbyIdRequest,
     Lobby,
-    LobbyNameRequest,
-    MemberIdRequest,
-    MemberIdLobbyIdRequest,
+    LobbyIdRequest,
     LobbyIdThemeRequest,
+    LobbyNameRequest,
+    MemberIdLobbyIdRequest,
+    MemberIdRequest,
 } from "../dto";
 import { LobbyGrpcService } from "../api";
 
 @injectable()
 export default class LobbyGrpcServiceImpl implements LobbyGrpcService {
 
-    @inject(SERVICE_TYPES.LobbyService) private readonly lobbyService: LobbyService;
+    @inject(SERVICE_TYPES.LobbyService)
+    private readonly lobbyService: LobbyService;
 
     getById(
         call: ServerUnaryCall<LobbyIdRequest, Lobby>,

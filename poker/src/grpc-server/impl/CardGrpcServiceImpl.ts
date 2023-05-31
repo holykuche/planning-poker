@@ -14,7 +14,6 @@ export default class CardGrpcServiceImpl implements CardGrpcService {
     @inject(SERVICE_TYPES.CardService)
     private readonly cardService: CardService;
 
-
     getAll(
         call: ServerUnaryCall<void, CardsResponse>,
         callback: sendUnaryData<CardsResponse>,

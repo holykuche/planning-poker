@@ -1,15 +1,16 @@
-import { injectable, inject } from "inversify";
-import { ServerUnaryCall, sendUnaryData } from "@grpc/grpc-js";
+import { inject, injectable } from "inversify";
+import { sendUnaryData, ServerUnaryCall } from "@grpc/grpc-js";
 
 import { MemberService, SERVICE_TYPES } from "service/api";
 
-import { MemberIdRequest, Member, NumberResponse, BoolResponse, MemberIdCardCodeRequest } from "../dto";
+import { BoolResponse, Member, MemberIdCardCodeRequest, MemberIdRequest, NumberResponse } from "../dto";
 import { MemberGrpcService } from "../api";
 
 @injectable()
 export default class MemberGrpcServiceImpl implements MemberGrpcService {
 
-    @inject(SERVICE_TYPES.MemberService) private readonly memberService: MemberService;
+    @inject(SERVICE_TYPES.MemberService)
+    private readonly memberService: MemberService;
 
     getById(
         call: ServerUnaryCall<MemberIdRequest, Member>,

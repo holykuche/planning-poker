@@ -11,17 +11,18 @@ import { MigrationsExecutor } from "../api";
 import { TableName } from "../enum";
 import {
     IncompatibleMigrationsError,
+    MigrationExecutionError,
     MigrationHistoryTableAlreadyExistsError,
     UnknownMigrationsError,
     UnsuccessfulMigrationsExistError,
-    MigrationExecutionError,
 } from "../error";
 import { MigrationHistoryRecord, RecordsAndFilenames, RecordsAndFilenamesAndHashes } from "../dto";
 
 @injectable()
 export default class MigrationsExecutorImpl implements MigrationsExecutor {
 
-    @inject(GRPC_CLIENT_TYPES.DatabaseClient) private readonly dbClient: DatabaseClient;
+    @inject(GRPC_CLIENT_TYPES.DatabaseClient)
+    private readonly dbClient: DatabaseClient;
 
     execute(migrationsDirname: string): Promise<void> {
         return this.initializeMigrationHistoryTable()
