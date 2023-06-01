@@ -1,6 +1,6 @@
-import { injectable, inject } from "inversify";
+import { inject, injectable } from "inversify";
 
-import { LobbyClient, GRPC_CLIENT_TYPES } from "grpc-client/api";
+import { GRPC_CLIENT_TYPES, LobbyClient } from "grpc-client/api";
 import { Lobby as ProtobufLobby } from "grpc-client/entity";
 
 import { LobbyService } from "../api";
@@ -41,11 +41,11 @@ export default class LobbyServiceImpl implements LobbyService {
     }
 
     startPoker(lobbyId: number, theme: string): Promise<void> {
-        return this.startPoker(lobbyId, theme);
+        return this.lobbyClient.startPoker(lobbyId, theme);
     }
 
     cancelPoker(lobbyId: number): Promise<void> {
-        return this.cancelPoker(lobbyId);
+        return this.lobbyClient.cancelPoker(lobbyId);
     }
 
     private static deserializeLobby(lobby: ProtobufLobby): Lobby {

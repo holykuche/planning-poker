@@ -1,6 +1,6 @@
-import { injectable, inject } from "inversify";
+import { inject, injectable } from "inversify";
 
-import { MemberClient, GRPC_CLIENT_TYPES } from "grpc-client/api";
+import { GRPC_CLIENT_TYPES, MemberClient } from "grpc-client/api";
 import { Member } from "grpc-client/entity";
 import { CardCode } from "grpc-client/enum";
 
@@ -30,6 +30,14 @@ export default class MemberServiceImpl implements MemberService {
 
     removeCard(memberId: number): Promise<void> {
         return this.memberClient.removeCard(memberId);
+    }
+
+    save(member: Member): Promise<Member> {
+        return this.memberClient.save(member);
+    }
+
+    deleteById(memberId: number): Promise<void> {
+        return this.memberClient.deleteById(memberId);
     }
 
 }

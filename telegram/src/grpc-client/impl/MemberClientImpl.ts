@@ -36,4 +36,12 @@ export default class MemberClientImpl extends AbstractPokerClientImpl implements
         return super.promiseFactory("RemoveCard", { member_id });
     }
 
+    save(member: Member): Promise<Member> {
+        return super.promiseFactory("Save", member);
+    }
+
+    deleteById(member_id: number): Promise<void> {
+        return super.promiseFactory("DeleteById", { member_id })
+    }
+
 }
