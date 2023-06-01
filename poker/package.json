@@ -15,6 +15,7 @@
     "@grpc/grpc-js": "^1.8.14",
     "@grpc/proto-loader": "^0.7.7",
     "@type-cacheable/core": "^12.0.1",
+    "db-migrations-executor": "github:holykuche/db-migrations-executor",
     "inversify": "^6.0.1",
     "inversify-inject-decorators": "^3.1.0",
     "reflect-metadata": "^0.1.13",

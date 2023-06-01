@@ -1,10 +1,13 @@
 import "reflect-metadata";
 import { resolve } from "path";
+import { MigrationsExecutorImpl } from "db-migrations-executor";
 
 import { container } from "config/inversify";
-import { MIGRATION_TYPES, MigrationsExecutor } from "./api";
+import { DatabaseClient, GRPC_CLIENT_TYPES } from "grpc-client/api";
 
-container.get<MigrationsExecutor>(MIGRATION_TYPES.MigrationsExecutor)
+const dbClient = container.get<DatabaseClient>(GRPC_CLIENT_TYPES.DatabaseClient);
+
+new MigrationsExecutorImpl(dbClient)
     .execute(resolve(__dirname, MIGRATION_SCRIPTS_DIR))
     .then(() => console.log("Migration completed successfully"))
     .catch(error => console.error(error));
