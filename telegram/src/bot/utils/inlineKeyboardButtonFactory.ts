@@ -1,9 +1,10 @@
 import { InlineKeyboardButton } from "node-telegram-bot-api";
 
 import { CardCode } from "grpc-client/enum";
-import { CardDto } from "service/dto";
 
 import { ButtonCommand } from "../enum";
+
+import getCardDtoByCode from "./getCardDtoByCode";
 
 function inlineKeyboardButtonFactory(buttonCommand: ButtonCommand.Leave): InlineKeyboardButton;
 function inlineKeyboardButtonFactory(buttonCommand: ButtonCommand.PutCard, option: CardCode): InlineKeyboardButton;
@@ -14,7 +15,7 @@ function inlineKeyboardButtonFactory(buttonCommand: ButtonCommand, option?: any)
         case ButtonCommand.Leave:
             return { text: "Leave", callback_data: ButtonCommand.Leave };
         case ButtonCommand.PutCard:
-            return { text: CardDto.fromCode(option).label, callback_data: `${ ButtonCommand.PutCard } ${ option }` };
+            return { text: getCardDtoByCode(option).label, callback_data: `${ ButtonCommand.PutCard } ${ option }` };
         case ButtonCommand.RemoveCard:
             return { text: "Remove card", callback_data: ButtonCommand.RemoveCard };
         default:
