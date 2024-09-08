@@ -1,5 +1,5 @@
-import Protobuf from "./Protobuf";
+import Protobuf from './Protobuf';
 
 export default interface EntityResponse<T extends object> {
-    result: Protobuf.Entity<T>;
+  result: Protobuf.Entity<T>;
 }

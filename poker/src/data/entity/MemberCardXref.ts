@@ -1,6 +1,6 @@
-import { CardCode } from "../enum";
+import {CardCode} from '../enum';
 
 export default interface MemberCardXref {
-    memberId: number;
-    cardCode: CardCode;
+  memberId: number;
+  cardCode: CardCode;
 }

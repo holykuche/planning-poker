@@ -1,6 +1,6 @@
-import { TableDefinition } from "core/dto";
+import {TableDefinition} from '@/core/dto';
 
 export default interface CreateTableRequest<T extends object> {
-    table_name: string;
-    definition: TableDefinition<T>;
+  table_name: string;
+  definition: TableDefinition<T>;
 }

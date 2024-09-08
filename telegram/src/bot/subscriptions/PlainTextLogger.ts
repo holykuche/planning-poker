@@ -1,25 +1,26 @@
-import { injectable, inject } from "inversify";
-import { Observable } from "rxjs";
-import { Message } from "node-telegram-bot-api";
+import {injectable, inject} from 'inversify';
+import {Message} from 'node-telegram-bot-api';
+import {Observable} from 'rxjs';
 
-import { formatTelegramUserName } from "../utils";
-import { TELEGRAM_BOT_TYPES } from "../bot";
+import {TELEGRAM_BOT_TYPES} from '../bot';
+import {formatTelegramUserName} from '../utils';
 
-import AbstractMessageSubscription from "./AbstractMessageSubscription";
+import AbstractMessageSubscription from './AbstractMessageSubscription';
 
 @injectable()
 export default class PlainTextLogger extends AbstractMessageSubscription {
+  constructor(
+    @inject(TELEGRAM_BOT_TYPES.PlaintTexts$) plainTexts$: Observable<Message>
+  ) {
+    super(plainTexts$);
+  }
 
-    constructor(@inject(TELEGRAM_BOT_TYPES.PlaintTexts$) plainTexts$: Observable<Message>) {
-        super(plainTexts$);
-    }
+  protected handle(msg: Message): Promise<void> {
+    console.log(PlainTextLogger.format(msg));
+    return Promise.resolve();
+  }
 
-    protected handle(msg: Message): Promise<void> {
-        console.log(PlainTextLogger.format(msg));
-        return Promise.resolve();
-    }
-
-    private static format(msg: Message): string {
-        return `[INFO] ${ formatTelegramUserName(msg.from) } [ ${ msg.from.id } ] have typed message '${ msg.text }'`;
-    }
+  private static format(msg: Message): string {
+    return `[INFO] ${formatTelegramUserName(msg.from)} [ ${msg.from.id} ] have typed message '${msg.text}'`;
+  }
 }

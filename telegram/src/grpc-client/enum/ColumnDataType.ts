@@ -1,7 +1,7 @@
 enum ColumnDataType {
-    Number= "Number",
-    String = "String",
-    Boolean = "Boolean",
+  Number = 'Number',
+  String = 'String',
+  Boolean = 'Boolean',
 }
 
 export default ColumnDataType;

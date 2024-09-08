@@ -1,4 +1,4 @@
 export default interface MemberIdLobbyIdRequest {
-    member_id: number;
-    lobby_id: number;
+  member_id: number;
+  lobby_id: number;
 }

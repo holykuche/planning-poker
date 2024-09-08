@@ -1,3 +1,3 @@
 export default interface BoolResponse {
-    result: boolean;
+  result: boolean;
 }

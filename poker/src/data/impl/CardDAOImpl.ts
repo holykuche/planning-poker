@@ -1,24 +1,25 @@
-import { injectable } from "inversify";
+import {injectable} from 'inversify';
 
-import { Card } from "../entity";
-import { CardCode, TableName } from "../enum";
-import { CardDAO } from "../api";
+import {CardDAO} from '../api';
+import {Card} from '../entity';
+import {CardCode, TableName} from '../enum';
 
-import AbstractDAOImpl from "./AbstractDAOImpl";
+import AbstractDAOImpl from './AbstractDAOImpl';
 
 @injectable()
-export default class CardDAOImpl extends AbstractDAOImpl<Card> implements CardDAO {
+export default class CardDAOImpl
+  extends AbstractDAOImpl<Card>
+  implements CardDAO
+{
+  constructor() {
+    super(TableName.Card);
+  }
 
-    constructor() {
-        super(TableName.Card);
-    }
+  getAll(): Promise<Card[]> {
+    return this.getAll();
+  }
 
-    getAll(): Promise<Card[]> {
-        return this.getAll();
-    }
-
-    getByCode(cardCode: CardCode): Promise<Card> {
-        return this.find("code", cardCode);
-    }
-
+  getByCode(cardCode: CardCode): Promise<Card> {
+    return this.find('code', cardCode);
+  }
 }

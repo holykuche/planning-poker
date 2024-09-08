@@ -1,3 +1,3 @@
 export default {
-    Database: Symbol.for("Database"),
+  Database: Symbol.for('Database'),
 };

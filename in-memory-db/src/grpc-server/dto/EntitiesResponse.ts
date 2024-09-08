@@ -1,5 +1,5 @@
-import EntityResponse from "./EntityResponse";
+import EntityResponse from './EntityResponse';
 
 export default interface EntitiesResponse<T extends object> {
-    result: EntityResponse<T>[];
+  result: EntityResponse<T>[];
 }

@@ -1,3 +1,3 @@
 export default interface NumberResponse {
-    result: number;
+  result: number;
 }

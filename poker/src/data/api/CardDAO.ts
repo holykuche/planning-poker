@@ -1,10 +1,8 @@
-import { Card } from "../entity";
-import { CardCode } from "../enum";
+import {Card} from '../entity';
+import {CardCode} from '../enum';
 
 export default interface CardDAO {
+  getAll(): Promise<Card[]>;
 
-    getAll(): Promise<Card[]>;
-
-    getByCode(cardCode: CardCode): Promise<Card>;
-
+  getByCode(cardCode: CardCode): Promise<Card>;
 }

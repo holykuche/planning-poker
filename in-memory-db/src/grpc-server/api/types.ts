@@ -1,3 +1,3 @@
 export default {
-    DatabaseGrpcService: Symbol.for("DatabaseGrpcService"),
-}
+  DatabaseGrpcService: Symbol.for('DatabaseGrpcService'),
+};

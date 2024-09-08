@@ -1,0 +1,57 @@
+{
+  "root": true,
+  "extends": ["./node_modules/gts"],
+  "plugins": ["import", "unused-imports"],
+  "ignorePatterns": ["**/*.config.js"],
+  "rules": {
+    "prettier/prettier": ["error", {"singleQuote": true}],
+    "unused-imports/no-unused-imports": "error",
+    "unused-imports/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "import/prefer-default-export": "off", // Named export is easier to refactor automatically
+    "import/no-empty-named-blocks": "error",
+    "import/no-cycle": "error",
+    "import/no-useless-path-segments": "error",
+    "import/no-duplicates": "error",
+    "import/order": [
+      "error",
+      {
+        "newlines-between": "always",
+        "groups": ["builtin", "external", "internal", "parent", "sibling", "index", "object", "type"],
+        "pathGroups": [
+          {"pattern": "@/**", "group": "internal"},
+          {"pattern": "@test/**", "group": "internal", "position": "after"}
+        ],
+        "pathGroupsExcludedImportTypes": [],
+        "alphabetize": {"order": "asc"}
+      }
+    ],
+    "import/no-named-as-default": "off",
+    "import/no-named-as-default-member": "off"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.ts", "**/*.tsx"],
+      "parser": "@typescript-eslint/parser",
+      "plugins": ["@typescript-eslint"],
+      "parserOptions": {
+        "project": ["./in-memory-db/tsconfig.json", "./poker/tsconfig.json", "./telegram/tsconfig.json"]
+      },
+      "rules": {
+        "@typescript-eslint/comma-dangle": "off", // Avoid conflict rule between Eslint and Prettier
+        "@typescript-eslint/naming-convention": "off",
+        "@typescript-eslint/interface-name-prefix": "off",
+        "@typescript-eslint/explicit-function-return-type": "off",
+        "@typescript-eslint/no-explicit-any": "error",
+        "@typescript-eslint/no-unused-vars": "error"
+      },
+      "overrides": [
+        {
+          "files": ["./*/test/**/*.ts", "./*/test/**/*.tsx"],
+          "rules": {
+            "n/no-unpublished-import": "off"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,1 +1,1 @@
-export { default as TaskType } from "./TaskType";
+export {default as TaskType} from './TaskType';

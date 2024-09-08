@@ -1,1 +1,1 @@
-export { default as PokerResultItemDto } from "./PokerResultItemDto";
+export {default as PokerResultItemDto} from './PokerResultItemDto';

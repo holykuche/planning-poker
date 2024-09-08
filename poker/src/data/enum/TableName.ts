@@ -1,9 +1,9 @@
 enum TableName {
-    Card = "Card",
-    Lobby = "lobby",
-    Member = "member",
-    MemberCardXref = "member_card_xref",
-    MemberLobbyXref = "member_lobby_xref",
+  Card = 'Card',
+  Lobby = 'lobby',
+  Member = 'member',
+  MemberCardXref = 'member_card_xref',
+  MemberLobbyXref = 'member_lobby_xref',
 }
 
 export default TableName;

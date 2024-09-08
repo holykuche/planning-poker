@@ -1,3 +1,3 @@
 export default function (text: string): string {
-    return `_${ text }_`;
-};
+  return `_${text}_`;
+}

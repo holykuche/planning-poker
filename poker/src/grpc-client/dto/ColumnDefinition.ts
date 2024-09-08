@@ -1,11 +1,9 @@
-import { ColumnDataType } from "../enum";
+import {ColumnDataType} from '../enum';
 
 export default interface ColumnDefinition {
+  type: ColumnDataType;
 
-    type: ColumnDataType;
+  required?: boolean;
 
-    required?: boolean;
-
-    primary_key?: boolean;
-
+  primary_key?: boolean;
 }

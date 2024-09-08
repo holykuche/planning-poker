@@ -1,3 +1,3 @@
 export default interface TableRequest {
-    table_name: string;
+  table_name: string;
 }

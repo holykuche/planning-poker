@@ -1,5 +1,5 @@
 enum TaskType {
-    Lobby = "Lobby",
+  Lobby = 'Lobby',
 }
 
 export default TaskType;

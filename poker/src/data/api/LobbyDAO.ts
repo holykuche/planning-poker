@@ -1,15 +1,13 @@
-import { Lobby } from "../entity";
+import {Lobby} from '../entity';
 
 export default interface LobbyDAO {
+  getById(id: number): Promise<Lobby>;
 
-    getById(id: number): Promise<Lobby>;
+  getByName(name: string): Promise<Lobby>;
 
-    getByName(name: string): Promise<Lobby>;
+  save(lobby: Lobby): Promise<Lobby>;
 
-    save(lobby: Lobby): Promise<Lobby>;
+  deleteById(id: number): Promise<void>;
 
-    deleteById(id: number): Promise<void>;
-
-    isExists(name: string): Promise<boolean>;
-
+  isExists(name: string): Promise<boolean>;
 }

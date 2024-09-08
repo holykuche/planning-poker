@@ -1,31 +1,36 @@
-import { PokerResultItemDto } from "service/dto";
+import {PokerResultItemDto} from '@/service/dto';
 
-import { Emoji } from "../enum";
-import bold from "./bold";
-import italic from "./italic";
-import escape from "./escape";
-import membersComparatorFactory from "./membersComparatorFactory";
+import {Emoji} from '../enum';
 
-export default function (items: PokerResultItemDto[], memberId: number): string {
-    const isAllMembersVoted = items.every(item => !!item.card);
-    const membersComparator = membersComparatorFactory(memberId);
+import bold from './bold';
+import escape from './escape';
+import italic from './italic';
+import membersComparatorFactory from './membersComparatorFactory';
 
-    return items
-        .sort((left, right) => membersComparator(left.member, right.member))
-        .map(({ member, card }) => {
-            let cardLabel;
+export default function (
+  items: PokerResultItemDto[],
+  memberId: number
+): string {
+  const isAllMembersVoted = items.every(item => !!item.card);
+  const membersComparator = membersComparatorFactory(memberId);
 
-            if (isAllMembersVoted || member.id === memberId) {
-                cardLabel = card?.label || Emoji.ThinkingFace;
-            } else {
-                cardLabel = card ? Emoji.ElectricLampBulb : Emoji.ThinkingFace;
-            }
+  return items
+    .sort((left, right) => membersComparator(left.member, right.member))
+    .map(({member, card}) => {
+      let cardLabel;
 
-            const memberName = member.id === memberId
-                ? bold(italic(escape(member.name)))
-                : italic(escape(member.name));
+      if (isAllMembersVoted || member.id === memberId) {
+        cardLabel = card?.label || Emoji.ThinkingFace;
+      } else {
+        cardLabel = card ? Emoji.ElectricLampBulb : Emoji.ThinkingFace;
+      }
 
-            return `${ memberName }: ${ italic(cardLabel) }`;
-        })
-        .join("\n");
-};
+      const memberName =
+        member.id === memberId
+          ? bold(italic(escape(member.name)))
+          : italic(escape(member.name));
+
+      return `${memberName}: ${italic(cardLabel)}`;
+    })
+    .join('\n');
+}

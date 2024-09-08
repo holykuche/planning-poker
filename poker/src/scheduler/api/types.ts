@@ -1,3 +1,3 @@
 export default {
-    TimeoutScheduler: Symbol.for("TimeoutScheduler"),
+  TimeoutScheduler: Symbol.for('TimeoutScheduler'),
 };

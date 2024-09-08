@@ -1,5 +1,14 @@
-import { MetadataKey } from "../common";
+import {MetadataKey} from '../common';
 
-export default function (target: Object, propertyKey: string, parameterIndex: number) {
-    Reflect.defineMetadata(MetadataKey.MemberId, parameterIndex, target, propertyKey);
-};
+export default function (
+  target: object,
+  propertyKey: string,
+  parameterIndex: number
+) {
+  Reflect.defineMetadata(
+    MetadataKey.MemberId,
+    parameterIndex,
+    target,
+    propertyKey
+  );
+}

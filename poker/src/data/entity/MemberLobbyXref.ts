@@ -1,4 +1,4 @@
 export default interface MemberLobbyXref {
-    memberId: number;
-    lobbyId: number;
+  memberId: number;
+  lobbyId: number;
 }

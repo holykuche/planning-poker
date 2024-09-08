@@ -1,33 +1,33 @@
-import { injectable } from "inversify";
+import {injectable} from 'inversify';
 
-import { Lobby } from "../entity";
-import { LobbyDAO } from "../api"
-import { TableName } from "../enum";
+import {LobbyDAO} from '../api';
+import {Lobby} from '../entity';
+import {TableName} from '../enum';
 
-import AbstractDAOImpl from "./AbstractDAOImpl";
+import AbstractDAOImpl from './AbstractDAOImpl';
 
 @injectable()
-export default class LobbyDAOImpl extends AbstractDAOImpl<Lobby> implements LobbyDAO {
+export default class LobbyDAOImpl
+  extends AbstractDAOImpl<Lobby>
+  implements LobbyDAO
+{
+  constructor() {
+    super(TableName.Lobby);
+  }
 
-    constructor() {
-        super(TableName.Lobby);
-    }
+  getById(id: number): Promise<Lobby> {
+    return this.find('id', id);
+  }
 
-    getById(id: number): Promise<Lobby> {
-        return this.find("id", id);
-    }
+  getByName(name: string): Promise<Lobby> {
+    return this.find('name', name);
+  }
 
-    getByName(name: string): Promise<Lobby> {
-        return this.find("name", name);
-    }
+  deleteById(id: number): Promise<void> {
+    return this.delete('id', id);
+  }
 
-    deleteById(id: number): Promise<void> {
-        return this.delete("id", id);
-    }
-
-    isExists(name: string): Promise<boolean> {
-        return this.getByName(name)
-            .then(lobby => !!lobby);
-    }
-
+  isExists(name: string): Promise<boolean> {
+    return this.getByName(name).then(lobby => !!lobby);
+  }
 }

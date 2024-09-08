@@ -1,6 +1,6 @@
 enum LobbyState {
-    Waiting = "Waiting",
-    Playing = "Playing",
+  Waiting = 'Waiting',
+  Playing = 'Playing',
 }
 
 export default LobbyState;

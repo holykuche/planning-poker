@@ -1,5 +1,5 @@
-import { Container, BindingScopeEnum } from "inversify";
+import {Container, BindingScopeEnum} from 'inversify';
 
-const container = new Container({ defaultScope: BindingScopeEnum.Singleton });
+const container = new Container({defaultScope: BindingScopeEnum.Singleton});
 
-export { container };
+export {container};

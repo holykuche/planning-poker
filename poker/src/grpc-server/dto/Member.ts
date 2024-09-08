@@ -1,4 +1,4 @@
 export default interface Member {
-    id?: number;
-    name: string;
+  id?: number;
+  name: string;
 }

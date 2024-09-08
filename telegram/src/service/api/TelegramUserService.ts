@@ -1,15 +1,13 @@
-import { TelegramMemberDto } from "../dto";
+import {TelegramMemberDto} from '../dto';
 
 export default interface TelegramUserService {
+  getMemberByTelegramUserId(telegramUserId: number): Promise<TelegramMemberDto>;
 
-    getMemberByTelegramUserId(telegramUserId: number): Promise<TelegramMemberDto>;
+  createMember(member: TelegramMemberDto): Promise<TelegramMemberDto>;
 
-    createMember(member: TelegramMemberDto): Promise<TelegramMemberDto>;
+  isMemberExists(telegramUserId: number): Promise<boolean>;
 
-    isMemberExists(telegramUserId: number): Promise<boolean>;
+  deleteMemberByMemberId(memberId: number): Promise<void>;
 
-    deleteMemberByMemberId(memberId: number): Promise<void>;
-
-    deleteMemberByTelegramUserId(telegramUserId: number): Promise<void>;
-
+  deleteMemberByTelegramUserId(telegramUserId: number): Promise<void>;
 }

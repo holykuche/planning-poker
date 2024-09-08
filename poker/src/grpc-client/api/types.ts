@@ -1,3 +1,3 @@
 export default {
-    DatabaseClient: Symbol.for("DatabaseClient"),
+  DatabaseClient: Symbol.for('DatabaseClient'),
 };

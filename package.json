@@ -1,12 +1,22 @@
 {
   "name": "planning-poker",
   "version": "1.0.0",
-  "description": "",
+  "description": "Planning poker app",
   "scripts": {
+    "compile-no-emit:in-memory-db": "cd ./in-memory-db && tsc --noEmit",
+    "compile-no-emit:poker": "cd ./poker && tsc --noEmit",
+    "compile-no-emit:telegram": "cd ./telegram && tsc --noEmit",
+    "install:in-memory-db": "cd ./in-memory-db && test -f package.json && yarn",
     "install:poker": "cd ./poker && test -f package.json && yarn",
     "install:telegram": "cd ./telegram && test -f package.json && yarn",
-    "install:in-memory-db": "cd ./in-memory-db && test -f package.json && yarn",
-    "install": "run-p install:*"
+    "install:all": "run-p install:*",
+    "lint": "gts lint",
+    "clean": "gts clean",
+    "compile": "tsc",
+    "fix": "gts fix",
+    "prepare": "yarn run compile",
+    "pretest": "yarn run compile",
+    "posttest": "yarn run lint"
   },
   "repository": {
     "type": "git",
@@ -14,6 +24,14 @@
   },
   "private": true,
   "devDependencies": {
-    "yarn-run-all": "^3.1.1"
+    "@typescript-eslint/eslint-plugin": "^8.4.0",
+    "@typescript-eslint/parser": "^8.4.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-import": "^2.30.0",
+    "eslint-plugin-unused-imports": "^4.1.3",
+    "gts": "^5.3.1",
+    "yarn-run-all": "^3.1.1",
+    "typescript": "^5.4.3",
+    "@types/node": "20.12.7"
   }
 }

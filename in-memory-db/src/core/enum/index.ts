@@ -1,1 +1,1 @@
-export { default as ColumnDataType } from "./ColumnDataType";
+export {default as ColumnDataType} from './ColumnDataType';

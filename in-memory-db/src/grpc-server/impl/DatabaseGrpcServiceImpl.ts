@@ -1,176 +1,180 @@
-import { injectable, inject } from "inversify";
-import { ServerUnaryCall, sendUnaryData } from "@grpc/grpc-js";
+import {ServerUnaryCall, sendUnaryData} from '@grpc/grpc-js';
+import {injectable, inject} from 'inversify';
 
-import { Database, CORE_TYPES } from "core/api";
+import {Database, CORE_TYPES} from '@/core/api';
 
-import { DatabaseGrpcService } from "../api";
+import {DatabaseGrpcService} from '../api';
 import {
-    CreateTableRequest,
-    BoolResponse,
-    EntitiesResponse,
-    EntityResponse,
-    EntityRequest,
-    TableFieldRequest,
-    TableRequest,
-} from "../dto";
-import { EntitySerializer } from "../util";
+  CreateTableRequest,
+  BoolResponse,
+  EntitiesResponse,
+  EntityResponse,
+  EntityRequest,
+  TableFieldRequest,
+  TableRequest,
+} from '../dto';
+import {EntitySerializer} from '../util';
 
 @injectable()
 export default class DatabaseGrpcServiceImpl implements DatabaseGrpcService {
-    
-    @inject(CORE_TYPES.Database) private readonly database: Database;
-    
-    createTable<T extends object>(
-        call: ServerUnaryCall<CreateTableRequest<T>, void>,
-        callback: sendUnaryData<void>
-    ) {
-        const { table_name, definition } = call.request;
+  @inject(CORE_TYPES.Database) private readonly database: Database;
 
-        let error: Error = null;
+  createTable<T extends object>(
+    call: ServerUnaryCall<CreateTableRequest<T>, void>,
+    callback: sendUnaryData<void>
+  ) {
+    const {table_name, definition} = call.request;
 
-        try {
-            this.database.createTable(table_name, definition);
-        } catch (e) {
-            error = e;
-        }
+    let error: Error = null;
 
-        callback(error);
+    try {
+      this.database.createTable(table_name, definition);
+    } catch (e) {
+      error = e;
     }
 
-    dropTable(
-        call: ServerUnaryCall<TableRequest, void>,
-        callback: sendUnaryData<void>
-    ) {
-        const { table_name } = call.request;
+    callback(error);
+  }
 
-        let error: Error = null;
+  dropTable(
+    call: ServerUnaryCall<TableRequest, void>,
+    callback: sendUnaryData<void>
+  ) {
+    const {table_name} = call.request;
 
-        try {
-            this.database.dropTable(table_name);
-        } catch (e) {
-            error = e;
-        }
+    let error: Error = null;
 
-        callback(error);
+    try {
+      this.database.dropTable(table_name);
+    } catch (e) {
+      error = e;
     }
 
-    isTableExists(
-        call: ServerUnaryCall<TableRequest, BoolResponse>,
-        callback: sendUnaryData<BoolResponse>
-    ) {
-        const { table_name } = call.request;
+    callback(error);
+  }
 
-        let response: BoolResponse = null;
-        let error: Error = null;
+  isTableExists(
+    call: ServerUnaryCall<TableRequest, BoolResponse>,
+    callback: sendUnaryData<BoolResponse>
+  ) {
+    const {table_name} = call.request;
 
-        try {
-            response = {
-                result: this.database.isTableExists(table_name),
-            };
-        } catch (e) {
-            error = e;
-        }
+    let response: BoolResponse = null;
+    let error: Error = null;
 
-        callback(error, response);
+    try {
+      response = {
+        result: this.database.isTableExists(table_name),
+      };
+    } catch (e) {
+      error = e;
     }
 
-    find<T extends object, K extends keyof T>(
-        call: ServerUnaryCall<TableFieldRequest<T, K>, EntityResponse<T>>,
-        callback: sendUnaryData<EntityResponse<T>>
-    ) {
-        const { table_name, key, value } = call.request;
+    callback(error, response);
+  }
 
-        let response: EntityResponse<T> = null;
-        let error: Error = null;
+  find<T extends object, K extends keyof T>(
+    call: ServerUnaryCall<TableFieldRequest<T, K>, EntityResponse<T>>,
+    callback: sendUnaryData<EntityResponse<T>>
+  ) {
+    const {table_name, key, value} = call.request;
 
-        try {
-            response = {
-                result: EntitySerializer.serialize(this.database.find(table_name, key, value)),
-            };
-        } catch (e) {
-            error = e;
-        }
+    let response: EntityResponse<T> = null;
+    let error: Error = null;
 
-        callback(error, response);
+    try {
+      response = {
+        result: EntitySerializer.serialize(
+          this.database.find(table_name, key, value)
+        ),
+      };
+    } catch (e) {
+      error = e;
     }
 
-    findAll<T extends object>(
-        call: ServerUnaryCall<TableRequest, EntitiesResponse<T>>,
-        callback: sendUnaryData<EntitiesResponse<T>>
-    ) {
-        const { table_name } = call.request;
+    callback(error, response);
+  }
 
-        let response: EntitiesResponse<T> = null;
-        let error: Error = null;
+  findAll<T extends object>(
+    call: ServerUnaryCall<TableRequest, EntitiesResponse<T>>,
+    callback: sendUnaryData<EntitiesResponse<T>>
+  ) {
+    const {table_name} = call.request;
 
-        try {
-            response = {
-                result: this.database.findAll<T>(table_name)
-                    .map(entity => ({ result: EntitySerializer.serialize(entity) })),
-            };
-        } catch (e) {
-            error = e;
-        }
+    let response: EntitiesResponse<T> = null;
+    let error: Error = null;
 
-        callback(error, response);
+    try {
+      response = {
+        result: this.database
+          .findAll<T>(table_name)
+          .map(entity => ({result: EntitySerializer.serialize(entity)})),
+      };
+    } catch (e) {
+      error = e;
     }
 
-    findMany<T extends object, K extends keyof T>(
-        call: ServerUnaryCall<TableFieldRequest<T, K>, EntitiesResponse<T>>,
-        callback: sendUnaryData<EntitiesResponse<T>>
-    ) {
-        const { table_name, key, value } = call.request;
+    callback(error, response);
+  }
 
-        let response: EntitiesResponse<T> = null;
-        let error: Error = null;
+  findMany<T extends object, K extends keyof T>(
+    call: ServerUnaryCall<TableFieldRequest<T, K>, EntitiesResponse<T>>,
+    callback: sendUnaryData<EntitiesResponse<T>>
+  ) {
+    const {table_name, key, value} = call.request;
 
-        try {
-            response = {
-                result: this.database.findMany(table_name, key, value)
-                    .map(entity => ({ result: EntitySerializer.serialize(entity) })),
-            };
-        } catch (e) {
-            error = e;
-        }
+    let response: EntitiesResponse<T> = null;
+    let error: Error = null;
 
-        callback(error, response);
+    try {
+      response = {
+        result: this.database
+          .findMany(table_name, key, value)
+          .map(entity => ({result: EntitySerializer.serialize(entity)})),
+      };
+    } catch (e) {
+      error = e;
     }
 
-    save<T extends object>(
-        call: ServerUnaryCall<EntityRequest<T>, EntityResponse<T>>,
-        callback: sendUnaryData<EntityResponse<T>>
-    ) {
-        const { table_name, entity } = call.request;
+    callback(error, response);
+  }
 
-        let response: EntityResponse<T> = null;
-        let error: Error = null;
+  save<T extends object>(
+    call: ServerUnaryCall<EntityRequest<T>, EntityResponse<T>>,
+    callback: sendUnaryData<EntityResponse<T>>
+  ) {
+    const {table_name, entity} = call.request;
 
-        try {
-            response = {
-                result: EntitySerializer.serialize(this.database.save(table_name, EntitySerializer.deserialize(entity))),
-            };
-        } catch (e) {
-            error = e;
-        }
+    let response: EntityResponse<T> = null;
+    let error: Error = null;
 
-        callback(error, response);
+    try {
+      response = {
+        result: EntitySerializer.serialize(
+          this.database.save(table_name, EntitySerializer.deserialize(entity))
+        ),
+      };
+    } catch (e) {
+      error = e;
     }
 
-    delete<T extends object, K extends keyof T>(
-        call: ServerUnaryCall<TableFieldRequest<T, K>, void>,
-        callback: sendUnaryData<void>
-    ) {
-        const { table_name, key, value } = call.request;
+    callback(error, response);
+  }
 
-        let error: Error = null;
+  delete<T extends object, K extends keyof T>(
+    call: ServerUnaryCall<TableFieldRequest<T, K>, void>,
+    callback: sendUnaryData<void>
+  ) {
+    const {table_name, key, value} = call.request;
 
-        try {
-            this.database.delete(table_name, key, value);
-        } catch (e) {
-            error = e;
-        }
+    let error: Error = null;
 
-        callback(error);
+    try {
+      this.database.delete(table_name, key, value);
+    } catch (e) {
+      error = e;
     }
-    
+
+    callback(error);
+  }
 }

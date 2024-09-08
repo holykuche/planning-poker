@@ -1,1 +1,1 @@
-export { default as EntitySerializer } from "./EntitySerializer";
+export {default as EntitySerializer} from './EntitySerializer';

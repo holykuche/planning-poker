@@ -1,54 +1,73 @@
-import { injectable } from "inversify";
+import {injectable} from 'inversify';
 
+import {TelegramMessageDAO} from '../api';
+import {TelegramMessage} from '../entity';
+import {TelegramMessageType, TableName} from '../enum';
 
-import { TelegramMessageDAO } from "../api";
-import { TelegramMessage } from "../entity";
-import { TelegramMessageType, TableName } from "../enum";
-import AbstractDAOImpl from "./AbstractDAOImpl";
+import AbstractDAOImpl from './AbstractDAOImpl';
 
 @injectable()
-export default class TelegramMessageDAOImpl extends AbstractDAOImpl<TelegramMessage> implements TelegramMessageDAO {
+export default class TelegramMessageDAOImpl
+  extends AbstractDAOImpl<TelegramMessage>
+  implements TelegramMessageDAO
+{
+  constructor() {
+    super(TableName.TelegramMessage);
+  }
 
-    constructor() {
-        super(TableName.TelegramMessage);
-    }
+  getMessage(
+    lobbyId: number,
+    chatId: number,
+    messageType: TelegramMessageType
+  ): Promise<TelegramMessage> {
+    return this.findMany('lobbyId', lobbyId)
+      .then(messages =>
+        messages.find(
+          message =>
+            message.chatId === chatId && message.messageType === messageType
+        )
+      )
+      .then(message => message || null);
+  }
 
-    getMessage(lobbyId: number, chatId: number, messageType: TelegramMessageType): Promise<TelegramMessage> {
-        return this.findMany("lobbyId", lobbyId)
-                .then(messages => messages.find(message => message.chatId === chatId && message.messageType === messageType))
-                .then(message => message || null);
-    }
+  getAllMessages(lobbyId: number): Promise<TelegramMessage[]> {
+    return this.findMany('lobbyId', lobbyId);
+  }
 
-    getAllMessages(lobbyId: number): Promise<TelegramMessage[]> {
-        return this.findMany("lobbyId", lobbyId);
-    }
+  addMessage(message: TelegramMessage): Promise<TelegramMessage> {
+    return this.save(message);
+  }
 
-    addMessage(message: TelegramMessage): Promise<TelegramMessage> {
-        return this.save(message);
-    }
+  deleteMessageById(id: number): Promise<void> {
+    return this.delete('id', id);
+  }
 
-    deleteMessageById(id: number): Promise<void> {
-        return this.delete("id", id);
-    }
+  deleteMessages(
+    lobbyId: number,
+    messageType: TelegramMessageType
+  ): Promise<void> {
+    return this.findMany('lobbyId', lobbyId)
+      .then(messages =>
+        messages.filter(message => message.messageType === messageType)
+      )
+      .then(messages => messages.map(message => message.id))
+      .then(messageIds =>
+        Promise.all(messageIds.map(id => this.delete('id', id)))
+      )
+      .then();
+  }
 
-    deleteMessages(lobbyId: number, messageType: TelegramMessageType): Promise<void> {
-        return this.findMany("lobbyId", lobbyId)
-            .then(messages => messages.filter(message => message.messageType === messageType))
-            .then(messages => messages.map(message => message.id))
-            .then(messageIds => Promise.all(messageIds.map(id => this.delete("id", id))))
-            .then();
-    }
+  deleteAllMessages(lobbyId: number): Promise<void> {
+    return this.delete('lobbyId', lobbyId);
+  }
 
-    deleteAllMessages(lobbyId: number): Promise<void> {
-        return this.delete("lobbyId", lobbyId);
-    }
-
-    deleteAllMessagesFromChat(lobbyId: number, chatId: number): Promise<void> {
-        return this.findMany("lobbyId", lobbyId)
-            .then(messages => messages.filter(message => message.chatId === chatId))
-            .then(messages => messages.map(message => message.id))
-            .then(messageIds => Promise.all(messageIds.map(id => this.delete("id", id))))
-            .then();
-    }
-
+  deleteAllMessagesFromChat(lobbyId: number, chatId: number): Promise<void> {
+    return this.findMany('lobbyId', lobbyId)
+      .then(messages => messages.filter(message => message.chatId === chatId))
+      .then(messages => messages.map(message => message.id))
+      .then(messageIds =>
+        Promise.all(messageIds.map(id => this.delete('id', id)))
+      )
+      .then();
+  }
 }

@@ -1,5 +1,5 @@
-import { Member } from "grpc-client/entity";
+import {Member} from '@/grpc-client/entity';
 
 export default interface TelegramMemberDto extends Member {
-    telegramUserId?: number;
+  telegramUserId?: number;
 }

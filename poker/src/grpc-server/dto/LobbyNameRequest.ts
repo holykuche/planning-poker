@@ -1,3 +1,3 @@
 export default interface LobbyNameRequest {
-    lobby_name: string;
+  lobby_name: string;
 }

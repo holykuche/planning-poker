@@ -1,10 +1,9 @@
-import ServiceError from "./ServiceError";
-import ErrorType from "./ErrorType";
+import ErrorType from './ErrorType';
+import ServiceError from './ServiceError';
 
 export default class UnknownMemberError extends ServiceError {
-
-    constructor() {
-        super(ErrorType.UnknownMember, "Unknown member.");
-        Object.setPrototypeOf(this, UnknownMemberError.prototype);
-    }
+  constructor() {
+    super(ErrorType.UnknownMember, 'Unknown member.');
+    Object.setPrototypeOf(this, UnknownMemberError.prototype);
+  }
 }
