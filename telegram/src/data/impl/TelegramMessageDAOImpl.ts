@@ -42,32 +42,33 @@ export default class TelegramMessageDAOImpl
     return this.delete('id', id);
   }
 
-  deleteMessages(
+  async deleteMessages(
     lobbyId: number,
     messageType: TelegramMessageType
   ): Promise<void> {
-    return this.findMany('lobbyId', lobbyId)
+    await this.findMany('lobbyId', lobbyId)
       .then(messages =>
         messages.filter(message => message.messageType === messageType)
       )
       .then(messages => messages.map(message => message.id))
       .then(messageIds =>
         Promise.all(messageIds.map(id => this.delete('id', id)))
-      )
-      .then();
+      );
   }
 
   deleteAllMessages(lobbyId: number): Promise<void> {
     return this.delete('lobbyId', lobbyId);
   }
 
-  deleteAllMessagesFromChat(lobbyId: number, chatId: number): Promise<void> {
-    return this.findMany('lobbyId', lobbyId)
+  async deleteAllMessagesFromChat(
+    lobbyId: number,
+    chatId: number
+  ): Promise<void> {
+    await this.findMany('lobbyId', lobbyId)
       .then(messages => messages.filter(message => message.chatId === chatId))
       .then(messages => messages.map(message => message.id))
       .then(messageIds =>
         Promise.all(messageIds.map(id => this.delete('id', id)))
-      )
-      .then();
+      );
   }
 }

@@ -70,8 +70,9 @@ export default class MemberServiceImpl implements MemberService {
           throw new PokerIsNotStartedError(lobby);
         }
       })
-      .then(() => this.memberCardXrefDAO.put(memberId, cardCode))
-      .then();
+      .then(async () => {
+        await this.memberCardXrefDAO.put(memberId, cardCode);
+      });
   }
 
   @ResetLobbyLifetime

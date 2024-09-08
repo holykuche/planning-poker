@@ -25,8 +25,8 @@ export default class MemberLobbyXrefDAOImpl
     );
   }
 
-  bindMember(memberId: number, lobbyId: number): Promise<void> {
-    return this.save({memberId, lobbyId}).then();
+  async bindMember(memberId: number, lobbyId: number): Promise<void> {
+    await this.save({memberId, lobbyId});
   }
 
   unbindMember(memberId: number): Promise<void> {
@@ -37,7 +37,7 @@ export default class MemberLobbyXrefDAOImpl
     return this.delete('lobbyId', lobbyId);
   }
 
-  isMemberBound(memberId: number): Promise<boolean> {
-    return this.find('memberId', memberId).then(xref => !!xref);
+  async isMemberBound(memberId: number): Promise<boolean> {
+    return !!(await this.find('memberId', memberId));
   }
 }

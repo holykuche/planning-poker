@@ -33,9 +33,9 @@ export default class MemberCardXrefDAOImpl
     return this.delete('memberId', memberId);
   }
 
-  removeByMemberIds(memberIds: number[]): Promise<void> {
-    return Promise.all(
+  async removeByMemberIds(memberIds: number[]): Promise<void> {
+    await Promise.all(
       memberIds.map(memberId => this.removeByMemberId(memberId))
-    ).then();
+    );
   }
 }

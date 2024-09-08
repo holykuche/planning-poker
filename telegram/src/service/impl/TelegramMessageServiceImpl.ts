@@ -32,8 +32,8 @@ export default class TelegramMessageServiceImpl
       );
   }
 
-  addMessage(message: TelegramMessage): Promise<void> {
-    return this.telegramMessageDAO.addMessage(message).then();
+  async addMessage(message: TelegramMessage): Promise<void> {
+    await this.telegramMessageDAO.addMessage(message);
   }
 
   deleteMessageById(messageId: number): Promise<void> {

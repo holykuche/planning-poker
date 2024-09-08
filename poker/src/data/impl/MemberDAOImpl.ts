@@ -33,7 +33,7 @@ export default class MemberDAOImpl
     return this.delete('id', id);
   }
 
-  deleteByIds(ids: number[]): Promise<void> {
-    return Promise.all(ids.map(id => this.deleteById(id))).then();
+  async deleteByIds(ids: number[]): Promise<void> {
+    await Promise.all(ids.map(id => this.deleteById(id)));
   }
 }

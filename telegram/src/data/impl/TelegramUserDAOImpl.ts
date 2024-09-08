@@ -31,11 +31,11 @@ export default class TelegramUserDAOImpl
     return this.find('telegramUserId', telegramUserId).then(xref => !!xref);
   }
 
-  bindTelegramUserWithMember(
+  async bindTelegramUserWithMember(
     telegramUserId: number,
     memberId: number
   ): Promise<void> {
-    return this.save({telegramUserId, memberId}).then();
+    await this.save({telegramUserId, memberId});
   }
 
   unbindTelegramUserFromMember(telegramUserId: number): Promise<void> {

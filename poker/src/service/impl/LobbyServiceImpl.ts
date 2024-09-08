@@ -76,15 +76,17 @@ export default class LobbyServiceImpl implements LobbyService {
   @ResetLobbyLifetime
   @DispatchPokerResult
   @DispatchMembers
-  enterMember(@MemberId memberId: number, lobbyId: number): Promise<void> {
+  enterMember(
+    @MemberId memberId: number,
+    @LobbyId lobbyId: number
+  ): Promise<void> {
     return this.memberLobbyXrefDAO
       .isMemberBound(memberId)
-      .then(isMemberBound => {
-        return isMemberBound
-          ? this.memberDAO.getById(memberId).then(member => {
-              throw new MemberIsAlreadyInLobbyError(member.name);
-            })
-          : Promise.resolve();
+      .then(async isMemberBound => {
+        if (isMemberBound) {
+          const member = await this.memberDAO.getById(memberId);
+          throw new MemberIsAlreadyInLobbyError(member.name);
+        }
       })
       .then(() => this.memberLobbyXrefDAO.bindMember(memberId, lobbyId));
   }
@@ -92,7 +94,10 @@ export default class LobbyServiceImpl implements LobbyService {
   @ResetLobbyLifetime
   @DispatchPokerResult
   @DispatchMembers
-  leaveMember(memberId: number, @LobbyId lobbyId: number): Promise<void> {
+  leaveMember(
+    @MemberId memberId: number,
+    @LobbyId lobbyId: number
+  ): Promise<void> {
     return this.memberDAO
       .getById(memberId)
       .then(member => {
@@ -130,14 +135,13 @@ export default class LobbyServiceImpl implements LobbyService {
         }
         return lobby;
       })
-      .then(lobby =>
-        this.lobbyDAO.save({
+      .then(async lobby => {
+        await this.lobbyDAO.save({
           ...lobby,
           currentTheme: theme,
           state: LobbyState.Playing,
-        })
-      )
-      .then();
+        });
+      });
   }
 
   @ResetLobbyLifetime
@@ -150,8 +154,8 @@ export default class LobbyServiceImpl implements LobbyService {
         }
         return lobby;
       })
-      .then(lobby =>
-        Promise.all([
+      .then(async lobby => {
+        await Promise.all([
           this.lobbyDAO.save({
             ...lobby,
             currentTheme: null,
@@ -162,8 +166,7 @@ export default class LobbyServiceImpl implements LobbyService {
             .then(memberIds =>
               this.memberCardXrefDAO.removeByMemberIds(memberIds)
             ),
-        ])
-      )
-      .then();
+        ]);
+      });
   }
 }
