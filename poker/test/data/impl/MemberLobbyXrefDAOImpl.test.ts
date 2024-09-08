@@ -9,7 +9,7 @@ import {TableName} from '@/data/enum';
 import MemberLobbyXrefDAOImpl from '@/data/impl/MemberLobbyXrefDAOImpl';
 import {DatabaseClient, GRPC_CLIENT_TYPES} from '@/grpc-client/api';
 
-import {sameObject} from '../../test-utils/customMatchers';
+import {sameObject} from '@test/test-utils/customMatchers';
 
 describe('data/impl/MemberLobbyXrefDAOImpl', () => {
   let memberLobbyXrefDAO: MemberLobbyXrefDAO;
