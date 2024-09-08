@@ -1,0 +1,19 @@
+{
+  "name": "planning-poker",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "install:poker": "cd ./poker && test -f package.json && yarn",
+    "install:telegram": "cd ./telegram && test -f package.json && yarn",
+    "install:in-memory-db": "cd ./in-memory-db && test -f package.json && yarn",
+    "install": "run-p install:*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/holykuche/planning-poker.git"
+  },
+  "private": true,
+  "devDependencies": {
+    "yarn-run-all": "^3.1.1"
+  }
+}
