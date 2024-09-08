@@ -4,10 +4,10 @@
 * in-memory-db
 
 #### Unfinished microservices:
-* poker (it left to make compatibility with RabbitMQ, fix tests)
-* telegram (it left to make compatibility with RabbitMQ, create some implementations, fix tests)
+* poker (left to make compatibility with RabbitMQ or Kafka, fix tests)
+* telegram (left to make compatibility with RabbitMQ or Kafka, create some implementations, fix tests)
 
-##### Also, it needs to finally configure Docker
+##### Also need to finally configure Docker
 
 ***
-It's my first try to use microservice architecture, Docker, gRPC and RabbitMQ. Just for studying.
+This is my first try at using microservice architecture, Docker, gRPC and RabbitMQ/Kafka. Just for studying.
