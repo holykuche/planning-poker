@@ -4,7 +4,7 @@
 * in-memory-db
 
 #### Unfinished microservices:
-* poker (left to make compatibility with RabbitMQ or Kafka, fix tests)
+* poker (left to make compatibility with RabbitMQ or Kafka)
 * telegram (left to make compatibility with RabbitMQ or Kafka, create some implementations, fix tests)
 
 ##### Also need to finally configure Docker

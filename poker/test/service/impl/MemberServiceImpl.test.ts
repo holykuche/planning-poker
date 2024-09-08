@@ -17,6 +17,7 @@ import {
   LobbyService,
   SERVICE_TYPES,
   SubscriptionService,
+  CardService,
 } from '@/service/api';
 import {
   MemberIsNotInLobbyError,
@@ -25,15 +26,16 @@ import {
 } from '@/service/error';
 import MemberServiceImpl from '@/service/impl/MemberServiceImpl';
 
-import {sameArray, sameObject} from '../../test-utils/customMatchers';
+import {sameArray, sameObject} from '@test/test-utils/customMatchers';
 
-describe('service/common-service/impl/MemberServiceImpl', () => {
+describe('service/impl/MemberServiceImpl', () => {
   let memberService: MemberService;
 
   let memberDAOMock: MockProxy<MemberDAO>;
   let memberCardXrefDAOMock: MockProxy<MemberCardXrefDAO>;
   let memberLobbyXrefDAOMock: MockProxy<MemberLobbyXrefDAO>;
   let lobbyDAOMock: MockProxy<LobbyDAO>;
+  let cardServiceMock: MockProxy<CardService>;
   let lobbyServiceMock: MockProxy<LobbyService>;
   let subscriptionServiceMock: MockProxy<SubscriptionService>;
   let timeoutSchedulerMock: MockProxy<TimeoutScheduler>;
@@ -61,6 +63,11 @@ describe('service/common-service/impl/MemberServiceImpl', () => {
     lobbyDAOMock = mock<LobbyDAO>();
     container.bind<LobbyDAO>(DAO_TYPES.LobbyDAO).toConstantValue(lobbyDAOMock);
 
+    cardServiceMock = mock<CardService>();
+    container
+      .bind<CardService>(SERVICE_TYPES.CardService)
+      .toConstantValue(cardServiceMock);
+
     lobbyServiceMock = mock<LobbyService>();
     container
       .bind<LobbyService>(SERVICE_TYPES.LobbyService)
@@ -87,7 +94,7 @@ describe('service/common-service/impl/MemberServiceImpl', () => {
     mockReset(lobbyServiceMock);
   });
 
-  it("getById should return a member if it was called with that member's ID", () => {
+  it("getById must return a member if it was called with that member's ID", () => {
     const dummyMember = {id: 1, name: 'dummy'};
     memberDAOMock.getById
       .calledWith(dummyMember.id)
@@ -98,7 +105,7 @@ describe('service/common-service/impl/MemberServiceImpl', () => {
     });
   });
 
-  it('getById should throw an error if it was called with ID of not existed member', () => {
+  it('getById must throw an error if it was called with ID of not existed member', () => {
     memberDAOMock.getById
       .calledWith(anyNumber())
       .mockReturnValue(Promise.resolve(null));
@@ -108,7 +115,7 @@ describe('service/common-service/impl/MemberServiceImpl', () => {
     });
   });
 
-  it("getMembersLobbyId should return a lobby ID if it was called with member's ID who id involved into a lobby", () => {
+  it("getMembersLobbyId must return a lobby ID if it was called with member's ID who id involved into a lobby", () => {
     const memberId = 1;
     const membersLobbyId = 2;
     memberLobbyXrefDAOMock.getMembersBinding
@@ -120,7 +127,7 @@ describe('service/common-service/impl/MemberServiceImpl', () => {
     });
   });
 
-  it("getMembersLobbyId should throw an error if it was called with member's ID who isn't involved into any lobby", () => {
+  it("getMembersLobbyId must throw an error if it was called with member's ID who isn't involved into any lobby", () => {
     memberDAOMock.getById
       .calledWith(anyNumber())
       .mockReturnValue(Promise.resolve({id: 1, name: 'dummy'}));
@@ -133,7 +140,7 @@ describe('service/common-service/impl/MemberServiceImpl', () => {
     });
   });
 
-  it("isMemberInLobby should return true if it was called with member's ID who is involved into a lobby", () => {
+  it("isMemberInLobby must return true if it was called with member's ID who is involved into a lobby", () => {
     const memberId = 1;
     memberLobbyXrefDAOMock.isMemberBound
       .calledWith(memberId)
@@ -146,7 +153,7 @@ describe('service/common-service/impl/MemberServiceImpl', () => {
       });
   });
 
-  it("isMemberInLobby should return false if it was called with member's ID who isn't involved into any lobby", () => {
+  it("isMemberInLobby must return false if it was called with member's ID who isn't involved into any lobby", () => {
     const memberId = 1;
     memberLobbyXrefDAOMock.isMemberBound
       .calledWith(memberId)
@@ -159,7 +166,7 @@ describe('service/common-service/impl/MemberServiceImpl', () => {
       });
   });
 
-  it("putCard should store member's card if poker was started in the member's lobby", () => {
+  it("putCard must store member's card if poker was started in the member's lobby", () => {
     const memberId = 1;
     const cardCode = CardCode.DontKnow;
     const dummyLobby = {id: 2, name: 'DUMMY', state: LobbyState.Playing};
@@ -196,6 +203,7 @@ describe('service/common-service/impl/MemberServiceImpl', () => {
           state: LobbyState.Waiting,
         })
       );
+    cardServiceMock.getAll.calledWith().mockReturnValue(Promise.resolve([]));
 
     return memberService.putCard(memberId, cardCode).then(() => {
       expect(memberCardXrefDAOMock.put).toBeCalledTimes(1);
@@ -203,7 +211,7 @@ describe('service/common-service/impl/MemberServiceImpl', () => {
     });
   });
 
-  it("putCard should throw an error if poker wasn't started in the member's lobby", () => {
+  it("putCard must throw an error if poker wasn't started in the member's lobby", () => {
     const memberId = 1;
     const cardCode = CardCode.DontKnow;
     const dummyLobby = {id: 2, name: 'DUMMY', state: LobbyState.Waiting};
@@ -222,7 +230,7 @@ describe('service/common-service/impl/MemberServiceImpl', () => {
     });
   });
 
-  it("removeCard should remove member's card from storage if poker was started in the member's lobby", () => {
+  it("removeCard must remove member's card from storage if poker was started in the member's lobby", () => {
     const memberId = 1;
     const dummyLobby = {id: 2, name: 'DUMMY', state: LobbyState.Playing};
 
@@ -250,7 +258,7 @@ describe('service/common-service/impl/MemberServiceImpl', () => {
     });
   });
 
-  it("removeCard should throw an error if poker wasn't started in the member's lobby", () => {
+  it("removeCard must throw an error if poker wasn't started in the member's lobby", () => {
     const memberId = 1;
     const dummyLobby = {id: 2, name: 'DUMMY', state: LobbyState.Waiting};
 
