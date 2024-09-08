@@ -1,7 +1,7 @@
 import {CardCode} from '@/grpc-client/enum';
 import {CardDto} from '@/service/dto';
 
-// todo: move that to db
+// todo: think about moving that to db
 const VALUES: Map<CardCode, CardDto> = new Map<CardCode, CardDto>([
   [CardCode.Score0, {code: CardCode.Score0, label: '0', value: 0}],
   [CardCode.Score1, {code: CardCode.Score1, label: '1', value: 1}],
