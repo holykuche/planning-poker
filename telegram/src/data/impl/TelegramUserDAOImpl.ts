@@ -15,20 +15,19 @@ export default class TelegramUserDAOImpl
     super(TableName.TelegramUserMemberXref);
   }
 
-  getMemberIdByTelegramUserId(telegramUserId: number): Promise<number> {
-    return this.find('telegramUserId', telegramUserId).then(
-      xref => xref?.memberId || null
-    );
+  async getMemberIdByTelegramUserId(telegramUserId: number): Promise<number> {
+    const member = await this.find('telegramUserId', telegramUserId);
+    return member?.memberId || null;
   }
 
-  getTelegramUserIdByMemberId(memberId: number): Promise<number> {
-    return this.find('memberId', memberId).then(
-      xref => xref?.telegramUserId || null
-    );
+  async getTelegramUserIdByMemberId(memberId: number): Promise<number> {
+    const member = await this.find('memberId', memberId);
+    return member.telegramUserId || null;
   }
 
-  isMemberExists(telegramUserId: number): Promise<boolean> {
-    return this.find('telegramUserId', telegramUserId).then(xref => !!xref);
+  async isMemberExists(telegramUserId: number): Promise<boolean> {
+    const member = await this.find('telegramUserId', telegramUserId);
+    return !!member;
   }
 
   async bindTelegramUserWithMember(
