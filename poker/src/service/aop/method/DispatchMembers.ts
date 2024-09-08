@@ -30,8 +30,8 @@ export default (
   const method = descriptor.value;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  descriptor.value = async (...args: any[]) => {
-    const result = method.apply(this, args);
+  descriptor.value = async function (...args: any[]) {
+    const result = await method.apply(this, args);
 
     const dependencies: Dependencies = {
       memberLobbyXrefDAO: container.get<MemberLobbyXrefDAO>(
