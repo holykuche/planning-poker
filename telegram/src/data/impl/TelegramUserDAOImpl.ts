@@ -22,7 +22,7 @@ export default class TelegramUserDAOImpl
 
   async getTelegramUserIdByMemberId(memberId: number): Promise<number> {
     const member = await this.find('memberId', memberId);
-    return member.telegramUserId || null;
+    return member?.telegramUserId || null;
   }
 
   async isMemberExists(telegramUserId: number): Promise<boolean> {
