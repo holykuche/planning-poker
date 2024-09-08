@@ -5,7 +5,7 @@
 
 #### Unfinished microservices:
 * poker (left to make compatibility with RabbitMQ or Kafka)
-* telegram (left to make compatibility with RabbitMQ or Kafka, create some implementations, fix tests)
+* telegram (left to make compatibility with RabbitMQ or Kafka, create some implementations)
 
 ##### Also need to finally configure Docker
 

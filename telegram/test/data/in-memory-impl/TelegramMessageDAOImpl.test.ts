@@ -1,17 +1,39 @@
 import 'reflect-metadata';
 
-import {TelegramMessage} from '@/data/entity';
-import {TelegramMessageType} from '@/data/enum';
-import TelegramMessageDAOImpl from '@/data/impl/TelegramMessageDAOImpl';
+import {CalledWithMock, mock, MockProxy, mockReset} from 'jest-mock-extended';
 
-describe('data/telegram-data/in-memory-impl/TelegramMessageDAOImpl', () => {
-  let telegramMessageDAO: TelegramMessageDAOImpl;
+import {container} from '@/config/inversify';
+import {DAO_TYPES, TelegramMessageDAO} from '@/data/api';
+import {TelegramMessage} from '@/data/entity';
+import {TableName, TelegramMessageType} from '@/data/enum';
+import TelegramMessageDAOImpl from '@/data/impl/TelegramMessageDAOImpl';
+import {DatabaseClient, GRPC_CLIENT_TYPES} from '@/grpc-client/api';
+
+describe('data/impl/TelegramMessageDAOImpl', () => {
+  let telegramMessageDAO: TelegramMessageDAO;
+
+  let dbClientMock: MockProxy<DatabaseClient>;
+
+  beforeAll(() => {
+    container
+      .bind<TelegramMessageDAO>(DAO_TYPES.TelegramMessageDAO)
+      .to(TelegramMessageDAOImpl);
+
+    dbClientMock = mock<DatabaseClient>();
+    container
+      .bind<DatabaseClient>(GRPC_CLIENT_TYPES.DatabaseClient)
+      .toConstantValue(dbClientMock);
+
+    telegramMessageDAO = container.get<TelegramMessageDAO>(
+      DAO_TYPES.TelegramMessageDAO
+    );
+  });
 
   beforeEach(() => {
-    telegramMessageDAO = new TelegramMessageDAOImpl();
+    mockReset(dbClientMock);
   });
 
-  it('addMessage should assign ID to message without ID', () => {
+  it('addMessage must store message', async () => {
     const message: TelegramMessage = {
       lobbyId: 1,
       chatId: 10,
@@ -19,70 +41,63 @@ describe('data/telegram-data/in-memory-impl/TelegramMessageDAOImpl', () => {
       messageType: TelegramMessageType.Poker,
     };
 
-    const storedMessage = telegramMessageDAO.addMessage(message);
-
-    expect(storedMessage.id).toBeDefined();
+    await telegramMessageDAO.addMessage(message);
+    expect(dbClientMock.save).toHaveBeenCalledWith(
+      TableName.TelegramMessage,
+      message
+    );
   });
 
-  it('addMessage should return message with the same property values', () => {
+  it('getMessage must return stored message', async () => {
     const message: TelegramMessage = {
-      lobbyId: 1,
-      chatId: 10,
-      messageId: 100,
+      id: 1,
+      lobbyId: 10,
+      chatId: 100,
+      messageId: 1000,
       messageType: TelegramMessageType.Poker,
     };
 
-    const storedMessage = telegramMessageDAO.addMessage(message);
+    (
+      dbClientMock.findMany as CalledWithMock<
+        Promise<TelegramMessage[]>,
+        [TableName, string, number]
+      >
+    )
+      .calledWith(TableName.TelegramMessage, 'lobbyId', message.lobbyId)
+      .mockReturnValue(Promise.resolve([message]));
 
-    expect(storedMessage.lobbyId).toBe(message.lobbyId);
-    expect(storedMessage.chatId).toBe(message.chatId);
-    expect(storedMessage.messageId).toBe(message.messageId);
-    expect(storedMessage.messageType).toBe(message.messageType);
-  });
-
-  it('addMessage should store message', () => {
-    const message: TelegramMessage = {
-      lobbyId: 1,
-      chatId: 10,
-      messageId: 100,
-      messageType: TelegramMessageType.Poker,
-    };
-
-    const storedMessage = telegramMessageDAO.addMessage(message);
-    const receivedMessage = telegramMessageDAO.find('id', storedMessage.id);
-
-    expect(receivedMessage).toEqual(storedMessage);
-  });
-
-  it('getMessage should return stored message', () => {
-    const message: TelegramMessage = {
-      lobbyId: 1,
-      chatId: 10,
-      messageId: 100,
-      messageType: TelegramMessageType.Poker,
-    };
-
-    const storedMessage = telegramMessageDAO.addMessage(message);
-    const receivedMessage = telegramMessageDAO.getMessage(
+    const receivedMessage = await telegramMessageDAO.getMessage(
       message.lobbyId,
       message.chatId,
       message.messageType
     );
 
-    expect(receivedMessage).toEqual(storedMessage);
+    expect(receivedMessage).toEqual(message);
   });
 
-  it("getMessage shouldn't return not stored message", () => {
-    const receivedMessage = telegramMessageDAO.getMessage(
-      1,
-      10,
+  it("getMessage mustn't return not stored message", async () => {
+    const lobbyId = 1;
+    const chatId = 1;
+
+    (
+      dbClientMock.findMany as CalledWithMock<
+        Promise<TelegramMessage[]>,
+        [TableName, string, number]
+      >
+    )
+      .calledWith(TableName.TelegramMessage, 'lobbyId', lobbyId)
+      .mockReturnValue(Promise.resolve([]));
+
+    const receivedMessage = await telegramMessageDAO.getMessage(
+      lobbyId,
+      chatId,
       TelegramMessageType.Poker
     );
 
     expect(receivedMessage).toBeNull();
   });
 
-  it('getAllMessages should return all messages by lobby', () => {
+  it('getAllMessages must return all messages by lobby', async () => {
     const lobbyId = 1;
     const messages: TelegramMessage[] = [
       {
@@ -111,9 +126,16 @@ describe('data/telegram-data/in-memory-impl/TelegramMessageDAOImpl', () => {
       },
     ];
 
-    messages.forEach(msg => telegramMessageDAO.addMessage(msg));
+    (
+      dbClientMock.findMany as CalledWithMock<
+        Promise<TelegramMessage[]>,
+        [TableName, string, number]
+      >
+    )
+      .calledWith(TableName.TelegramMessage, 'lobbyId', lobbyId)
+      .mockReturnValue(Promise.resolve(messages));
 
-    const receivedMessages = telegramMessageDAO.getAllMessages(lobbyId);
+    const receivedMessages = await telegramMessageDAO.getAllMessages(lobbyId);
 
     expect(receivedMessages.length).toBe(messages.length);
 
@@ -130,39 +152,36 @@ describe('data/telegram-data/in-memory-impl/TelegramMessageDAOImpl', () => {
     });
   });
 
-  it('deleteMessageById should delete message', () => {
-    const message: TelegramMessage = {
-      lobbyId: 1,
-      chatId: 10,
-      messageId: 100,
-      messageType: TelegramMessageType.Poker,
-    };
+  it('deleteMessageById must delete message', async () => {
+    const messageId = 1;
 
-    const storedMessage = telegramMessageDAO.addMessage(message);
-    expect(telegramMessageDAO.find('id', storedMessage.id)).toEqual(
-      storedMessage
+    await telegramMessageDAO.deleteMessageById(messageId);
+    expect(dbClientMock.delete).toHaveBeenCalledWith(
+      TableName.TelegramMessage,
+      'id',
+      messageId
     );
-
-    telegramMessageDAO.deleteMessageById(storedMessage.id);
-    expect(telegramMessageDAO.find('id', storedMessage.id)).toBeNull();
   });
 
-  it('deleteMessages should delete messages', () => {
+  it('deleteMessages must delete messages', async () => {
     const lobbyId = 1;
     const pokerMessages: TelegramMessage[] = [
       {
+        id: 1,
         lobbyId,
         chatId: 10,
         messageId: 100,
         messageType: TelegramMessageType.Poker,
       },
       {
+        id: 3,
         lobbyId,
         chatId: 30,
         messageId: 300,
         messageType: TelegramMessageType.Poker,
       },
       {
+        id: 5,
         lobbyId,
         chatId: 50,
         messageId: 500,
@@ -171,12 +190,14 @@ describe('data/telegram-data/in-memory-impl/TelegramMessageDAOImpl', () => {
     ];
     const lobbyMessages: TelegramMessage[] = [
       {
+        id: 2,
         lobbyId,
         chatId: 20,
         messageId: 200,
         messageType: TelegramMessageType.Lobby,
       },
       {
+        id: 4,
         lobbyId,
         chatId: 40,
         messageId: 400,
@@ -184,91 +205,78 @@ describe('data/telegram-data/in-memory-impl/TelegramMessageDAOImpl', () => {
       },
     ];
 
-    pokerMessages
-      .concat(lobbyMessages)
-      .forEach(msg => telegramMessageDAO.addMessage(msg));
+    (
+      dbClientMock.findMany as CalledWithMock<
+        Promise<TelegramMessage[]>,
+        [TableName, string, number]
+      >
+    )
+      .calledWith(TableName.TelegramMessage, 'lobbyId', lobbyId)
+      .mockReturnValue(Promise.resolve(pokerMessages.concat(lobbyMessages)));
 
-    telegramMessageDAO.deleteMessages(lobbyId, TelegramMessageType.Lobby);
-
-    const receivedMessages = telegramMessageDAO.getAllMessages(lobbyId);
-    const receivedPokerMessages = receivedMessages.filter(
-      msg => msg.messageType === TelegramMessageType.Poker
-    );
-    const receivedLobbyMessages = receivedMessages.filter(
-      msg => msg.messageType === TelegramMessageType.Lobby
-    );
-
-    expect(receivedPokerMessages.length).toBe(pokerMessages.length);
-    expect(receivedLobbyMessages.length).toBe(0);
+    await telegramMessageDAO.deleteMessages(lobbyId, TelegramMessageType.Lobby);
+    pokerMessages.forEach(msg => {
+      expect(dbClientMock.delete).not.toHaveBeenCalledWith(
+        TableName.TelegramMessage,
+        'id',
+        msg.id
+      );
+    });
+    lobbyMessages.forEach(msg => {
+      expect(dbClientMock.delete).toHaveBeenCalledWith(
+        TableName.TelegramMessage,
+        'id',
+        msg.id
+      );
+    });
   });
 
-  it('deleteAllMessages should delete all messages by lobby', () => {
+  it('deleteAllMessages must delete all messages by lobby', async () => {
     const lobbyId = 1;
-    const messages: TelegramMessage[] = [
-      {
-        lobbyId,
-        chatId: 10,
-        messageId: 100,
-        messageType: TelegramMessageType.Poker,
-      },
-      {
-        lobbyId,
-        chatId: 20,
-        messageId: 200,
-        messageType: TelegramMessageType.Lobby,
-      },
-      {
-        lobbyId,
-        chatId: 30,
-        messageId: 300,
-        messageType: TelegramMessageType.Poker,
-      },
-      {
-        lobbyId,
-        chatId: 40,
-        messageId: 400,
-        messageType: TelegramMessageType.Lobby,
-      },
-    ];
 
-    messages.forEach(msg => telegramMessageDAO.addMessage(msg));
-
-    telegramMessageDAO.deleteAllMessages(lobbyId);
-
-    const receivedMessages = telegramMessageDAO.getAllMessages(lobbyId);
-    expect(receivedMessages.length).toBe(0);
+    await telegramMessageDAO.deleteAllMessages(lobbyId);
+    expect(dbClientMock.delete).toHaveBeenCalledWith(
+      TableName.TelegramMessage,
+      'lobbyId',
+      lobbyId
+    );
   });
 
-  it('deleteAllMessagesFromChat should delete all messages by lobby and chat', () => {
+  it('deleteAllMessagesFromChat must delete all messages by lobby and chat', async () => {
     const lobbyId = 1;
     const chatId1 = 10;
     const chatId2 = 20;
     const chatMessages1: TelegramMessage[] = [
       {
+        id: 1,
         lobbyId,
         chatId: chatId1,
         messageId: 100,
         messageType: TelegramMessageType.Poker,
       },
       {
+        id: 2,
         lobbyId,
         chatId: chatId1,
         messageId: 200,
         messageType: TelegramMessageType.Lobby,
       },
       {
+        id: 3,
         lobbyId,
         chatId: chatId1,
         messageId: 300,
         messageType: TelegramMessageType.Poker,
       },
       {
+        id: 4,
         lobbyId,
         chatId: chatId1,
         messageId: 400,
         messageType: TelegramMessageType.Lobby,
       },
       {
+        id: 5,
         lobbyId,
         chatId: chatId1,
         messageId: 500,
@@ -277,24 +285,28 @@ describe('data/telegram-data/in-memory-impl/TelegramMessageDAOImpl', () => {
     ];
     const chatMessages2: TelegramMessage[] = [
       {
+        id: 6,
         lobbyId,
         chatId: chatId2,
         messageId: 600,
         messageType: TelegramMessageType.Poker,
       },
       {
+        id: 7,
         lobbyId,
         chatId: chatId2,
         messageId: 700,
         messageType: TelegramMessageType.Lobby,
       },
       {
+        id: 8,
         lobbyId,
         chatId: chatId2,
         messageId: 800,
         messageType: TelegramMessageType.Poker,
       },
       {
+        id: 9,
         lobbyId,
         chatId: chatId2,
         messageId: 900,
@@ -302,21 +314,29 @@ describe('data/telegram-data/in-memory-impl/TelegramMessageDAOImpl', () => {
       },
     ];
 
-    chatMessages1
-      .concat(chatMessages2)
-      .forEach(msg => telegramMessageDAO.addMessage(msg));
+    (
+      dbClientMock.findMany as CalledWithMock<
+        Promise<TelegramMessage[]>,
+        [TableName, string, number]
+      >
+    )
+      .calledWith(TableName.TelegramMessage, 'lobbyId', lobbyId)
+      .mockReturnValue(Promise.resolve(chatMessages1.concat(chatMessages2)));
 
-    telegramMessageDAO.deleteAllMessagesFromChat(lobbyId, chatId1);
-
-    const receivedMessages = telegramMessageDAO.getAllMessages(lobbyId);
-    const receivedChatMessages1 = receivedMessages.filter(
-      msg => msg.chatId === chatId1
-    );
-    const receivedChatMessages2 = receivedMessages.filter(
-      msg => msg.chatId === chatId2
-    );
-
-    expect(receivedChatMessages1.length).toBe(0);
-    expect(receivedChatMessages2.length).toBe(chatMessages2.length);
+    await telegramMessageDAO.deleteAllMessagesFromChat(lobbyId, chatId1);
+    chatMessages1.forEach(msg => {
+      expect(dbClientMock.delete).toHaveBeenCalledWith(
+        TableName.TelegramMessage,
+        'id',
+        msg.id
+      );
+    });
+    chatMessages2.forEach(msg => {
+      expect(dbClientMock.delete).not.toHaveBeenCalledWith(
+        TableName.TelegramMessage,
+        'id',
+        msg.id
+      );
+    });
   });
 });
