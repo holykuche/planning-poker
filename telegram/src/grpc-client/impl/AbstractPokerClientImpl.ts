@@ -23,7 +23,7 @@ export default abstract class AbstractPokerClientImpl {
       serviceName
     ] as ServiceClientConstructor;
     this.stub = new ClientConstructor(
-      `${process.env.POKER_PORT}:${process.env.POKER_PORT}`,
+      `${process.env.POKER_IP}:${process.env.POKER_PORT}`,
       credentials.createInsecure()
     );
   }
