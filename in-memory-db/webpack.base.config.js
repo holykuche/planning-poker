@@ -13,16 +13,19 @@ module.exports = {
             {
                 test: /\.ts$/,
                 use: "ts-loader",
-                exclude: /node_modules/
+                exclude: /node_modules/,
             },
         ],
     },
     resolve: {
+        alias: {
+            '@': path.resolve(__dirname, "src"),
+            '@test': path.resolve(__dirname, "test"),
+        },
         modules: [
-            path.resolve(__dirname, "src/"),
             path.resolve(__dirname, "node_modules/"),
         ],
-        extensions: [ '.js', ".ts" ]
+        extensions: [ '.js', ".ts" ],
     },
     output: {
         path: path.resolve(__dirname, "dist/"),
