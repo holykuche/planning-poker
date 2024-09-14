@@ -1,7 +1,7 @@
 {
   "name": "planning-poker",
   "version": "1.0.0",
-  "description": "Planning poker app",
+  "description": "Planning Poker by Holy Kuche",
   "scripts": {
     "compile-no-emit:in-memory-db": "cd ./in-memory-db && tsc --noEmit",
     "compile-no-emit:poker": "cd ./poker && tsc --noEmit",
