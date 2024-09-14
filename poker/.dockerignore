@@ -1,3 +1,7 @@
+coverage/*
+dist/*
+node_modules/*
+proto/*
 .dockerignore
 Dockerfile
-node_modules
+yarn.lock

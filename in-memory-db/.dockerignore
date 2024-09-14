@@ -1,8 +1,7 @@
-coverage
-dist
-node_modules
-proto
+coverage/*
+dist/*
+node_modules/*
+proto/*
 .dockerignore
-.gitignore
 Dockerfile
-package-lock.json
+yarn.lock

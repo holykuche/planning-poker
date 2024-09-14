@@ -6,7 +6,7 @@
     "start": "npm run copy-proto && webpack --mode development && node ./dist/main.dev.js",
     "build": "jest && webpack --mode production",
     "test": "jest",
-    "copy-proto": "cpx -C \"../proto/db.proto\" proto"
+    "copy-proto": "cpx -C \"../in-memory-db-proto/db.proto\" proto"
   },
   "author": "Nikita Temnikov",
   "license": "ISC",
