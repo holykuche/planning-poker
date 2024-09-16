@@ -23,7 +23,8 @@ module.exports = {
             '@test': path.resolve(__dirname, "test"),
         },
         modules: [
-            path.resolve(__dirname, "node_modules/"),
+            path.resolve(__dirname, "src"),
+            path.resolve(__dirname, "node_modules"),
         ],
         extensions: [ '.js', ".ts" ],
     },

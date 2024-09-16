@@ -9,7 +9,6 @@ module.exports = {
     target: "node",
     entry: [
         path.resolve(__dirname, "src", "grpc-client", "impl", "index.ts"),
-        path.resolve(__dirname, "src", "migration", "impl", "index.ts"),
         path.resolve(__dirname, "src", "migration", "index.ts"),
         path.resolve(__dirname, "src", "grpc-server", "impl", "index.ts"),
         path.resolve(__dirname, "src", "grpc-server", "index.ts"),
@@ -29,6 +28,7 @@ module.exports = {
             '@test': path.resolve(__dirname, "test"),
         },
         modules: [
+            path.resolve(__dirname, "src"),
             path.resolve(__dirname, "node_modules"),
         ],
         extensions: [ '.js', ".ts" ]
