@@ -1,6 +1,6 @@
-FROM planning-poker-in-memory-db-proto as db-proto
+FROM planning-poker-in-memory-db-proto AS db-proto
 
-FROM planning-poker-poker-proto as poker-proto
+FROM planning-poker-poker-proto AS poker-proto
 
 FROM node:18-alpine
 
