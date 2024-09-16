@@ -1,0 +1,71 @@
+name: planning-poker
+services:
+  in-memory-db-proto:
+    container_name: in-memory-db-proto
+    build: ./in-memory-db-proto
+  poker-proto:
+    container_name: poker-proto
+    build: ./poker-proto
+  poker-in-memory-db:
+    container_name: poker-in-memory-db
+    build: ./in-memory-db
+    depends_on:
+      - in-memory-db-proto
+    networks:
+      - planning-poker-net
+    hostname: poker-in-memory-db
+    ports:
+      - "8080"
+    environment:
+      - DB_PORT=8080
+  telegram-in-memory-db:
+    container_name: telegram-in-memory-db
+    build: ./in-memory-db
+    depends_on:
+      - in-memory-db-proto
+    networks:
+      - planning-poker-net
+    hostname: telegram-in-memory-db
+    ports:
+      - "8080"
+    environment:
+      - DB_PORT=8080
+  poker:
+    container_name: poker
+    build: ./poker
+    depends_on:
+      - poker-proto
+      - poker-in-memory-db
+    networks:
+      - planning-poker-net
+    hostname: poker
+    env_file:
+      - path: ./poker/.env
+        required: true
+    environment:
+      - DB_IP=poker-in-memory-db
+      - DB_PORT=8080
+      - POKER_PORT=8080
+  telegram:
+    container_name: telegram
+    build: ./telegram
+    depends_on:
+      - in-memory-db-proto
+      - poker-proto
+      - telegram-in-memory-db
+      - poker
+    networks:
+      - planning-poker-net
+    ports:
+      - "8081"
+    env_file:
+      - path: ./telegram/.env
+        required: true
+    environment:
+      - DB_IP=poker-in-memory-db
+      - DB_PORT=8080
+      - POKER_IP=poker
+      - POKER_PORT=8080
+networks:
+  planning-poker-net:
+    driver: bridge

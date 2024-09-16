@@ -4,4 +4,4 @@
 **/dist
 **/coverage
 **/proto/*.proto
-/.env
+**/*.env
