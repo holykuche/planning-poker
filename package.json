@@ -1,5 +1,5 @@
 {
-  "name": "planning-poker",
+  "private": true,
   "name": "@holykuche/planning-poker",
   "version": "1.0.0",
   "description": "Planning Poker by Holy Kuche",
@@ -27,7 +27,6 @@
     "type": "git",
     "url": "https://github.com/holykuche/planning-poker.git"
   },
-  "private": true,
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.4.0",
     "@typescript-eslint/parser": "^8.4.0",

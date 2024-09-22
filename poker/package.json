@@ -1,5 +1,5 @@
 {
-  "name": "planning-poker-service",
+  "private": true,
   "name": "@holykuche/planning-poker-service",
   "version": "1.0.0",
   "description": "Planning Poker by Holy Kuche - Common service",

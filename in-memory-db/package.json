@@ -1,5 +1,5 @@
 {
-  "name": "planning-poker-in-memory-db",
+  "private": true,
   "name": "@holykuche/planning-poker-in-memory-db",
   "version": "1.0.0",
   "description": "Planning Poker by Holy Kuche - In-memory DB implementation",
