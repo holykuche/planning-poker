@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import {resolve} from 'path';
 
-import {MigrationsExecutorImpl} from 'db-migrations-executor';
+import {MigrationsExecutorImpl} from '@holykuche/db-migrations-executor';
 
 import {container} from '@/config/inversify';
 import {DatabaseClient, GRPC_CLIENT_TYPES} from '@/grpc-client/api';

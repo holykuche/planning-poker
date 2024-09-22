@@ -314,6 +314,11 @@
     protobufjs "^7.2.5"
     yargs "^17.7.2"
 
+"@holykuche/db-migrations-executor@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@holykuche/db-migrations-executor/-/db-migrations-executor-1.0.0.tgz#a4de6790dd058e89e0aa668b88422cbd14146e68"
+  integrity sha512-MejQmmlxtSat0HJ9yoyun3ybwI9sOsz9+838gGE3CI8vYTbV+7kwUj4FBUH6Ad08eUlUEwN3ZTb5AE6H+MiSKg==
+
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@istanbuljs/load-nyc-config/-/load-nyc-config-1.1.0.tgz#fd3db1d59ecf7cf121e80650bb86712f9b55eced"
@@ -1553,10 +1558,6 @@ cross-spawn@^7.0.3:
     path-key "^3.1.0"
     shebang-command "^2.0.0"
     which "^2.0.1"
-
-"db-migrations-executor@github:holykuche/db-migrations-executor":
-  version "1.0.0"
-  resolved "https://codeload.github.com/holykuche/db-migrations-executor/tar.gz/dc0c0722e54a1d06271b26979a2b03f4cbcf9f32"
 
 debug@^2.2.0, debug@^2.3.3:
   version "2.6.9"
