@@ -15,8 +15,8 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.8.14",
     "@grpc/proto-loader": "^0.7.7",
+    "@holykuche/db-migrations-executor": "^1.0.0",
     "bluebird": "^3.7.2",
-    "db-migrations-executor": "github:holykuche/db-migrations-executor",
     "inversify": "^6.0.1",
     "inversify-inject-decorators": "^3.1.0",
     "node-telegram-bot-api": "^0.57.0",
