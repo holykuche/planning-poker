@@ -1,16 +1,8 @@
 name: planning-poker
 services:
-  in-memory-db-proto:
-    container_name: in-memory-db-proto
-    build: ./in-memory-db-proto
-  poker-proto:
-    container_name: poker-proto
-    build: ./poker-proto
   poker-in-memory-db:
     container_name: poker-in-memory-db
     build: ./in-memory-db
-    depends_on:
-      - in-memory-db-proto
     networks:
       - planning-poker-net
     hostname: poker-in-memory-db
@@ -21,8 +13,6 @@ services:
   telegram-in-memory-db:
     container_name: telegram-in-memory-db
     build: ./in-memory-db
-    depends_on:
-      - in-memory-db-proto
     networks:
       - planning-poker-net
     hostname: telegram-in-memory-db
@@ -34,7 +24,6 @@ services:
     container_name: poker
     build: ./poker
     depends_on:
-      - poker-proto
       - poker-in-memory-db
     networks:
       - planning-poker-net
@@ -50,8 +39,6 @@ services:
     container_name: telegram
     build: ./telegram
     depends_on:
-      - in-memory-db-proto
-      - poker-proto
       - telegram-in-memory-db
       - poker
     networks:

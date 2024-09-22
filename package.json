@@ -11,9 +11,9 @@
     "install:poker": "cd ./poker && test -f package.json && yarn",
     "install:telegram": "cd ./telegram && test -f package.json && yarn",
     "install": "run-p install:*",
-    "copy-proto:in-memory-db": "cd ./in-memory-db && yarn run copy-proto",
-    "copy-proto:poker": "cd ./poker && yarn run copy-proto",
-    "copy-proto:telegram": "cd ./telegram && yarn run copy-proto",
+    "copy-proto:in-memory-db": "rm ./in-memory-db/proto/* && cp \"./proto/db.proto\" ./in-memory-db/proto",
+    "copy-proto:poker": "rm ./poker/proto/* && cp \"./proto/db.proto\" ./poker/proto && cp \"./proto/poker.proto\" ./poker/proto",
+    "copy-proto:telegram": "rm ./telegram/proto/* && cp \"./proto/db.proto\" ./telegram/proto && cp \"./proto/poker.proto\" ./telegram/proto",
     "copy-proto": "run-p copy-proto:*",
     "fix": "gts fix",
     "lint": "gts lint",
@@ -28,14 +28,14 @@
     "url": "https://github.com/holykuche/planning-poker.git"
   },
   "devDependencies": {
+    "@types/node": "20.12.7",
     "@typescript-eslint/eslint-plugin": "^8.4.0",
     "@typescript-eslint/parser": "^8.4.0",
     "eslint": "^8.57.0",
     "eslint-plugin-import": "^2.30.0",
     "eslint-plugin-unused-imports": "^4.1.3",
     "gts": "^5.3.1",
-    "yarn-run-all": "^3.1.1",
     "typescript": "^5.4.3",
-    "@types/node": "20.12.7"
+    "yarn-run-all": "^3.1.1"
   }
 }

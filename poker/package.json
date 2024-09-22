@@ -4,10 +4,9 @@
   "version": "1.0.0",
   "description": "Planning Poker by Holy Kuche - Common service",
   "scripts": {
-    "start": "yarn run copy-proto && webpack --mode development && node ./dist/main.dev.js",
+    "start": "webpack --mode development && node ./dist/main.dev.js",
     "build": "jest && webpack --mode production",
-    "test": "jest",
-    "copy-proto": "cpx -C \"../in-memory-db-proto/db.proto\" proto & cpx -C \"../poker-proto/poker.proto\" proto"
+    "test": "jest"
   },
   "author": "Nikita Temnikov",
   "license": "ISC",
@@ -28,7 +27,6 @@
     "@types/node": "^20.1.0",
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^11.0.0",
-    "cpx": "^1.5.0",
     "jest": "^29.4.0",
     "jest-mock-extended": "^3.0.7",
     "ts-jest": "^29.0.5",
