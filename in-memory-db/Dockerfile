@@ -8,4 +8,4 @@ COPY . /usr/src/app
 RUN yarn install
 RUN yarn run build
 
-CMD [ "node", "/dist/main.prod.js" ]
+CMD [ "node", "./dist/main.prod.js" ]
