@@ -53,10 +53,13 @@ server.addService(
 server.bindAsync(
   `0.0.0.0:${process.env.POKER_PORT}`,
   ServerCredentials.createInsecure(),
-  () => {
-    server.start();
-    console.log(
-      `The server has successfully started on port ${process.env.POKER_PORT}`
-    );
+  (error, port) => {
+    if (error) {
+      console.error(
+        `gRPC server couldn't start on port ${port}: ${JSON.stringify(error, null, 2)}`
+      );
+    } else {
+      console.log(`gRPC server has successfully started on port ${port}`);
+    }
   }
 );
