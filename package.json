@@ -5,6 +5,7 @@
   "description": "Planning Poker by Holy Kuche",
   "scripts": {
     "start:in-memory-db": "cd ./in-memory-db && yarn run start",
+    "build-dev:in-memory-db": "cd ./in-memory-db && yarn run build-dev",
     "start:poker": "cd ./poker && yarn run start",
     "start:telegram": "cd ./telegram && yarn run start",
     "compile-no-emit:in-memory-db": "cd ./in-memory-db && tsc --noEmit",

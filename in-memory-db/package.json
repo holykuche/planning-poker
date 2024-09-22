@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Planning Poker by Holy Kuche - In-memory DB implementation",
   "scripts": {
-    "start": "yarn run build-dev && yarn run start-poker & yarn run start-telegram",
+    "start": "yarn run start-poker & yarn run start-telegram",
     "start-poker": "cross-env DB_PORT=8080 node ./dist/main.dev.js",
     "start-telegram": "cross-env DB_PORT=8081 node ./dist/main.dev.js",
     "build-dev": "webpack --mode development",
