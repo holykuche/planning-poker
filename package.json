@@ -4,6 +4,9 @@
   "version": "1.0.0",
   "description": "Planning Poker by Holy Kuche",
   "scripts": {
+    "start:in-memory-db": "cd ./in-memory-db && yarn run start",
+    "start:poker": "cd ./poker && yarn run start",
+    "start:telegram": "cd ./telegram && yarn run start",
     "compile-no-emit:in-memory-db": "cd ./in-memory-db && tsc --noEmit",
     "compile-no-emit:poker": "cd ./poker && tsc --noEmit",
     "compile-no-emit:telegram": "cd ./telegram && tsc --noEmit",
