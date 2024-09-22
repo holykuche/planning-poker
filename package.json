@@ -1,5 +1,6 @@
 {
   "name": "planning-poker",
+  "name": "@holykuche/planning-poker",
   "version": "1.0.0",
   "description": "Planning Poker by Holy Kuche",
   "scripts": {

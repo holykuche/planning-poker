@@ -1,5 +1,6 @@
 {
   "name": "planning-poker-telegram",
+  "name": "@holykuche/planning-poker-telegram",
   "version": "1.0.0",
   "description": "Planning Poker by Holy Kuche - Telegram Bot",
   "scripts": {
