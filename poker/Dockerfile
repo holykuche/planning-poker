@@ -12,7 +12,6 @@ COPY . /usr/src/app
 COPY --from=db-proto . /usr/src/app/proto
 COPY --from=poker-proto . /usr/src/app/proto
 
-RUN apk add git
 RUN yarn install
 RUN yarn run build
 
