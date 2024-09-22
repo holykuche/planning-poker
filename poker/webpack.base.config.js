@@ -10,6 +10,9 @@ module.exports = {
     entry: [
         path.resolve(__dirname, "src", "grpc-client", "impl", "index.ts"),
         path.resolve(__dirname, "src", "migration", "index.ts"),
+        path.resolve(__dirname, "src", "data", "impl", "index.ts"),
+        path.resolve(__dirname, "src", "scheduler", "impl", "index.ts"),
+        path.resolve(__dirname, "src", "service", "impl", "index.ts"),
         path.resolve(__dirname, "src", "grpc-server", "impl", "index.ts"),
         path.resolve(__dirname, "src", "grpc-server", "index.ts"),
     ],
