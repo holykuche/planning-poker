@@ -23,8 +23,8 @@ message Lobby {
 }
 
 enum LobbyState {
-    Waiting = 0;
-    Playing = 1;
+  Waiting = 0;
+  Playing = 1;
 }
 
 message LobbyNameRequest {
@@ -111,4 +111,42 @@ message Card {
   CardCode code = 1;
   string label = 2;
   int32 value = 3;
+}
+
+
+
+service SubscriptionService {
+  rpc Subscribe (MemberIdLobbyIdRequest) returns (stream LobbyEvent);
+  rpc Unsubscribe (MemberIdRequest) returns (EmptyBody);
+  rpc Register (LobbyIdRequest) returns (EmptyBody);
+  rpc Unregister (LobbyIdRequest) returns (EmptyBody);
+  rpc Dispatch (LobbyIdLobbyEventRequest) returns (EmptyBody);
+}
+
+message LobbyEvent {
+  EventType type = 1;
+  LobbyEventPayload payload = 2;
+}
+
+message LobbyIdLobbyEventRequest {
+  int32 lobby_id = 1;
+  LobbyEvent event = 2;
+}
+
+enum EventType {
+  LobbyWasDestroyed = 0;
+  MembersWasChanged = 1;
+  PokerWasFinished = 2;
+  PokerResultWasChanged = 3;
+}
+
+message LobbyEventPayload {
+  repeated Member members = 1;
+  string theme = 2;
+  repeated PokerResult result = 3;
+}
+
+message PokerResult {
+  Member member = 1;
+  Card card = 2;
 }

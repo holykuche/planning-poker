@@ -9,7 +9,13 @@ import {loadSync} from '@grpc/proto-loader';
 
 import {container} from '@/config/inversify';
 
-import {LobbyGrpcService, MemberGrpcService, GRPC_SERVER_TYPES} from './api';
+import {
+  LobbyGrpcService,
+  MemberGrpcService,
+  GRPC_SERVER_TYPES,
+  CardGrpcService,
+  SubscriptionGrpcService,
+} from './api';
 
 const PROTO_PATH = __dirname + '/poker.proto';
 
@@ -24,6 +30,12 @@ const lobbyService = container.get<LobbyGrpcService>(
 );
 const memberService = container.get<MemberGrpcService>(
   GRPC_SERVER_TYPES.MemberGrpcService
+);
+const cardService = container.get<CardGrpcService>(
+  GRPC_SERVER_TYPES.CardGrpcService
+);
+const subscriptionService = container.get<SubscriptionGrpcService>(
+  GRPC_SERVER_TYPES.SubscriptionGrpcService
 );
 
 const server = new Server();
@@ -48,6 +60,23 @@ server.addService(
     IsMemberInLobby: memberService.isMemberInLobby,
     PutCard: memberService.putCard,
     RemoveCard: memberService.removeCard,
+  }
+);
+server.addService(
+  (protoDescriptor.CardService as ServiceClientConstructor).service,
+  {
+    GetAll: cardService.getAll,
+    GetByCode: cardService.getByCode,
+  }
+);
+server.addService(
+  (protoDescriptor.SubscriptionService as ServiceClientConstructor).service,
+  {
+    Subscribe: subscriptionService.subscribe,
+    Unsubscribe: subscriptionService.unsubscribe,
+    Register: subscriptionService.register,
+    Unregister: subscriptionService.unregister,
+    Dispatch: subscriptionService.dispatch,
   }
 );
 server.bindAsync(

@@ -6,11 +6,13 @@ import {
   GRPC_SERVER_TYPES,
   LobbyGrpcService,
   MemberGrpcService,
+  SubscriptionGrpcService,
 } from '../api';
 
 import CardGrpcServiceImpl from './CardGrpcServiceImpl';
 import LobbyGrpcServiceImpl from './LobbyGrpcServiceImpl';
 import MemberGrpcServiceImpl from './MemberGrpcServiceImpl';
+import SubscriptionGrpcServiceImpl from './SubscriptionGrpcServiceImpl';
 
 container
   .bind<CardGrpcService>(GRPC_SERVER_TYPES.CardGrpcService)
@@ -21,3 +23,6 @@ container
 container
   .bind<MemberGrpcService>(GRPC_SERVER_TYPES.MemberGrpcService)
   .to(MemberGrpcServiceImpl);
+container
+  .bind<SubscriptionGrpcService>(GRPC_SERVER_TYPES.SubscriptionGrpcService)
+  .to(SubscriptionGrpcServiceImpl);

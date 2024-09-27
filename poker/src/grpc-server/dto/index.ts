@@ -1,6 +1,9 @@
 export {default as BoolResponse} from './BoolResponse';
 export {default as Card} from './Card';
 export {default as Lobby} from './Lobby';
+export {default as LobbyEvent} from './LobbyEvent';
+export {default as LobbyEventPayload} from './LobbyEventPayload';
+export {default as LobbyIdLobbyEventRequest} from './LobbyIdLobbyEventRequest';
 export {default as LobbyIdRequest} from './LobbyIdRequest';
 export {default as LobbyIdThemeRequest} from './LobbyIdThemeRequest';
 export {default as LobbyNameRequest} from './LobbyNameRequest';
