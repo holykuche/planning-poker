@@ -19,6 +19,17 @@ import {EntitySerializer} from '../util';
 export default class DatabaseGrpcServiceImpl implements DatabaseGrpcService {
   @inject(CORE_TYPES.Database) private readonly database: Database;
 
+  constructor() {
+    this.createTable = this.createTable.bind(this);
+    this.dropTable = this.dropTable.bind(this);
+    this.isTableExists = this.isTableExists.bind(this);
+    this.find = this.find.bind(this);
+    this.findAll = this.findAll.bind(this);
+    this.findMany = this.findMany.bind(this);
+    this.save = this.save.bind(this);
+    this.delete = this.delete.bind(this);
+  }
+
   createTable<T extends object>(
     call: ServerUnaryCall<CreateTableRequest<T>, void>,
     callback: sendUnaryData<void>
