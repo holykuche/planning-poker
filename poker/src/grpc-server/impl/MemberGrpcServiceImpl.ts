@@ -17,6 +17,14 @@ export default class MemberGrpcServiceImpl implements MemberGrpcService {
   @inject(SERVICE_TYPES.MemberService)
   private readonly memberService: MemberService;
 
+  constructor() {
+    this.getById = this.getById.bind(this);
+    this.getMembersLobbyId = this.getMembersLobbyId.bind(this);
+    this.isMemberInLobby = this.isMemberInLobby.bind(this);
+    this.putCard = this.putCard.bind(this);
+    this.removeCard = this.removeCard.bind(this);
+  }
+
   getById(
     call: ServerUnaryCall<MemberIdRequest, Member>,
     callback: sendUnaryData<Member>

@@ -18,6 +18,17 @@ export default class LobbyGrpcServiceImpl implements LobbyGrpcService {
   @inject(SERVICE_TYPES.LobbyService)
   private readonly lobbyService: LobbyService;
 
+  constructor() {
+    this.getById = this.getById.bind(this);
+    this.getByName = this.getByName.bind(this);
+    this.createLobby = this.createLobby.bind(this);
+    this.getMembersLobby = this.getMembersLobby.bind(this);
+    this.enterMember = this.enterMember.bind(this);
+    this.leaveMember = this.leaveMember.bind(this);
+    this.startPoker = this.startPoker.bind(this);
+    this.cancelPoker = this.cancelPoker.bind(this);
+  }
+
   getById(
     call: ServerUnaryCall<LobbyIdRequest, Lobby>,
     callback: sendUnaryData<Lobby>

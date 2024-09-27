@@ -12,6 +12,11 @@ export default class CardGrpcServiceImpl implements CardGrpcService {
   @inject(SERVICE_TYPES.CardService)
   private readonly cardService: CardService;
 
+  constructor() {
+    this.getAll = this.getAll.bind(this);
+    this.getByCode = this.getByCode.bind(this);
+  }
+
   getAll(
     call: ServerUnaryCall<void, CardsResponse>,
     callback: sendUnaryData<CardsResponse>
