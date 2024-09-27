@@ -14,7 +14,7 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.8.14",
     "@grpc/proto-loader": "^0.7.7",
-    "@holykuche/db-migrations-executor": "^1.0.0",
+    "@holykuche/db-migrations-executor": "^1.0.4",
     "@type-cacheable/core": "^12.0.1",
     "inversify": "^6.0.1",
     "reflect-metadata": "^0.1.13",
