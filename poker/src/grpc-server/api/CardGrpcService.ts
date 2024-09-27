@@ -1,8 +1,6 @@
 import {sendUnaryData, ServerUnaryCall} from '@grpc/grpc-js';
 
-import {Card} from '@/data/entity';
-
-import {CardCodeRequest, CardsResponse} from '../dto';
+import {Card, CardCodeRequest, CardsResponse} from '../dto';
 
 export default interface CardGrpcService {
   getAll(

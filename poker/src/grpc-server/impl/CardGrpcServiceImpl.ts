@@ -1,11 +1,10 @@
 import {sendUnaryData, ServerUnaryCall} from '@grpc/grpc-js';
 import {inject, injectable} from 'inversify';
 
-import {Card} from '@/data/entity';
 import {CardService, SERVICE_TYPES} from '@/service/api';
 
 import {CardGrpcService} from '../api';
-import {CardCodeRequest, CardsResponse} from '../dto';
+import {Card, CardCodeRequest, CardsResponse} from '../dto';
 
 @injectable()
 export default class CardGrpcServiceImpl implements CardGrpcService {

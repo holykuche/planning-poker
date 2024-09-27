@@ -1,4 +1,5 @@
 export {default as BoolResponse} from './BoolResponse';
+export {default as Card} from './Card';
 export {default as Lobby} from './Lobby';
 export {default as LobbyIdRequest} from './LobbyIdRequest';
 export {default as LobbyIdThemeRequest} from './LobbyIdThemeRequest';
