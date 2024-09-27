@@ -1,13 +1,5 @@
-### Migration to microservices isn't done yet
-
-#### Finished microservices:
-* in-memory-db
-
-#### Unfinished microservices:
-* poker (left to make compatibility with RabbitMQ or Kafka)
-* telegram (left to make compatibility with RabbitMQ or Kafka)
-
-##### Also need to finally configure Docker
+#### Migration to microservices isn't done yet
 
 ***
-This is my first try at using microservice architecture, Docker, gRPC and RabbitMQ/Kafka. Just for studying.
+This is my first try at using microservice architecture, Docker and gRPC. Just for studying.  
+The next step is web-client.
