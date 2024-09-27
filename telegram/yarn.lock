@@ -314,10 +314,10 @@
     protobufjs "^7.2.5"
     yargs "^17.7.2"
 
-"@holykuche/db-migrations-executor@^1.0.0":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@holykuche/db-migrations-executor/-/db-migrations-executor-1.0.3.tgz#5f30bdb8932fd965014ccf2a2120db9e725e2dbb"
-  integrity sha512-tWwLkJAdFBFquu6URrNIK4BFVmCkghuo3U4sBmJ4nNBNl+XCv+hWdEHV47sZ2i7PB2SynsU+gr5X5PAv8QPqfQ==
+"@holykuche/db-migrations-executor@^1.0.4":
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/@holykuche/db-migrations-executor/-/db-migrations-executor-1.0.4.tgz#406a5731adc036941ce7cbbdb4b44630ef7ce6dc"
+  integrity sha512-liU0gthrZiAxgFQE5sElC1sZqDutX0MHMkhCHEp3Fh8re8fYWpup2PkVJTtf8W4G0R1Y8lCZI2+WgqNVT9WFYA==
 
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.1.0"
