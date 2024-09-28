@@ -4,13 +4,13 @@ import {
   credentials,
 } from '@grpc/grpc-js';
 import {loadSync} from '@grpc/proto-loader';
-import {injectable} from 'inversify';
+import {injectable, unmanaged} from 'inversify';
 
 @injectable()
 export default abstract class AbstractPokerClientImpl {
   private readonly stub: InstanceType<ServiceClientConstructor>;
 
-  constructor(serviceName: string) {
+  constructor(@unmanaged() serviceName: string) {
     const PROTO_PATH = __dirname + '/poker.proto';
 
     const packageDefinition = loadSync(PROTO_PATH, {
