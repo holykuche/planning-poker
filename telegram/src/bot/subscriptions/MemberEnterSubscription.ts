@@ -4,19 +4,19 @@ import {Observable} from 'rxjs';
 
 import {TelegramMessageType} from '@/data/enum';
 import {
+  LobbyEvent,
+  EventType,
+  MembersWasChangedLobbyEvent,
+  PokerResultWasChangedLobbyEvent,
+  PokerWasFinishedLobbyEvent,
+} from '@/grpc-client/event';
+import {
   SERVICE_TYPES,
   TelegramMessageService,
   TelegramUserService,
   LobbyService,
   SubscriptionService,
 } from '@/service/api';
-import {
-  LobbyEvent,
-  EventType,
-  MembersWasChangedLobbyEvent,
-  PokerResultWasChangedLobbyEvent,
-  PokerWasFinishedLobbyEvent,
-} from '@/service/event';
 
 import {TELEGRAM_BOT_TYPES} from '../bot';
 import {ButtonCommand} from '../enum';
