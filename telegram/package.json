@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Planning Poker by Holy Kuche - Telegram Bot",
   "scripts": {
-    "start": "webpack --mode development && cross-env DB_IP=127.0.0.1 DB_PORT=8081 POKER_IP=127.0.0.1 POKER_PORT=8090 node ./dist/main.dev.js",
+    "start": "webpack --mode development && cross-env DB_IP=127.0.0.1 DB_PORT=8081 POKER_IP=127.0.0.1 POKER_PORT=8090 node --env-file=.env ./dist/main.dev.js",
     "build": "jest && webpack --mode production",
     "test": "jest"
   },
