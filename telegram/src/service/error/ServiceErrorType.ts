@@ -1,4 +1,4 @@
-enum ErrorType {
+enum ServiceErrorType {
   LobbyAlreadyExists = 'LOBBY_ALREADY_EXISTS',
   MemberIsAlreadyInLobby = 'MEMBER_IS_ALREADY_IN_LOBBY',
   MemberIsNotInLobby = 'MEMBER_IS_NOT_IN_LOBBY',
@@ -7,4 +7,4 @@ enum ErrorType {
   UnknownMember = 'UNKNOWN_MEMBER',
 }
 
-export default ErrorType;
+export default ServiceErrorType;

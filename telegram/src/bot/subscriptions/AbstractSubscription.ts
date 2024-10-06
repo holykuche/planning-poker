@@ -3,15 +3,14 @@ import TelegramBot, {InlineKeyboardButton} from 'node-telegram-bot-api';
 import {Observable, Subscription} from 'rxjs';
 
 import {CardCode} from '@/grpc-client/enum';
+import {GrpcClientRequestError} from '@/grpc-client/error';
 import {ServiceError} from '@/service/error';
 
 import {TELEGRAM_BOT_TYPES} from '../bot';
 import {ButtonCommand} from '../enum';
-import {
-  inlineKeyboardButtonFactory,
-  formatWarning,
-  formatError,
-} from '../utils';
+import {inlineKeyboardButtonFactory, formatAlert, formatError} from '../utils';
+
+const ALERT_DURATION_MS = 5000;
 
 @injectable()
 export default abstract class AbstractSubscription<T> {
@@ -65,24 +64,38 @@ export default abstract class AbstractSubscription<T> {
 
   protected async handleError(error: unknown, item?: T): Promise<void> {
     if (error instanceof ServiceError) {
-      const warningMessage = await this.bot.sendMessage(
+      const alertMessage = await this.bot.sendMessage(
         this.getChatId(item),
-        formatWarning(formatError(error)),
-        {
-          parse_mode: AbstractSubscription.PARSE_MODE,
-        }
+        formatAlert(formatError(error)),
+        {parse_mode: AbstractSubscription.PARSE_MODE}
       );
       setTimeout(
-        async () =>
-          await this.bot.deleteMessage(
+        () =>
+          this.bot.deleteMessage(
             this.getChatId(item),
-            String(warningMessage.message_id)
+            String(alertMessage.message_id)
           ),
-        5000
+        ALERT_DURATION_MS
       );
     }
+
+    if (error instanceof GrpcClientRequestError) {
+      const alertMessage = await this.bot.sendMessage(
+        this.getChatId(item),
+        'Internal Server Error'
+      );
+      setTimeout(
+        () =>
+          this.bot.deleteMessage(
+            this.getChatId(item),
+            String(alertMessage.message_id)
+          ),
+        ALERT_DURATION_MS
+      );
+    }
+
     if (error instanceof Error) {
-      console.log(`[ERROR]: ${error.message}`);
+      console.error(`D ${new Date().toISOString()} | ${error.toString()}`);
     }
   }
 }
