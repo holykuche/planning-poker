@@ -15,9 +15,8 @@ export default class PlainTextLogger extends AbstractMessageSubscription {
     super(plainTexts$);
   }
 
-  protected handle(msg: Message): Promise<void> {
+  protected async handle(msg: Message): Promise<void> {
     console.log(PlainTextLogger.format(msg));
-    return Promise.resolve();
   }
 
   private static format(msg: Message): string {
