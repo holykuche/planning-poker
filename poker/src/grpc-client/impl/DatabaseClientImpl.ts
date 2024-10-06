@@ -78,7 +78,7 @@ export default class DatabaseClientImpl implements DatabaseClient {
           reject
         )
       );
-    }).then(response => EntitySerializer.deserialize(response.result) || null);
+    }).then(response => EntitySerializer.deserialize(response.result));
   }
 
   findMany<T extends object, K extends keyof T>(

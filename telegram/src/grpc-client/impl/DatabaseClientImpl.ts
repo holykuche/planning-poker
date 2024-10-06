@@ -100,7 +100,7 @@ export default class DatabaseClientImpl implements DatabaseClient {
         )
       );
     })
-      .then(response => EntitySerializer.deserialize(response.result) || null)
+      .then(response => EntitySerializer.deserialize(response.result))
       .catch(error =>
         DatabaseClientImpl.handleError(methodName, request, error)
       );

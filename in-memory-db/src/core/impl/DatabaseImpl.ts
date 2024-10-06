@@ -38,7 +38,7 @@ export default class DatabaseImpl implements Database {
     tableName: string,
     key: K,
     value: T[K]
-  ): T {
+  ): T | null {
     this.checkTableExistence(tableName);
     return (this.tables.get(tableName) as Table<T>).find(key, value);
   }

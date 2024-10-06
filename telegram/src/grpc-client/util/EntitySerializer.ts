@@ -16,7 +16,11 @@ const isProtobufBoolean = (value: any): value is Protobuf.BoolValue => {
 };
 
 export default {
-  serialize: <T extends object>(entity: T): Protobuf.Entity<T> => {
+  serialize: <T extends object>(entity?: T): Protobuf.Entity<T> => {
+    if (!entity) {
+      return {} as Protobuf.Entity<T>;
+    }
+
     return Object.entries(entity).reduce(
       (pe, [key, value]) => ({
         ...pe,
@@ -33,7 +37,11 @@ export default {
     );
   },
 
-  deserialize: <T extends object>(protobufEntity: Protobuf.Entity<T>): T => {
+  deserialize: <T extends object>(protobufEntity?: Protobuf.Entity<T>): T => {
+    if (!protobufEntity) {
+      return null;
+    }
+
     return Object.entries<Protobuf.Entity<T>[keyof Protobuf.Entity<T>]>(
       protobufEntity
     ).reduce(
