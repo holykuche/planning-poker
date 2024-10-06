@@ -7,8 +7,8 @@
     "start": "yarn run just-build-dev && (yarn run just-start-poker & yarn run just-start-telegram)",
     "start-poker": "yarn run just-build-dev && yarn run just-start-poker",
     "start-telegram": "yarn run just-build-dev && yarn run just-start-telegram",
-    "just-start-poker": "cross-env DB_PORT=8080 node ./dist/main.dev.js",
-    "just-start-telegram": "cross-env DB_PORT=8081 node ./dist/main.dev.js",
+    "just-start-poker": "cross-env DB_PORT=8080 GRPC_VERBOSITY=debug GRPC_TRACE=channel,subchannel,call_stream,server_call node ./dist/main.dev.js",
+    "just-start-telegram": "cross-env DB_PORT=8081 GRPC_VERBOSITY=debug GRPC_TRACE=channel,subchannel,call_stream,server_call node ./dist/main.dev.js",
     "just-build-dev": "webpack --mode development",
     "build": "jest && webpack --mode production",
     "test": "jest"
