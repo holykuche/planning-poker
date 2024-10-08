@@ -6,8 +6,13 @@ import {MemberService, SERVICE_TYPES, TelegramUserService} from '../api';
 import {TelegramMemberDto} from '../dto';
 import {MemberIsAlreadyInLobbyError, UnknownMemberError} from '../error';
 
+import AbstractServiceImpl from './AbstractServiceImpl';
+
 @injectable()
-export default class TelegramUserServiceImpl implements TelegramUserService {
+export default class TelegramUserServiceImpl
+  extends AbstractServiceImpl
+  implements TelegramUserService
+{
   @inject(DAO_TYPES.TelegramUserDAO)
   private readonly telegramUserDAO: TelegramUserDAO;
 
@@ -19,6 +24,7 @@ export default class TelegramUserServiceImpl implements TelegramUserService {
   ): Promise<TelegramMemberDto> {
     return this.telegramUserDAO
       .getMemberIdByTelegramUserId(telegramUserId)
+      .catch(TelegramUserServiceImpl.handleGrpcError)
       .then(memberId => {
         if (!memberId) {
           throw new UnknownMemberError();
@@ -38,6 +44,7 @@ export default class TelegramUserServiceImpl implements TelegramUserService {
   createMember(member: TelegramMemberDto): Promise<TelegramMemberDto> {
     return this.telegramUserDAO
       .getMemberIdByTelegramUserId(member.telegramUserId)
+      .catch(TelegramUserServiceImpl.handleGrpcError)
       .then(async existedMemberId => {
         if (existedMemberId) {
           const existedMember =
@@ -61,12 +68,15 @@ export default class TelegramUserServiceImpl implements TelegramUserService {
   }
 
   isMemberExists(telegramUserId: number): Promise<boolean> {
-    return this.telegramUserDAO.isMemberExists(telegramUserId);
+    return this.telegramUserDAO
+      .isMemberExists(telegramUserId)
+      .catch(TelegramUserServiceImpl.handleGrpcError);
   }
 
   deleteMemberByMemberId(memberId: number): Promise<void> {
     return this.telegramUserDAO
       .unbindMemberFromTelegramUser(memberId)
+      .catch(TelegramUserServiceImpl.handleGrpcError)
       .then(() => this.memberService.deleteById(memberId));
   }
 
@@ -76,6 +86,7 @@ export default class TelegramUserServiceImpl implements TelegramUserService {
       .then(memberId => this.memberService.deleteById(memberId))
       .then(() =>
         this.telegramUserDAO.unbindTelegramUserFromMember(telegramUserId)
-      );
+      )
+      .catch(TelegramUserServiceImpl.handleGrpcError);
   }
 }

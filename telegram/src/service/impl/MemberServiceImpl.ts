@@ -6,36 +6,55 @@ import {CardCode} from '@/grpc-client/enum';
 
 import {MemberService} from '../api';
 
+import AbstractServiceImpl from './AbstractServiceImpl';
+
 @injectable()
-export default class MemberServiceImpl implements MemberService {
+export default class MemberServiceImpl
+  extends AbstractServiceImpl
+  implements MemberService
+{
   @inject(GRPC_CLIENT_TYPES.MemberClient)
   private readonly memberClient: MemberClient;
 
   getById(memberId: number): Promise<Member> {
-    return this.memberClient.getById(memberId);
+    return this.memberClient
+      .getById(memberId)
+      .catch(MemberServiceImpl.handleGrpcError);
   }
 
   getMembersLobbyId(memberId: number): Promise<number> {
-    return this.memberClient.getMembersLobbyId(memberId);
+    return this.memberClient
+      .getMembersLobbyId(memberId)
+      .catch(MemberServiceImpl.handleGrpcError);
   }
 
   isMemberInLobby(memberId: number): Promise<boolean> {
-    return this.memberClient.isMemberInLobby(memberId);
+    return this.memberClient
+      .isMemberInLobby(memberId)
+      .catch(MemberServiceImpl.handleGrpcError);
   }
 
   putCard(memberId: number, cardCode: CardCode): Promise<void> {
-    return this.memberClient.putCard(memberId, cardCode);
+    return this.memberClient
+      .putCard(memberId, cardCode)
+      .catch(MemberServiceImpl.handleGrpcError);
   }
 
   removeCard(memberId: number): Promise<void> {
-    return this.memberClient.removeCard(memberId);
+    return this.memberClient
+      .removeCard(memberId)
+      .catch(MemberServiceImpl.handleGrpcError);
   }
 
   save(member: Member): Promise<Member> {
-    return this.memberClient.save(member);
+    return this.memberClient
+      .save(member)
+      .catch(MemberServiceImpl.handleGrpcError);
   }
 
   deleteById(memberId: number): Promise<void> {
-    return this.memberClient.deleteById(memberId);
+    return this.memberClient
+      .deleteById(memberId)
+      .catch(MemberServiceImpl.handleGrpcError);
   }
 }
