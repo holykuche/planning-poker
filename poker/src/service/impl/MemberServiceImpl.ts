@@ -87,4 +87,12 @@ export default class MemberServiceImpl implements MemberService {
       })
       .then(() => this.memberCardXrefDAO.removeByMemberId(memberId));
   }
+
+  save(member: Member): Promise<Member> {
+    return this.memberDAO.save(member);
+  }
+
+  deleteById(memberId: number): Promise<void> {
+    return this.memberDAO.deleteById(memberId);
+  }
 }

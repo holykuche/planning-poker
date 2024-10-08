@@ -60,6 +60,8 @@ server.addService(
     IsMemberInLobby: memberService.isMemberInLobby,
     PutCard: memberService.putCard,
     RemoveCard: memberService.removeCard,
+    Save: memberService.save,
+    DeleteById: memberService.deleteById,
   }
 );
 server.addService(

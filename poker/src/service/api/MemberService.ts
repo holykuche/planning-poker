@@ -11,4 +11,8 @@ export default interface MemberService {
   putCard(memberId: number, cardCode: CardCode): Promise<void>;
 
   removeCard(memberId: number): Promise<void>;
+
+  save(member: Member): Promise<Member>;
+
+  deleteById(memberId: number): Promise<void>;
 }

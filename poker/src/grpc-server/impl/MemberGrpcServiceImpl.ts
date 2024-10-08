@@ -29,6 +29,8 @@ export default class MemberGrpcServiceImpl
     this.isMemberInLobby = this.isMemberInLobby.bind(this);
     this.putCard = this.putCard.bind(this);
     this.removeCard = this.removeCard.bind(this);
+    this.save = this.save.bind(this);
+    this.deleteById = this.deleteById.bind(this);
   }
 
   getById(
@@ -95,6 +97,34 @@ export default class MemberGrpcServiceImpl
 
     this.memberService
       .removeCard(member_id)
+      .then(() => callback(null))
+      .catch(error =>
+        callback(MemberGrpcServiceImpl.fromServiceErrorToGrpcError(error))
+      );
+  }
+
+  save(
+    call: ServerUnaryCall<Member, void>,
+    callback: sendUnaryData<Member>
+  ): void {
+    const member = call.request;
+
+    this.memberService
+      .save(member)
+      .then(member => callback(null, member))
+      .catch(error =>
+        callback(MemberGrpcServiceImpl.fromServiceErrorToGrpcError(error))
+      );
+  }
+
+  deleteById(
+    call: ServerUnaryCall<MemberIdRequest, void>,
+    callback: sendUnaryData<void>
+  ): void {
+    const {member_id} = call.request;
+
+    this.memberService
+      .deleteById(member_id)
       .then(() => callback(null))
       .catch(error =>
         callback(MemberGrpcServiceImpl.fromServiceErrorToGrpcError(error))

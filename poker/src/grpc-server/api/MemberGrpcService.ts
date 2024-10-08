@@ -33,4 +33,14 @@ export default interface MemberGrpcService {
     call: ServerUnaryCall<MemberIdRequest, void>,
     callback: sendUnaryData<void>
   ): void;
+
+  save(
+    call: ServerUnaryCall<Member, void>,
+    callback: sendUnaryData<Member>
+  ): void;
+
+  deleteById(
+    call: ServerUnaryCall<MemberIdRequest, void>,
+    callback: sendUnaryData<void>
+  ): void;
 }
