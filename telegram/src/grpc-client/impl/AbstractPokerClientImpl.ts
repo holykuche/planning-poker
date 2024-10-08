@@ -6,8 +6,6 @@ import {
 import {loadSync} from '@grpc/proto-loader';
 import {injectable, unmanaged} from 'inversify';
 
-import {PokerGrpcClientRequestError} from '../error';
-
 @injectable()
 export default abstract class AbstractPokerClientImpl {
   private readonly stub: InstanceType<ServiceClientConstructor>;
@@ -36,12 +34,6 @@ export default abstract class AbstractPokerClientImpl {
         request,
         AbstractPokerClientImpl.callbackFactory<T>(resolve, reject)
       );
-    }).catch(e => {
-      if (e instanceof Error) {
-        throw new PokerGrpcClientRequestError(methodName, request, e.message);
-      } else {
-        throw e;
-      }
     });
   }
 

@@ -3,7 +3,6 @@ import TelegramBot, {InlineKeyboardButton} from 'node-telegram-bot-api';
 import {Observable, Subscription} from 'rxjs';
 
 import {CardCode} from '@/grpc-client/enum';
-import {GrpcClientRequestError} from '@/grpc-client/error';
 import {ServiceError} from '@/service/error';
 
 import {TELEGRAM_BOT_TYPES} from '../bot';
@@ -77,9 +76,7 @@ export default abstract class AbstractSubscription<T> {
           ),
         ALERT_DURATION_MS
       );
-    }
-
-    if (error instanceof GrpcClientRequestError) {
+    } else {
       const alertMessage = await this.bot.sendMessage(
         this.getChatId(item),
         'Internal Server Error'

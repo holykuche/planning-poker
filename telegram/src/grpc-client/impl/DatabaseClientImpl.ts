@@ -8,7 +8,6 @@ import {injectable} from 'inversify';
 
 import {DatabaseClient} from '../api';
 import {TableDefinition, Protobuf} from '../entity';
-import {DatabaseGrpcClientRequestError} from '../error';
 import {EntitySerializer} from '../util';
 
 interface Result<T> {
@@ -48,9 +47,7 @@ export default class DatabaseClientImpl implements DatabaseClient {
         request,
         DatabaseClientImpl.callbackFactory<void>(resolve, reject)
       );
-    }).catch(error =>
-      DatabaseClientImpl.handleError(methodName, request, error)
-    );
+    });
   }
 
   dropTable(table_name: string): Promise<void> {
@@ -62,9 +59,7 @@ export default class DatabaseClientImpl implements DatabaseClient {
         request,
         DatabaseClientImpl.callbackFactory<void>(resolve, reject)
       );
-    }).catch(error =>
-      DatabaseClientImpl.handleError(methodName, request, error)
-    );
+    });
   }
 
   isTableExists(table_name: string): Promise<boolean> {
@@ -76,11 +71,7 @@ export default class DatabaseClientImpl implements DatabaseClient {
         request,
         DatabaseClientImpl.callbackFactory<Result<boolean>>(resolve, reject)
       );
-    })
-      .then(response => response.result)
-      .catch(error =>
-        DatabaseClientImpl.handleError(methodName, request, error)
-      );
+    }).then(response => response.result);
   }
 
   find<T extends object, K extends keyof T>(
@@ -99,11 +90,7 @@ export default class DatabaseClientImpl implements DatabaseClient {
           reject
         )
       );
-    })
-      .then(response => EntitySerializer.deserialize(response.result))
-      .catch(error =>
-        DatabaseClientImpl.handleError(methodName, request, error)
-      );
+    }).then(response => EntitySerializer.deserialize(response.result));
   }
 
   findMany<T extends object, K extends keyof T>(
@@ -123,15 +110,11 @@ export default class DatabaseClientImpl implements DatabaseClient {
           >(resolve, reject)
         );
       }
-    )
-      .then(response =>
-        (response?.result || []).map(({result}) =>
-          EntitySerializer.deserialize(result)
-        )
+    ).then(response =>
+      (response?.result || []).map(({result}) =>
+        EntitySerializer.deserialize(result)
       )
-      .catch(error =>
-        DatabaseClientImpl.handleError(methodName, request, error)
-      );
+    );
   }
 
   findAll<T extends object>(table_name: string): Promise<T[]> {
@@ -147,15 +130,11 @@ export default class DatabaseClientImpl implements DatabaseClient {
           >(resolve, reject)
         );
       }
-    )
-      .then(response =>
-        (response?.result || []).map(({result}) =>
-          EntitySerializer.deserialize(result)
-        )
+    ).then(response =>
+      (response?.result || []).map(({result}) =>
+        EntitySerializer.deserialize(result)
       )
-      .catch(error =>
-        DatabaseClientImpl.handleError(methodName, request, error)
-      );
+    );
   }
 
   save<T extends object>(table_name: string, entity: T): Promise<T> {
@@ -170,11 +149,7 @@ export default class DatabaseClientImpl implements DatabaseClient {
           reject
         )
       );
-    })
-      .then(response => EntitySerializer.deserialize(response.result))
-      .catch(error =>
-        DatabaseClientImpl.handleError(methodName, request, error)
-      );
+    }).then(response => EntitySerializer.deserialize(response.result));
   }
 
   delete<T extends object, K extends keyof T>(
@@ -190,9 +165,7 @@ export default class DatabaseClientImpl implements DatabaseClient {
         request,
         DatabaseClientImpl.callbackFactory<void>(resolve, reject)
       );
-    }).catch(error =>
-      DatabaseClientImpl.handleError(methodName, request, error)
-    );
+    });
   }
 
   private static callbackFactory<T>(
@@ -200,21 +173,5 @@ export default class DatabaseClientImpl implements DatabaseClient {
     reject: (error: Error) => void
   ): (error: Error, value: T) => void {
     return (error, value) => (error ? reject(error) : resolve(value));
-  }
-
-  private static handleError<TReturn>(
-    methodName: string,
-    request: object,
-    error: unknown
-  ): TReturn {
-    if (error instanceof Error) {
-      throw new DatabaseGrpcClientRequestError(
-        methodName,
-        request,
-        error.message
-      );
-    } else {
-      throw error;
-    }
   }
 }
