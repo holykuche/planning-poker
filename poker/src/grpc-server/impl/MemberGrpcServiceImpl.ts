@@ -12,12 +12,18 @@ import {
   NumberResponse,
 } from '../dto';
 
+import AbstractGrpcServiceImpl from './AbstractGrpcServiceImpl';
+
 @injectable()
-export default class MemberGrpcServiceImpl implements MemberGrpcService {
+export default class MemberGrpcServiceImpl
+  extends AbstractGrpcServiceImpl
+  implements MemberGrpcService
+{
   @inject(SERVICE_TYPES.MemberService)
   private readonly memberService: MemberService;
 
   constructor() {
+    super();
     this.getById = this.getById.bind(this);
     this.getMembersLobbyId = this.getMembersLobbyId.bind(this);
     this.isMemberInLobby = this.isMemberInLobby.bind(this);
@@ -34,7 +40,9 @@ export default class MemberGrpcServiceImpl implements MemberGrpcService {
     this.memberService
       .getById(member_id)
       .then(member => callback(null, member))
-      .catch(error => callback(error));
+      .catch(error =>
+        callback(MemberGrpcServiceImpl.fromServiceErrorToGrpcError(error))
+      );
   }
 
   getMembersLobbyId(
@@ -46,7 +54,9 @@ export default class MemberGrpcServiceImpl implements MemberGrpcService {
     this.memberService
       .getMembersLobbyId(member_id)
       .then(lobbyId => callback(null, {result: lobbyId}))
-      .catch(error => callback(error));
+      .catch(error =>
+        callback(MemberGrpcServiceImpl.fromServiceErrorToGrpcError(error))
+      );
   }
 
   isMemberInLobby(
@@ -58,7 +68,9 @@ export default class MemberGrpcServiceImpl implements MemberGrpcService {
     this.memberService
       .isMemberInLobby(member_id)
       .then(isMemberInLobby => callback(null, {result: isMemberInLobby}))
-      .catch(error => callback(error));
+      .catch(error =>
+        callback(MemberGrpcServiceImpl.fromServiceErrorToGrpcError(error))
+      );
   }
 
   putCard(
@@ -70,7 +82,9 @@ export default class MemberGrpcServiceImpl implements MemberGrpcService {
     this.memberService
       .putCard(member_id, card_code)
       .then(() => callback(null))
-      .catch(error => callback(error));
+      .catch(error =>
+        callback(MemberGrpcServiceImpl.fromServiceErrorToGrpcError(error))
+      );
   }
 
   removeCard(
@@ -82,6 +96,8 @@ export default class MemberGrpcServiceImpl implements MemberGrpcService {
     this.memberService
       .removeCard(member_id)
       .then(() => callback(null))
-      .catch(error => callback(error));
+      .catch(error =>
+        callback(MemberGrpcServiceImpl.fromServiceErrorToGrpcError(error))
+      );
   }
 }

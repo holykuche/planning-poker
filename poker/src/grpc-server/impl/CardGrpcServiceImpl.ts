@@ -6,12 +6,18 @@ import {CardService, SERVICE_TYPES} from '@/service/api';
 import {CardGrpcService} from '../api';
 import {Card, CardCodeRequest, CardsResponse} from '../dto';
 
+import AbstractGrpcServiceImpl from './AbstractGrpcServiceImpl';
+
 @injectable()
-export default class CardGrpcServiceImpl implements CardGrpcService {
+export default class CardGrpcServiceImpl
+  extends AbstractGrpcServiceImpl
+  implements CardGrpcService
+{
   @inject(SERVICE_TYPES.CardService)
   private readonly cardService: CardService;
 
   constructor() {
+    super();
     this.getAll = this.getAll.bind(this);
     this.getByCode = this.getByCode.bind(this);
   }
@@ -23,7 +29,9 @@ export default class CardGrpcServiceImpl implements CardGrpcService {
     this.cardService
       .getAll()
       .then(cards => callback(null, {result: cards}))
-      .catch(error => callback(error));
+      .catch(error =>
+        callback(CardGrpcServiceImpl.fromServiceErrorToGrpcError(error))
+      );
   }
 
   getByCode(
@@ -35,6 +43,8 @@ export default class CardGrpcServiceImpl implements CardGrpcService {
     this.cardService
       .getByCode(card_code)
       .then(card => callback(null, card))
-      .catch(error => callback(error));
+      .catch(error =>
+        callback(CardGrpcServiceImpl.fromServiceErrorToGrpcError(error))
+      );
   }
 }

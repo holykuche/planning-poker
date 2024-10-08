@@ -1,12 +1,12 @@
-import ErrorType from './ErrorType';
 import ServiceError from './ServiceError';
+import ServiceErrorType from './ServiceErrorType';
 
 export default class MemberIsAlreadyInLobbyError extends ServiceError {
   readonly memberName: string;
 
   constructor(memberName: string) {
     super(
-      ErrorType.MemberIsAlreadyInLobby,
+      ServiceErrorType.MemberIsAlreadyInLobby,
       `User '${memberName}' is already included into lobby.`
     );
     this.memberName = memberName;

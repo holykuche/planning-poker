@@ -24,6 +24,7 @@ import {
   MemberIsNotInLobbyError,
   PokerIsAlreadyStartedError,
   PokerIsNotStartedError,
+  UnknownLobbyError,
   UnknownMemberError,
 } from '../error';
 
@@ -44,12 +45,24 @@ export default class LobbyServiceImpl implements LobbyService {
   @inject(SERVICE_TYPES.SubscriptionService)
   private readonly subscriptionService: SubscriptionService;
 
-  getById(id: number): Promise<Lobby> {
-    return this.lobbyDAO.getById(id);
+  async getById(id: number): Promise<Lobby> {
+    const lobby = await this.lobbyDAO.getById(id);
+
+    if (!lobby) {
+      throw new UnknownLobbyError();
+    }
+
+    return lobby;
   }
 
-  getByName(name: string): Promise<Lobby> {
-    return this.lobbyDAO.getByName(name);
+  async getByName(name: string): Promise<Lobby> {
+    const lobby = await this.lobbyDAO.getByName(name);
+
+    if (!lobby) {
+      throw new UnknownLobbyError();
+    }
+
+    return lobby;
   }
 
   createLobby(name: string): Promise<Lobby> {
@@ -67,10 +80,14 @@ export default class LobbyServiceImpl implements LobbyService {
       });
   }
 
-  getMembersLobby(memberId: number): Promise<Lobby> {
-    return this.memberLobbyXrefDAO
-      .getMembersBinding(memberId)
-      .then(lobbyId => this.lobbyDAO.getById(lobbyId));
+  async getMembersLobby(memberId: number): Promise<Lobby> {
+    const lobbyId = await this.memberLobbyXrefDAO.getMembersBinding(memberId);
+
+    if (!lobbyId) {
+      throw new UnknownLobbyError();
+    }
+
+    return await this.lobbyDAO.getById(lobbyId);
   }
 
   @ResetLobbyLifetime

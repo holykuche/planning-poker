@@ -1,14 +1,14 @@
 import {Lobby} from '@/data/entity';
 
-import ErrorType from './ErrorType';
 import ServiceError from './ServiceError';
+import ServiceErrorType from './ServiceErrorType';
 
 export default class PokerIsNotStartedError extends ServiceError {
   readonly lobbyName: string;
 
   constructor(lobby: Lobby) {
     super(
-      ErrorType.PokerIsNotStarted,
+      ServiceErrorType.PokerIsNotStarted,
       `Poker in lobby '${lobby.name}' is not started.`
     );
     this.lobbyName = lobby.name;

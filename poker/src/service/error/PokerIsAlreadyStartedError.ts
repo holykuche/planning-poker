@@ -1,7 +1,7 @@
 import {Lobby} from '@/data/entity';
 
-import ErrorType from './ErrorType';
 import ServiceError from './ServiceError';
+import ServiceErrorType from './ServiceErrorType';
 
 export default class PokerIsAlreadyStartedError extends ServiceError {
   readonly lobbyName: string;
@@ -9,7 +9,7 @@ export default class PokerIsAlreadyStartedError extends ServiceError {
 
   constructor(lobby: Lobby) {
     super(
-      ErrorType.PokerIsAlreadyStarted,
+      ServiceErrorType.PokerIsAlreadyStarted,
       `Poker in lobby '${lobby.name}' is already started with theme '${lobby.currentTheme}'.`
     );
     this.lobbyName = lobby.name;

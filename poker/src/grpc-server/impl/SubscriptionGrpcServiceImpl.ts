@@ -17,14 +17,18 @@ import {
   LobbyIdLobbyEventRequest,
 } from '../dto';
 
+import AbstractGrpcServiceImpl from './AbstractGrpcServiceImpl';
+
 @injectable()
 export default class SubscriptionGrpcServiceImpl
+  extends AbstractGrpcServiceImpl
   implements SubscriptionGrpcService
 {
   @inject(SERVICE_TYPES.SubscriptionService)
   private readonly subscriptionService: SubscriptionService;
 
   constructor() {
+    super();
     this.subscribe = this.subscribe.bind(this);
     this.unsubscribe = this.unsubscribe.bind(this);
     this.register = this.register.bind(this);
@@ -52,7 +56,7 @@ export default class SubscriptionGrpcServiceImpl
       this.subscriptionService.unsubscribe(member_id);
       callback(null);
     } catch (e) {
-      callback(e);
+      callback(SubscriptionGrpcServiceImpl.fromServiceErrorToGrpcError(e));
     }
   }
 
@@ -66,7 +70,7 @@ export default class SubscriptionGrpcServiceImpl
       this.subscriptionService.register(lobby_id);
       callback(null);
     } catch (e) {
-      callback(e);
+      callback(SubscriptionGrpcServiceImpl.fromServiceErrorToGrpcError(e));
     }
   }
 
@@ -80,7 +84,7 @@ export default class SubscriptionGrpcServiceImpl
       this.subscriptionService.unregister(lobby_id);
       callback(null);
     } catch (e) {
-      callback(e);
+      callback(SubscriptionGrpcServiceImpl.fromServiceErrorToGrpcError(e));
     }
   }
 
@@ -94,7 +98,7 @@ export default class SubscriptionGrpcServiceImpl
       this.subscriptionService.dispatch(lobby_id, event as ServiceLobbyEvent);
       callback(null);
     } catch (e) {
-      callback(e);
+      callback(SubscriptionGrpcServiceImpl.fromServiceErrorToGrpcError(e));
     }
   }
 }

@@ -13,12 +13,18 @@ import {
   MemberIdRequest,
 } from '../dto';
 
+import AbstractGrpcServiceImpl from './AbstractGrpcServiceImpl';
+
 @injectable()
-export default class LobbyGrpcServiceImpl implements LobbyGrpcService {
+export default class LobbyGrpcServiceImpl
+  extends AbstractGrpcServiceImpl
+  implements LobbyGrpcService
+{
   @inject(SERVICE_TYPES.LobbyService)
   private readonly lobbyService: LobbyService;
 
   constructor() {
+    super();
     this.getById = this.getById.bind(this);
     this.getByName = this.getByName.bind(this);
     this.createLobby = this.createLobby.bind(this);
@@ -45,7 +51,9 @@ export default class LobbyGrpcServiceImpl implements LobbyGrpcService {
           state: lobby.state,
         })
       )
-      .catch(error => callback(error));
+      .catch(error =>
+        callback(LobbyGrpcServiceImpl.fromServiceErrorToGrpcError(error))
+      );
   }
 
   getByName(
@@ -64,7 +72,9 @@ export default class LobbyGrpcServiceImpl implements LobbyGrpcService {
           state: lobby.state,
         })
       )
-      .catch(error => callback(error));
+      .catch(error =>
+        callback(LobbyGrpcServiceImpl.fromServiceErrorToGrpcError(error))
+      );
   }
 
   createLobby(
@@ -83,7 +93,9 @@ export default class LobbyGrpcServiceImpl implements LobbyGrpcService {
           state: lobby.state,
         })
       )
-      .catch(error => callback(error));
+      .catch(error =>
+        callback(LobbyGrpcServiceImpl.fromServiceErrorToGrpcError(error))
+      );
   }
 
   getMembersLobby(
@@ -102,7 +114,9 @@ export default class LobbyGrpcServiceImpl implements LobbyGrpcService {
           state: lobby.state,
         })
       )
-      .catch(error => callback(error));
+      .catch(error =>
+        callback(LobbyGrpcServiceImpl.fromServiceErrorToGrpcError(error))
+      );
   }
 
   enterMember(
@@ -114,7 +128,9 @@ export default class LobbyGrpcServiceImpl implements LobbyGrpcService {
     this.lobbyService
       .enterMember(member_id, lobby_id)
       .then(() => callback(null))
-      .catch(error => callback(error));
+      .catch(error =>
+        callback(LobbyGrpcServiceImpl.fromServiceErrorToGrpcError(error))
+      );
   }
 
   leaveMember(
@@ -126,7 +142,9 @@ export default class LobbyGrpcServiceImpl implements LobbyGrpcService {
     this.lobbyService
       .leaveMember(member_id, lobby_id)
       .then(() => callback(null))
-      .catch(error => callback(error));
+      .catch(error =>
+        callback(LobbyGrpcServiceImpl.fromServiceErrorToGrpcError(error))
+      );
   }
 
   startPoker(
@@ -138,7 +156,9 @@ export default class LobbyGrpcServiceImpl implements LobbyGrpcService {
     this.lobbyService
       .startPoker(lobby_id, theme)
       .then(() => callback(null))
-      .catch(error => callback(error));
+      .catch(error =>
+        callback(LobbyGrpcServiceImpl.fromServiceErrorToGrpcError(error))
+      );
   }
 
   cancelPoker(
@@ -150,6 +170,8 @@ export default class LobbyGrpcServiceImpl implements LobbyGrpcService {
     this.lobbyService
       .cancelPoker(lobby_id)
       .then(() => callback(null))
-      .catch(error => callback(error));
+      .catch(error =>
+        callback(LobbyGrpcServiceImpl.fromServiceErrorToGrpcError(error))
+      );
   }
 }

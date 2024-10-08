@@ -1,9 +1,9 @@
-import ErrorType from './ErrorType';
+import ServiceErrorType from './ServiceErrorType';
 
 export default abstract class ServiceError extends Error {
-  readonly errorType: ErrorType;
+  readonly errorType: ServiceErrorType;
 
-  protected constructor(errorType: ErrorType, message?: string) {
+  protected constructor(errorType: ServiceErrorType, message?: string) {
     super(message);
     this.errorType = errorType;
   }
