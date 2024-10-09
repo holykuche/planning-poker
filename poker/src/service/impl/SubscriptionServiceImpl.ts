@@ -14,7 +14,8 @@ export default class SubscriptionServiceImpl implements SubscriptionService {
     memberId: number,
     next: (event: LobbyEvent) => void
   ): void {
-    const subscription = this.lobbies$.get(lobbyId).subscribe(next);
+    const lobby$ = this.lobbies$.get(lobbyId) || this.register(lobbyId);
+    const subscription = lobby$.subscribe(next);
     this.memberSubscriptions.set(memberId, subscription);
   }
 
@@ -23,8 +24,10 @@ export default class SubscriptionServiceImpl implements SubscriptionService {
     this.memberSubscriptions.delete(memberId);
   }
 
-  register(lobbyId: number): void {
-    this.lobbies$.set(lobbyId, new Subject<LobbyEvent>());
+  register(lobbyId: number): Subject<LobbyEvent> {
+    const lobby$ = new Subject<LobbyEvent>();
+    this.lobbies$.set(lobbyId, lobby$);
+    return lobby$;
   }
 
   unregister(lobbyId: number): void {
