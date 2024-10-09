@@ -17,22 +17,24 @@ export default class TelegramMessageServiceImpl
   private readonly telegramMessageDAO: TelegramMessageDAO;
 
   getMessage(
-    lobbyId: number,
-    chatId: number,
-    messageType: TelegramMessageType
+    lobby_id: number,
+    chat_id: number,
+    message_type: TelegramMessageType
   ): Promise<TelegramMessage> {
     return this.telegramMessageDAO
-      .getMessage(lobbyId, chatId, messageType)
+      .getMessage(lobby_id, chat_id, message_type)
       .catch(TelegramMessageServiceImpl.handleGrpcError);
   }
 
   getMessages(
-    lobbyId: number,
-    messageType: TelegramMessageType
+    lobby_id: number,
+    message_type: TelegramMessageType
   ): Promise<TelegramMessage[]> {
     return this.telegramMessageDAO
-      .getAllMessages(lobbyId)
-      .then(messages => messages.filter(msg => msg.messageType === messageType))
+      .getAllMessages(lobby_id)
+      .then(messages =>
+        messages.filter(msg => msg.message_type === message_type)
+      )
       .catch(TelegramMessageServiceImpl.handleGrpcError);
   }
 
@@ -42,30 +44,30 @@ export default class TelegramMessageServiceImpl
       .catch(TelegramMessageServiceImpl.handleGrpcError);
   }
 
-  deleteMessageById(messageId: number): Promise<void> {
+  deleteMessageById(message_id: number): Promise<void> {
     return this.telegramMessageDAO
-      .deleteMessageById(messageId)
+      .deleteMessageById(message_id)
       .catch(TelegramMessageServiceImpl.handleGrpcError);
   }
 
   deleteMessages(
-    lobbyId: number,
-    messageType: TelegramMessageType
+    lobby_id: number,
+    message_type: TelegramMessageType
   ): Promise<void> {
     return this.telegramMessageDAO
-      .deleteMessages(lobbyId, messageType)
+      .deleteMessages(lobby_id, message_type)
       .catch(TelegramMessageServiceImpl.handleGrpcError);
   }
 
-  deleteAllMessages(lobbyId: number): Promise<void> {
+  deleteAllMessages(lobby_id: number): Promise<void> {
     return this.telegramMessageDAO
-      .deleteAllMessages(lobbyId)
+      .deleteAllMessages(lobby_id)
       .catch(TelegramMessageServiceImpl.handleGrpcError);
   }
 
-  deleteAllMessagesFromChat(lobbyId: number, chatId: number): Promise<void> {
+  deleteAllMessagesFromChat(lobby_id: number, chat_id: number): Promise<void> {
     return this.telegramMessageDAO
-      .deleteAllMessagesFromChat(lobbyId, chatId)
+      .deleteAllMessagesFromChat(lobby_id, chat_id)
       .catch(TelegramMessageServiceImpl.handleGrpcError);
   }
 }

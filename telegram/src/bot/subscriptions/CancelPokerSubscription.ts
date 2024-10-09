@@ -59,7 +59,7 @@ export default class CancelPokerSubscription extends AbstractMessageSubscription
       TelegramMessageType.Poker
     );
     messages.forEach(msg =>
-      this.bot.deleteMessage(msg.chatId, String(msg.messageId))
+      this.bot.deleteMessage(msg.chat_id, String(msg.message_id))
     );
   }
 }

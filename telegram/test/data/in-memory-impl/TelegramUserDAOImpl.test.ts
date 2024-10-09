@@ -32,11 +32,11 @@ describe('data/impl/TelegramUserDAOImpl', () => {
   });
 
   it('bindTelegramUserWithMember must save telegram user-member xref', async () => {
-    const xref: TelegramUserMemberXref = {memberId: 1, telegramUserId: 10};
+    const xref: TelegramUserMemberXref = {member_id: 1, telegram_user_id: 10};
 
     await telegramUserDAO.bindTelegramUserWithMember(
-      xref.telegramUserId,
-      xref.memberId
+      xref.telegram_user_id,
+      xref.member_id
     );
 
     expect(dbClientMock.save).toHaveBeenCalledWith(
@@ -46,7 +46,7 @@ describe('data/impl/TelegramUserDAOImpl', () => {
   });
 
   it('getMemberIdByTelegramUserId must return member ID if xref exists', async () => {
-    const xref: TelegramUserMemberXref = {memberId: 1, telegramUserId: 10};
+    const xref: TelegramUserMemberXref = {member_id: 1, telegram_user_id: 10};
 
     (
       dbClientMock.find as CalledWithMock<
@@ -56,15 +56,15 @@ describe('data/impl/TelegramUserDAOImpl', () => {
     )
       .calledWith(
         TableName.TelegramUserMemberXref,
-        'telegramUserId',
-        xref.telegramUserId
+        'telegram_user_id',
+        xref.telegram_user_id
       )
       .mockReturnValue(Promise.resolve(xref));
 
     const resultMemberId = await telegramUserDAO.getMemberIdByTelegramUserId(
-      xref.telegramUserId
+      xref.telegram_user_id
     );
-    expect(resultMemberId).toBe(xref.memberId);
+    expect(resultMemberId).toBe(xref.member_id);
   });
 
   it("getMemberIdByTelegramUserId mustn't return member ID if xref doesn't exist", async () => {
@@ -72,7 +72,7 @@ describe('data/impl/TelegramUserDAOImpl', () => {
   });
 
   it('getTelegramUserIdByMemberId must return telegram user ID if xref exists', async () => {
-    const xref: TelegramUserMemberXref = {memberId: 1, telegramUserId: 10};
+    const xref: TelegramUserMemberXref = {member_id: 1, telegram_user_id: 10};
 
     (
       dbClientMock.find as CalledWithMock<
@@ -80,12 +80,12 @@ describe('data/impl/TelegramUserDAOImpl', () => {
         [TableName, string, number]
       >
     )
-      .calledWith(TableName.TelegramUserMemberXref, 'memberId', xref.memberId)
+      .calledWith(TableName.TelegramUserMemberXref, 'member_id', xref.member_id)
       .mockReturnValue(Promise.resolve(xref));
 
     expect(
-      await telegramUserDAO.getTelegramUserIdByMemberId(xref.memberId)
-    ).toBe(xref.telegramUserId);
+      await telegramUserDAO.getTelegramUserIdByMemberId(xref.member_id)
+    ).toBe(xref.telegram_user_id);
   });
 
   it("getTelegramUserIdByMemberId mustn't return telegram user ID if xref doesn't exist", async () => {
@@ -93,7 +93,7 @@ describe('data/impl/TelegramUserDAOImpl', () => {
   });
 
   it('isMemberExists must return true if xref exists', async () => {
-    const xref: TelegramUserMemberXref = {memberId: 1, telegramUserId: 10};
+    const xref: TelegramUserMemberXref = {member_id: 1, telegram_user_id: 10};
 
     (
       dbClientMock.find as CalledWithMock<
@@ -103,13 +103,13 @@ describe('data/impl/TelegramUserDAOImpl', () => {
     )
       .calledWith(
         TableName.TelegramUserMemberXref,
-        'telegramUserId',
-        xref.telegramUserId
+        'telegram_user_id',
+        xref.telegram_user_id
       )
       .mockReturnValue(Promise.resolve(xref));
 
     expect(
-      await telegramUserDAO.isMemberExists(xref.telegramUserId)
+      await telegramUserDAO.isMemberExists(xref.telegram_user_id)
     ).toBeTruthy();
   });
 
@@ -118,24 +118,24 @@ describe('data/impl/TelegramUserDAOImpl', () => {
   });
 
   it('unbindTelegramUserFromMember must delete telegram user-member xref', async () => {
-    const telegramUserId = 10;
+    const telegram_user_id = 10;
 
-    await telegramUserDAO.unbindTelegramUserFromMember(telegramUserId);
+    await telegramUserDAO.unbindTelegramUserFromMember(telegram_user_id);
     expect(dbClientMock.delete).toHaveBeenCalledWith(
       TableName.TelegramUserMemberXref,
-      'telegramUserId',
-      telegramUserId
+      'telegram_user_id',
+      telegram_user_id
     );
   });
 
   it('unbindMemberFromTelegramUser must delete telegram user-member xref', async () => {
-    const memberId = 1;
+    const member_id = 1;
 
-    await telegramUserDAO.unbindMemberFromTelegramUser(memberId);
+    await telegramUserDAO.unbindMemberFromTelegramUser(member_id);
     expect(dbClientMock.delete).toHaveBeenCalledWith(
       TableName.TelegramUserMemberXref,
-      'memberId',
-      memberId
+      'member_id',
+      member_id
     );
   });
 });

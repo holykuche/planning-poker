@@ -15,33 +15,33 @@ export default class TelegramUserDAOImpl
     super(TableName.TelegramUserMemberXref);
   }
 
-  async getMemberIdByTelegramUserId(telegramUserId: number): Promise<number> {
-    const member = await this.find('telegramUserId', telegramUserId);
-    return member?.memberId || null;
+  async getMemberIdByTelegramUserId(telegram_user_id: number): Promise<number> {
+    const member = await this.find('telegram_user_id', telegram_user_id);
+    return member?.member_id || null;
   }
 
-  async getTelegramUserIdByMemberId(memberId: number): Promise<number> {
-    const member = await this.find('memberId', memberId);
-    return member?.telegramUserId || null;
+  async getTelegramUserIdByMemberId(member_id: number): Promise<number> {
+    const member = await this.find('member_id', member_id);
+    return member?.telegram_user_id || null;
   }
 
-  async isMemberExists(telegramUserId: number): Promise<boolean> {
-    const member = await this.find('telegramUserId', telegramUserId);
+  async isMemberExists(telegram_user_id: number): Promise<boolean> {
+    const member = await this.find('telegram_user_id', telegram_user_id);
     return !!member;
   }
 
   async bindTelegramUserWithMember(
-    telegramUserId: number,
-    memberId: number
+    telegram_user_id: number,
+    member_id: number
   ): Promise<void> {
-    await this.save({telegramUserId, memberId});
+    await this.save({telegram_user_id, member_id});
   }
 
-  unbindTelegramUserFromMember(telegramUserId: number): Promise<void> {
-    return this.delete('telegramUserId', telegramUserId);
+  unbindTelegramUserFromMember(telegram_user_id: number): Promise<void> {
+    return this.delete('telegram_user_id', telegram_user_id);
   }
 
-  unbindMemberFromTelegramUser(memberId: number): Promise<void> {
-    return this.delete('memberId', memberId);
+  unbindMemberFromTelegramUser(member_id: number): Promise<void> {
+    return this.delete('member_id', member_id);
   }
 }

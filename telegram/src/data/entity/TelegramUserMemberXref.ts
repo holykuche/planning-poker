@@ -1,4 +1,4 @@
 export default interface TelegramUserMemberXref {
-  telegramUserId: number;
-  memberId: number;
+  telegram_user_id: number;
+  member_id: number;
 }

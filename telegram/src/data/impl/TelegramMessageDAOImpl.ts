@@ -16,22 +16,22 @@ export default class TelegramMessageDAOImpl
   }
 
   getMessage(
-    lobbyId: number,
-    chatId: number,
-    messageType: TelegramMessageType
+    lobby_id: number,
+    chat_id: number,
+    message_type: TelegramMessageType
   ): Promise<TelegramMessage> {
-    return this.findMany('lobbyId', lobbyId)
+    return this.findMany('lobby_id', lobby_id)
       .then(messages =>
         messages.find(
           message =>
-            message.chatId === chatId && message.messageType === messageType
+            message.chat_id === chat_id && message.message_type === message_type
         )
       )
       .then(message => message || null);
   }
 
-  getAllMessages(lobbyId: number): Promise<TelegramMessage[]> {
-    return this.findMany('lobbyId', lobbyId);
+  getAllMessages(lobby_id: number): Promise<TelegramMessage[]> {
+    return this.findMany('lobby_id', lobby_id);
   }
 
   addMessage(message: TelegramMessage): Promise<TelegramMessage> {
@@ -43,12 +43,12 @@ export default class TelegramMessageDAOImpl
   }
 
   async deleteMessages(
-    lobbyId: number,
-    messageType: TelegramMessageType
+    lobby_id: number,
+    message_type: TelegramMessageType
   ): Promise<void> {
-    await this.findMany('lobbyId', lobbyId)
+    await this.findMany('lobby_id', lobby_id)
       .then(messages =>
-        messages.filter(message => message.messageType === messageType)
+        messages.filter(message => message.message_type === message_type)
       )
       .then(messages => messages.map(message => message.id))
       .then(messageIds =>
@@ -56,16 +56,16 @@ export default class TelegramMessageDAOImpl
       );
   }
 
-  deleteAllMessages(lobbyId: number): Promise<void> {
-    return this.delete('lobbyId', lobbyId);
+  deleteAllMessages(lobby_id: number): Promise<void> {
+    return this.delete('lobby_id', lobby_id);
   }
 
   async deleteAllMessagesFromChat(
-    lobbyId: number,
-    chatId: number
+    lobby_id: number,
+    chat_id: number
   ): Promise<void> {
-    await this.findMany('lobbyId', lobbyId)
-      .then(messages => messages.filter(message => message.chatId === chatId))
+    await this.findMany('lobby_id', lobby_id)
+      .then(messages => messages.filter(message => message.chat_id === chat_id))
       .then(messages => messages.map(message => message.id))
       .then(messageIds =>
         Promise.all(messageIds.map(id => this.delete('id', id)))

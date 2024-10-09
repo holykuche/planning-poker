@@ -55,7 +55,7 @@ export default class MemberLeaveSubscription extends AbstractCallbackQuerySubscr
     );
     await this.bot.editMessageReplyMarkup(null, {
       chat_id: callbackQuery.message.chat.id,
-      message_id: lobbyMessage.messageId,
+      message_id: lobbyMessage.message_id,
     });
 
     const resultMessage = await this.telegramMessageService.getMessage(
@@ -66,7 +66,7 @@ export default class MemberLeaveSubscription extends AbstractCallbackQuerySubscr
     if (resultMessage) {
       await this.bot.deleteMessage(
         callbackQuery.message.chat.id,
-        String(resultMessage.messageId)
+        String(resultMessage.message_id)
       );
     }
 
