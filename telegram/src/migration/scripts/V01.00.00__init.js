@@ -13,7 +13,7 @@ async function run(dbClient) {
   await dbClient.createTable('telegram_user_member_xref', {
     columns: {
       telegram_user_id: {type: 'Number', primary_key: true},
-      member_id: {type: 'String', required: true},
+      member_id: {type: 'Number', required: true},
     },
     index_by: ['member_id'],
   });
