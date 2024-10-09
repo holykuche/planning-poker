@@ -47,7 +47,7 @@ export default class LobbyGrpcServiceImpl
         callback(null, {
           id: lobby.id,
           name: lobby.name,
-          current_theme: lobby.currentTheme,
+          current_theme: lobby.current_theme,
           state: lobby.state,
         })
       )
@@ -68,7 +68,7 @@ export default class LobbyGrpcServiceImpl
         callback(null, {
           id: lobby.id,
           name: lobby.name,
-          current_theme: lobby.currentTheme,
+          current_theme: lobby.current_theme,
           state: lobby.state,
         })
       )
@@ -89,7 +89,7 @@ export default class LobbyGrpcServiceImpl
         callback(null, {
           id: lobby.id,
           name: lobby.name,
-          current_theme: lobby.currentTheme,
+          current_theme: lobby.current_theme,
           state: lobby.state,
         })
       )
@@ -110,7 +110,7 @@ export default class LobbyGrpcServiceImpl
         callback(null, {
           id: lobby.id,
           name: lobby.name,
-          current_theme: lobby.currentTheme,
+          current_theme: lobby.current_theme,
           state: lobby.state,
         })
       )

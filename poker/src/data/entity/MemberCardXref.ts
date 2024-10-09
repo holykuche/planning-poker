@@ -1,6 +1,6 @@
 import {CardCode} from '../enum';
 
 export default interface MemberCardXref {
-  memberId: number;
-  cardCode: CardCode;
+  member_id: number;
+  card_code: CardCode;
 }

@@ -104,7 +104,7 @@ describe('service/impl/LobbyServiceImpl', () => {
     const lobby: Lobby = {
       id: 1,
       name: 'dummy name',
-      currentTheme: 'task 1234',
+      current_theme: 'task 1234',
       state: LobbyState.Playing,
     };
 
@@ -131,7 +131,7 @@ describe('service/impl/LobbyServiceImpl', () => {
     const lobby: Lobby = {
       id: 1,
       name: 'dummy name',
-      currentTheme: 'task 1234',
+      current_theme: 'task 1234',
       state: LobbyState.Playing,
     };
 
@@ -227,22 +227,22 @@ describe('service/impl/LobbyServiceImpl', () => {
   });
 
   it('getMembersLobby must return a lobby by its member', () => {
-    const memberId = 10;
+    const member_id = 10;
     const lobby: Lobby = {
       id: 1,
       name: 'dummy name',
-      currentTheme: 'task 1234',
+      current_theme: 'task 1234',
       state: LobbyState.Playing,
     };
 
     memberLobbyXrefDAOMock.getMembersBinding
-      .calledWith(memberId)
+      .calledWith(member_id)
       .mockReturnValue(Promise.resolve(lobby.id));
     lobbyDAOMock.getById
       .calledWith(lobby.id)
       .mockReturnValue(Promise.resolve(lobby));
 
-    return lobbyService.getMembersLobby(memberId).then(returnedLobby => {
+    return lobbyService.getMembersLobby(member_id).then(returnedLobby => {
       expect(returnedLobby).toEqual(lobby);
     });
   });
@@ -261,17 +261,17 @@ describe('service/impl/LobbyServiceImpl', () => {
   });
 
   it('enterMember must bind member to an existed lobby', () => {
-    const memberId = 10;
+    const member_id = 10;
     const lobby: Lobby = {id: 1, name: 'dummy name', state: LobbyState.Waiting};
 
     memberLobbyXrefDAOMock.isMemberBound
-      .calledWith(memberId)
+      .calledWith(member_id)
       .mockReturnValue(Promise.resolve(false));
     memberLobbyXrefDAOMock.getMemberIdsByLobbyId
       .calledWith(lobby.id)
-      .mockReturnValue(Promise.resolve([memberId]));
+      .mockReturnValue(Promise.resolve([member_id]));
     memberLobbyXrefDAOMock.getMembersBinding
-      .calledWith(memberId)
+      .calledWith(member_id)
       .mockReturnValue(Promise.resolve(lobby.id));
     lobbyDAOMock.getByName
       .calledWith(lobby.name)
@@ -280,9 +280,9 @@ describe('service/impl/LobbyServiceImpl', () => {
       .calledWith(lobby.id)
       .mockReturnValue(Promise.resolve(lobby));
 
-    return lobbyService.enterMember(memberId, lobby.id).then(() => {
+    return lobbyService.enterMember(member_id, lobby.id).then(() => {
       expect(memberLobbyXrefDAOMock.bindMember).toHaveBeenCalledWith(
-        memberId,
+        member_id,
         lobby.id
       );
     });
@@ -309,17 +309,17 @@ describe('service/impl/LobbyServiceImpl', () => {
   });
 
   it('enterMember must schedule lobby destruction', () => {
-    const memberId = 10;
+    const member_id = 10;
     const lobby: Lobby = {id: 1, name: 'dummy name', state: LobbyState.Waiting};
 
     memberLobbyXrefDAOMock.isMemberBound
-      .calledWith(memberId)
+      .calledWith(member_id)
       .mockReturnValue(Promise.resolve(false));
     memberLobbyXrefDAOMock.getMemberIdsByLobbyId
       .calledWith(lobby.id)
-      .mockReturnValue(Promise.resolve([memberId]));
+      .mockReturnValue(Promise.resolve([member_id]));
     memberLobbyXrefDAOMock.getMembersBinding
-      .calledWith(memberId)
+      .calledWith(member_id)
       .mockReturnValue(Promise.resolve(lobby.id));
     lobbyDAOMock.getByName
       .calledWith(lobby.name)
@@ -328,7 +328,7 @@ describe('service/impl/LobbyServiceImpl', () => {
       .calledWith(lobby.id)
       .mockReturnValue(Promise.resolve(lobby));
 
-    return lobbyService.enterMember(memberId, lobby.id).then(() => {
+    return lobbyService.enterMember(member_id, lobby.id).then(() => {
       expect(timeoutSchedulerMock.schedule).toHaveBeenCalledWith(
         TaskType.Lobby,
         lobby.id,
@@ -339,7 +339,7 @@ describe('service/impl/LobbyServiceImpl', () => {
   });
 
   it('enterMember must dispatch MembersWasChanged event', () => {
-    const memberId = 10;
+    const member_id = 10;
     const lobby: Lobby = {id: 1, name: 'dummy name', state: LobbyState.Waiting};
     const members = [
       {id: 10, name: 'dummy member 1'},
@@ -350,13 +350,13 @@ describe('service/impl/LobbyServiceImpl', () => {
     const memberIds = members.map(m => m.id);
 
     memberLobbyXrefDAOMock.isMemberBound
-      .calledWith(memberId)
+      .calledWith(member_id)
       .mockReturnValue(Promise.resolve(false));
     memberLobbyXrefDAOMock.getMemberIdsByLobbyId
       .calledWith(lobby.id)
       .mockReturnValue(Promise.resolve(memberIds));
     memberLobbyXrefDAOMock.getMembersBinding
-      .calledWith(memberId)
+      .calledWith(member_id)
       .mockReturnValue(Promise.resolve(lobby.id));
     memberDAOMock.getByIds
       .calledWith(sameArray(memberIds))
@@ -368,7 +368,7 @@ describe('service/impl/LobbyServiceImpl', () => {
       .calledWith(lobby.id)
       .mockReturnValue(Promise.resolve(lobby));
 
-    return lobbyService.enterMember(memberId, lobby.id).then(() => {
+    return lobbyService.enterMember(member_id, lobby.id).then(() => {
       expect(subscriptionServiceMock.dispatch).toHaveBeenCalledWith(lobby.id, {
         type: EventType.MembersWasChanged,
         payload: {members},
@@ -377,11 +377,11 @@ describe('service/impl/LobbyServiceImpl', () => {
   });
 
   it('enterMember should dispatch PokerResultWasChanged event if lobby state is Playing', () => {
-    const memberId = 10;
+    const member_id = 10;
     const lobby: Lobby = {
       id: 1,
       name: 'dummy name',
-      currentTheme: 'dummy theme',
+      current_theme: 'dummy theme',
       state: LobbyState.Playing,
     };
     const members: Record<number, Member> = [
@@ -396,27 +396,27 @@ describe('service/impl/LobbyServiceImpl', () => {
       }),
       {}
     );
-    const memberIds = Object.keys(members).map(memberId => Number(memberId));
-    const memberCardXrefs: MemberCardXref[] = memberIds.map(memberId => ({
-      memberId,
-      cardCode: null,
+    const memberIds = Object.keys(members).map(member_id => Number(member_id));
+    const memberCardXrefs: MemberCardXref[] = memberIds.map(member_id => ({
+      member_id,
+      card_code: null,
     }));
     const pokerResult = memberCardXrefs.map(xref => ({
-      member: members[xref.memberId],
+      member: members[xref.member_id],
       card: undefined,
     }));
 
     memberLobbyXrefDAOMock.isMemberBound
-      .calledWith(memberId)
+      .calledWith(member_id)
       .mockReturnValue(Promise.resolve(false));
     memberLobbyXrefDAOMock.getMemberIdsByLobbyId
       .calledWith(lobby.id)
       .mockReturnValue(Promise.resolve(memberIds));
     memberLobbyXrefDAOMock.getMembersBinding
-      .calledWith(memberId)
+      .calledWith(member_id)
       .mockReturnValue(Promise.resolve(lobby.id));
     memberLobbyXrefDAOMock.bindMember
-      .calledWith(memberId, lobby.id)
+      .calledWith(member_id, lobby.id)
       .mockReturnValue(Promise.resolve());
     memberCardXrefDAOMock.getCardsByMemberIds
       .calledWith(sameArray(memberIds))
@@ -432,20 +432,20 @@ describe('service/impl/LobbyServiceImpl', () => {
       .calledWith(lobby.id)
       .mockReturnValue(Promise.resolve(lobby));
 
-    return lobbyService.enterMember(memberId, lobby.id).then(() => {
+    return lobbyService.enterMember(member_id, lobby.id).then(() => {
       expect(subscriptionServiceMock.dispatch).toHaveBeenNthCalledWith(
         2,
         lobby.id,
         {
           type: EventType.PokerResultWasChanged,
-          payload: {theme: lobby.currentTheme, result: pokerResult},
+          payload: {theme: lobby.current_theme, result: pokerResult},
         }
       );
     });
   });
 
   it("enterMember mustn't dispatch PokerResultWasChanged event if lobby state isn't Playing", () => {
-    const memberId = 10;
+    const member_id = 10;
     const lobby: Lobby = {id: 1, name: 'dummy name', state: LobbyState.Waiting};
     const members: Record<number, Member> = [
       {id: 10, name: 'dummy member 1'},
@@ -459,24 +459,24 @@ describe('service/impl/LobbyServiceImpl', () => {
       }),
       {}
     );
-    const memberIds = Object.keys(members).map(memberId => Number(memberId));
-    const memberCardXrefs: MemberCardXref[] = memberIds.map(memberId => ({
-      memberId,
-      cardCode: null,
+    const memberIds = Object.keys(members).map(member_id => Number(member_id));
+    const memberCardXrefs: MemberCardXref[] = memberIds.map(member_id => ({
+      member_id,
+      card_code: null,
     }));
     const pokerResult = memberCardXrefs.map(xref => ({
-      member: members[xref.memberId],
+      member: members[xref.member_id],
       card: null,
     }));
 
     memberLobbyXrefDAOMock.isMemberBound
-      .calledWith(memberId)
+      .calledWith(member_id)
       .mockReturnValue(Promise.resolve(false));
     memberLobbyXrefDAOMock.getMemberIdsByLobbyId
       .calledWith(lobby.id)
       .mockReturnValue(Promise.resolve(memberIds));
     memberLobbyXrefDAOMock.getMembersBinding
-      .calledWith(memberId)
+      .calledWith(member_id)
       .mockReturnValue(Promise.resolve(lobby.id));
     memberCardXrefDAOMock.getCardsByMemberIds
       .calledWith(sameArray(memberIds))
@@ -491,7 +491,7 @@ describe('service/impl/LobbyServiceImpl', () => {
       .calledWith(lobby.id)
       .mockReturnValue(Promise.resolve(lobby));
 
-    return lobbyService.enterMember(memberId, lobby.id).then(() => {
+    return lobbyService.enterMember(member_id, lobby.id).then(() => {
       expect(subscriptionServiceMock.dispatch).not.toHaveBeenCalledWith(
         lobby.id,
         {
@@ -553,10 +553,12 @@ describe('service/impl/LobbyServiceImpl', () => {
       {id: 4, name: 'dummy member name 4'},
     ];
     const otherMemberIds = otherMembers.map(m => m.id);
-    const otherMemberCards: MemberCardXref[] = otherMemberIds.map(memberId => ({
-      memberId,
-      cardCode: null,
-    }));
+    const otherMemberCards: MemberCardXref[] = otherMemberIds.map(
+      member_id => ({
+        member_id,
+        card_code: null,
+      })
+    );
     const lobby: Lobby = {
       id: 10,
       name: 'dummy lobby name',
@@ -652,10 +654,12 @@ describe('service/impl/LobbyServiceImpl', () => {
       {id: 4, name: 'dummy member name 4'},
     ];
     const otherMemberIds = otherMembers.map(m => m.id);
-    const otherMemberCards: MemberCardXref[] = otherMemberIds.map(memberId => ({
-      memberId,
-      cardCode: null,
-    }));
+    const otherMemberCards: MemberCardXref[] = otherMemberIds.map(
+      member_id => ({
+        member_id,
+        card_code: null,
+      })
+    );
     const lobby: Lobby = {
       id: 10,
       name: 'dummy lobby name',
@@ -707,7 +711,7 @@ describe('service/impl/LobbyServiceImpl', () => {
 
   it("leaveMember must throw an exception if the member isn't includes into lobby", () => {
     const member: Member = {id: 1, name: 'dummy member name 1'};
-    const lobbyId = 10;
+    const lobby_id = 10;
 
     memberDAOMock.getById
       .calledWith(member.id)
@@ -717,7 +721,7 @@ describe('service/impl/LobbyServiceImpl', () => {
       .mockReturnValue(Promise.resolve(null));
     cardServiceMock.getAll.calledWith().mockReturnValue(Promise.resolve([]));
 
-    return lobbyService.leaveMember(member.id, lobbyId).catch(error => {
+    return lobbyService.leaveMember(member.id, lobby_id).catch(error => {
       expect(error).toBeInstanceOf(MemberIsNotInLobbyError);
     });
   });
@@ -741,10 +745,10 @@ describe('service/impl/LobbyServiceImpl', () => {
       }),
       {}
     );
-    const memberIds = Object.keys(members).map(memberId => Number(memberId));
-    const memberCardXrefs: MemberCardXref[] = memberIds.map(memberId => ({
-      memberId,
-      cardCode: null,
+    const memberIds = Object.keys(members).map(member_id => Number(member_id));
+    const memberCardXrefs: MemberCardXref[] = memberIds.map(member_id => ({
+      member_id,
+      card_code: null,
     }));
 
     lobbyDAOMock.getById
@@ -763,7 +767,7 @@ describe('service/impl/LobbyServiceImpl', () => {
     return lobbyService.startPoker(lobby.id, theme).then(() => {
       expect(lobbyDAOMock.save).toHaveBeenCalledWith({
         ...lobby,
-        currentTheme: theme,
+        current_theme: theme,
         state: LobbyState.Playing,
       });
     });
@@ -788,10 +792,10 @@ describe('service/impl/LobbyServiceImpl', () => {
       }),
       {}
     );
-    const memberIds = Object.keys(members).map(memberId => Number(memberId));
-    const memberCardXrefs: MemberCardXref[] = memberIds.map(memberId => ({
-      memberId,
-      cardCode: null,
+    const memberIds = Object.keys(members).map(member_id => Number(member_id));
+    const memberCardXrefs: MemberCardXref[] = memberIds.map(member_id => ({
+      member_id,
+      card_code: null,
     }));
 
     lobbyDAOMock.getById
@@ -836,13 +840,13 @@ describe('service/impl/LobbyServiceImpl', () => {
       }),
       {}
     );
-    const memberIds = Object.keys(members).map(memberId => Number(memberId));
-    const memberCardXrefs: MemberCardXref[] = memberIds.map(memberId => ({
-      memberId,
-      cardCode: null,
+    const memberIds = Object.keys(members).map(member_id => Number(member_id));
+    const memberCardXrefs: MemberCardXref[] = memberIds.map(member_id => ({
+      member_id,
+      card_code: null,
     }));
     const pokerResult = memberCardXrefs.map(xref => ({
-      member: members[xref.memberId],
+      member: members[xref.member_id],
       card: undefined,
     }));
 
@@ -852,7 +856,7 @@ describe('service/impl/LobbyServiceImpl', () => {
       .mockReturnValueOnce(
         Promise.resolve({
           ...lobby,
-          currentTheme: theme,
+          current_theme: theme,
           state: LobbyState.Playing,
         })
       );
@@ -879,7 +883,7 @@ describe('service/impl/LobbyServiceImpl', () => {
     const lobby: Lobby = {
       id: 10,
       name: 'dummy lobby name',
-      currentTheme: 'current dummy poker theme',
+      current_theme: 'current dummy poker theme',
       state: LobbyState.Playing,
     };
     const theme = 'dummy poker theme';

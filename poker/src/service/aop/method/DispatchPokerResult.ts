@@ -43,9 +43,9 @@ const getPokerResult = async (
   );
 
   const memberCards = cardXrefs.reduce(
-    (cardsByMemberId, {memberId, cardCode}) => ({
+    (cardsByMemberId, {member_id, card_code}) => ({
       ...cardsByMemberId,
-      [memberId]: cards[cardCode],
+      [member_id]: cards[card_code],
     }),
     {} as Record<number, Card>
   );
@@ -63,14 +63,14 @@ const finishPoker = (
     .then(lobby =>
       dependencies.lobbyDAO.save({
         ...lobby,
-        currentTheme: null,
+        current_theme: null,
         state: LobbyState.Waiting,
       })
     )
     .then(lobby =>
       dependencies.subscriptionService.dispatch(lobby.id, {
         type: EventType.PokerWasFinished,
-        payload: {theme: lobby.currentTheme, result: pokerResult},
+        payload: {theme: lobby.current_theme, result: pokerResult},
       })
     )
     .then(() => dependencies.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId))
@@ -125,7 +125,7 @@ export default (
     } else {
       await dependencies.subscriptionService.dispatch(lobby.id, {
         type: EventType.PokerResultWasChanged,
-        payload: {theme: lobby.currentTheme, result: pokerResult},
+        payload: {theme: lobby.current_theme, result: pokerResult},
       });
     }
 

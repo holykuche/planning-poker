@@ -15,27 +15,29 @@ export default class MemberCardXrefDAOImpl
     super(TableName.MemberCardXref);
   }
 
-  getCardByMemberId(memberId: number): Promise<CardCode> {
-    return this.find('memberId', memberId).then(xref => xref?.cardCode || null);
+  getCardByMemberId(member_id: number): Promise<CardCode> {
+    return this.find('member_id', member_id).then(
+      xref => xref?.card_code || null
+    );
   }
 
-  getCardsByMemberIds(memberIds: number[]): Promise<MemberCardXref[]> {
-    return Promise.all(memberIds.map(mId => this.find('memberId', mId))).then(
+  getCardsByMemberIds(member_ids: number[]): Promise<MemberCardXref[]> {
+    return Promise.all(member_ids.map(mId => this.find('member_id', mId))).then(
       xrefs => xrefs.filter(xref => !!xref)
     );
   }
 
-  put(memberId: number, cardCode: CardCode): Promise<MemberCardXref> {
-    return this.save({memberId, cardCode});
+  put(member_id: number, card_code: CardCode): Promise<MemberCardXref> {
+    return this.save({member_id, card_code});
   }
 
-  removeByMemberId(memberId: number): Promise<void> {
-    return this.delete('memberId', memberId);
+  removeByMemberId(member_id: number): Promise<void> {
+    return this.delete('member_id', member_id);
   }
 
-  async removeByMemberIds(memberIds: number[]): Promise<void> {
+  async removeByMemberIds(member_ids: number[]): Promise<void> {
     await Promise.all(
-      memberIds.map(memberId => this.removeByMemberId(memberId))
+      member_ids.map(member_id => this.removeByMemberId(member_id))
     );
   }
 }

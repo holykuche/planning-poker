@@ -36,14 +36,14 @@ describe('data/impl/MemberLobbyXrefDAOImpl', () => {
   });
 
   it('bindMember should send save query to db', () => {
-    const xref: MemberLobbyXref = {memberId: 1, lobbyId: 10};
+    const xref: MemberLobbyXref = {member_id: 1, lobby_id: 10};
 
     dbClientMock.save
       .calledWith(TableName.MemberLobbyXref, sameObject(xref))
       .mockReturnValue(Promise.resolve(xref));
 
     return memberLobbyXrefDAO
-      .bindMember(xref.memberId, xref.lobbyId)
+      .bindMember(xref.member_id, xref.lobby_id)
       .then(() => {
         expect(dbClientMock.save).toBeCalledWith(
           TableName.MemberLobbyXref,
@@ -53,7 +53,7 @@ describe('data/impl/MemberLobbyXrefDAOImpl', () => {
   });
 
   it('getMembersBinding should send find query to db', () => {
-    const xref: MemberLobbyXref = {memberId: 1, lobbyId: 10};
+    const xref: MemberLobbyXref = {member_id: 1, lobby_id: 10};
 
     (
       dbClientMock.find as CalledWithMock<
@@ -61,26 +61,28 @@ describe('data/impl/MemberLobbyXrefDAOImpl', () => {
         [TableName, string, number]
       >
     )
-      .calledWith(TableName.MemberLobbyXref, 'memberId', xref.memberId)
+      .calledWith(TableName.MemberLobbyXref, 'member_id', xref.member_id)
       .mockReturnValue(Promise.resolve(xref));
 
-    return memberLobbyXrefDAO.getMembersBinding(xref.memberId).then(lobbyId => {
-      expect(dbClientMock.find).toBeCalledWith(
-        TableName.MemberLobbyXref,
-        'memberId',
-        xref.memberId
-      );
-      expect(lobbyId).toBe(xref.lobbyId);
-    });
+    return memberLobbyXrefDAO
+      .getMembersBinding(xref.member_id)
+      .then(lobby_id => {
+        expect(dbClientMock.find).toBeCalledWith(
+          TableName.MemberLobbyXref,
+          'member_id',
+          xref.member_id
+        );
+        expect(lobby_id).toBe(xref.lobby_id);
+      });
   });
 
   it('getMemberIdsByLobbyId should send findMany query to db', () => {
     const xrefs: MemberLobbyXref[] = [
-      {memberId: 1, lobbyId: 10},
-      {memberId: 2, lobbyId: 10},
-      {memberId: 3, lobbyId: 10},
-      {memberId: 4, lobbyId: 10},
-      {memberId: 5, lobbyId: 10},
+      {member_id: 1, lobby_id: 10},
+      {member_id: 2, lobby_id: 10},
+      {member_id: 3, lobby_id: 10},
+      {member_id: 4, lobby_id: 10},
+      {member_id: 5, lobby_id: 10},
     ];
 
     (
@@ -89,23 +91,23 @@ describe('data/impl/MemberLobbyXrefDAOImpl', () => {
         [TableName, string, number]
       >
     )
-      .calledWith(TableName.MemberLobbyXref, 'lobbyId', xrefs[0].lobbyId)
+      .calledWith(TableName.MemberLobbyXref, 'lobby_id', xrefs[0].lobby_id)
       .mockReturnValue(Promise.resolve(xrefs));
 
     return memberLobbyXrefDAO
-      .getMemberIdsByLobbyId(xrefs[0].lobbyId)
+      .getMemberIdsByLobbyId(xrefs[0].lobby_id)
       .then(returnedMemberIds => {
         expect(dbClientMock.findMany).toBeCalledWith(
           TableName.MemberLobbyXref,
-          'lobbyId',
-          xrefs[0].lobbyId
+          'lobby_id',
+          xrefs[0].lobby_id
         );
-        expect(returnedMemberIds).toEqual(xrefs.map(xref => xref.memberId));
+        expect(returnedMemberIds).toEqual(xrefs.map(xref => xref.member_id));
       });
   });
 
   it('unbindMember should send delete query to db', () => {
-    const xref: MemberLobbyXref = {memberId: 1, lobbyId: 10};
+    const xref: MemberLobbyXref = {member_id: 1, lobby_id: 10};
 
     (
       dbClientMock.delete as CalledWithMock<
@@ -113,20 +115,20 @@ describe('data/impl/MemberLobbyXrefDAOImpl', () => {
         [TableName, string, number]
       >
     )
-      .calledWith(TableName.MemberLobbyXref, 'memberId', xref.memberId)
+      .calledWith(TableName.MemberLobbyXref, 'member_id', xref.member_id)
       .mockReturnValue(Promise.resolve());
 
-    return memberLobbyXrefDAO.unbindMember(xref.memberId).then(() => {
+    return memberLobbyXrefDAO.unbindMember(xref.member_id).then(() => {
       expect(dbClientMock.delete).toBeCalledWith(
         TableName.MemberLobbyXref,
-        'memberId',
-        xref.memberId
+        'member_id',
+        xref.member_id
       );
     });
   });
 
   it('unbindMembers should send delete query to db', () => {
-    const xref: MemberLobbyXref = {memberId: 1, lobbyId: 10};
+    const xref: MemberLobbyXref = {member_id: 1, lobby_id: 10};
 
     (
       dbClientMock.delete as CalledWithMock<
@@ -134,20 +136,20 @@ describe('data/impl/MemberLobbyXrefDAOImpl', () => {
         [TableName, string, number]
       >
     )
-      .calledWith(TableName.MemberLobbyXref, 'lobbyId', xref.lobbyId)
+      .calledWith(TableName.MemberLobbyXref, 'lobby_id', xref.lobby_id)
       .mockReturnValue(Promise.resolve());
 
-    return memberLobbyXrefDAO.unbindMembers(xref.lobbyId).then(() => {
+    return memberLobbyXrefDAO.unbindMembers(xref.lobby_id).then(() => {
       expect(dbClientMock.delete).toBeCalledWith(
         TableName.MemberLobbyXref,
-        'lobbyId',
-        xref.lobbyId
+        'lobby_id',
+        xref.lobby_id
       );
     });
   });
 
   it('isMemberBound should send find query to db', () => {
-    const xref: MemberLobbyXref = {memberId: 1, lobbyId: 10};
+    const xref: MemberLobbyXref = {member_id: 1, lobby_id: 10};
 
     (
       dbClientMock.find as CalledWithMock<
@@ -155,14 +157,14 @@ describe('data/impl/MemberLobbyXrefDAOImpl', () => {
         [TableName, string, number]
       >
     )
-      .calledWith(TableName.MemberLobbyXref, 'memberId', xref.memberId)
+      .calledWith(TableName.MemberLobbyXref, 'member_id', xref.member_id)
       .mockReturnValue(Promise.resolve(xref));
 
-    return memberLobbyXrefDAO.isMemberBound(xref.memberId).then(isBound => {
+    return memberLobbyXrefDAO.isMemberBound(xref.member_id).then(isBound => {
       expect(dbClientMock.find).toBeCalledWith(
         TableName.MemberLobbyXref,
-        'memberId',
-        xref.memberId
+        'member_id',
+        xref.member_id
       );
       expect(isBound).toBe(true);
     });

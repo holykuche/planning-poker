@@ -36,19 +36,19 @@ describe('data/impl/MemberCardXrefDAOImpl', () => {
   });
 
   it('put should send save query to db', () => {
-    const xref: MemberCardXref = {memberId: 1, cardCode: CardCode.DontKnow};
+    const xref: MemberCardXref = {member_id: 1, card_code: CardCode.DontKnow};
 
     dbClientMock.save
       .calledWith(TableName.MemberCardXref, sameObject(xref))
       .mockReturnValue(Promise.resolve(xref));
 
-    return memberCardXrefDAO.put(xref.memberId, xref.cardCode).then(() => {
+    return memberCardXrefDAO.put(xref.member_id, xref.card_code).then(() => {
       expect(dbClientMock.save).toBeCalledWith(TableName.MemberCardXref, xref);
     });
   });
 
   it('getCardByMemberId should send find query to db', () => {
-    const xref: MemberCardXref = {memberId: 1, cardCode: CardCode.DontKnow};
+    const xref: MemberCardXref = {member_id: 1, card_code: CardCode.DontKnow};
 
     (
       dbClientMock.find as CalledWithMock<
@@ -56,29 +56,29 @@ describe('data/impl/MemberCardXrefDAOImpl', () => {
         [TableName, string, number]
       >
     )
-      .calledWith(TableName.MemberCardXref, 'memberId', xref.memberId)
+      .calledWith(TableName.MemberCardXref, 'member_id', xref.member_id)
       .mockReturnValue(Promise.resolve(xref));
 
-    return memberCardXrefDAO.getCardByMemberId(xref.memberId).then(card => {
+    return memberCardXrefDAO.getCardByMemberId(xref.member_id).then(card => {
       expect(dbClientMock.find).toBeCalledWith(
         TableName.MemberCardXref,
-        'memberId',
-        xref.memberId
+        'member_id',
+        xref.member_id
       );
-      expect(card).toBe(xref.cardCode);
+      expect(card).toBe(xref.card_code);
     });
   });
 
   // todo: it needs to make DatabaseClient able to send bulk find queries
   it('getCardsByMemberIds should send find query to db many times', () => {
     const xrefs: MemberCardXref[] = [
-      {memberId: 1, cardCode: CardCode.DontKnow},
-      {memberId: 2, cardCode: CardCode.Skip},
-      {memberId: 3, cardCode: CardCode.Score100},
-      {memberId: 4, cardCode: CardCode.Score40},
-      {memberId: 5, cardCode: CardCode.Score0},
+      {member_id: 1, card_code: CardCode.DontKnow},
+      {member_id: 2, card_code: CardCode.Skip},
+      {member_id: 3, card_code: CardCode.Score100},
+      {member_id: 4, card_code: CardCode.Score40},
+      {member_id: 5, card_code: CardCode.Score0},
     ];
-    const memberIds = xrefs.map(xref => xref.memberId);
+    const memberIds = xrefs.map(xref => xref.member_id);
 
     xrefs.forEach(xref => {
       (
@@ -87,7 +87,7 @@ describe('data/impl/MemberCardXrefDAOImpl', () => {
           [TableName, string, number]
         >
       )
-        .calledWith(TableName.MemberCardXref, 'memberId', xref.memberId)
+        .calledWith(TableName.MemberCardXref, 'member_id', xref.member_id)
         .mockReturnValue(Promise.resolve(xref));
     });
 
@@ -97,8 +97,8 @@ describe('data/impl/MemberCardXrefDAOImpl', () => {
         receivedXrefs.forEach(xref => {
           expect(dbClientMock.find).toBeCalledWith(
             TableName.MemberCardXref,
-            'memberId',
-            xref.memberId
+            'member_id',
+            xref.member_id
           );
         });
         expect(receivedXrefs).toEqual(xrefs);
@@ -106,7 +106,7 @@ describe('data/impl/MemberCardXrefDAOImpl', () => {
   });
 
   it('removeByMemberId should send delete query to db', () => {
-    const xref: MemberCardXref = {memberId: 1, cardCode: CardCode.DontKnow};
+    const xref: MemberCardXref = {member_id: 1, card_code: CardCode.DontKnow};
 
     (
       dbClientMock.delete as CalledWithMock<
@@ -114,28 +114,28 @@ describe('data/impl/MemberCardXrefDAOImpl', () => {
         [TableName, string, number]
       >
     )
-      .calledWith(TableName.MemberCardXref, 'memberId', xref.memberId)
+      .calledWith(TableName.MemberCardXref, 'member_id', xref.member_id)
       .mockReturnValue(Promise.resolve());
 
-    return memberCardXrefDAO.removeByMemberId(xref.memberId).then(() => {
+    return memberCardXrefDAO.removeByMemberId(xref.member_id).then(() => {
       expect(dbClientMock.delete).toBeCalledWith(
         TableName.MemberCardXref,
-        'memberId',
-        xref.memberId
+        'member_id',
+        xref.member_id
       );
     });
   });
 
-  // todo: it needs to make DatabaseClient able to send bulk delete queries
+  // todo: need to make DatabaseClient able to send bulk delete queries
   it('removeByMemberIds should send delete query to db many times', () => {
     const xrefs: MemberCardXref[] = [
-      {memberId: 1, cardCode: CardCode.DontKnow},
-      {memberId: 2, cardCode: CardCode.Skip},
-      {memberId: 3, cardCode: CardCode.Score100},
-      {memberId: 4, cardCode: CardCode.Score40},
-      {memberId: 5, cardCode: CardCode.Score0},
+      {member_id: 1, card_code: CardCode.DontKnow},
+      {member_id: 2, card_code: CardCode.Skip},
+      {member_id: 3, card_code: CardCode.Score100},
+      {member_id: 4, card_code: CardCode.Score40},
+      {member_id: 5, card_code: CardCode.Score0},
     ];
-    const memberIds = xrefs.map(xref => xref.memberId);
+    const memberIds = xrefs.map(xref => xref.member_id);
 
     xrefs.forEach(xref => {
       (
@@ -144,7 +144,7 @@ describe('data/impl/MemberCardXrefDAOImpl', () => {
           [TableName, string, number]
         >
       )
-        .calledWith(TableName.MemberCardXref, 'memberId', xref.memberId)
+        .calledWith(TableName.MemberCardXref, 'member_id', xref.member_id)
         .mockReturnValue(Promise.resolve());
     });
 
@@ -152,8 +152,8 @@ describe('data/impl/MemberCardXrefDAOImpl', () => {
       xrefs.forEach(xref => {
         expect(dbClientMock.delete).toBeCalledWith(
           TableName.MemberCardXref,
-          'memberId',
-          xref.memberId
+          'member_id',
+          xref.member_id
         );
       });
     });

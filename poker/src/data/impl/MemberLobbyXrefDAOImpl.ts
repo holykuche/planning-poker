@@ -15,29 +15,31 @@ export default class MemberLobbyXrefDAOImpl
     super(TableName.MemberLobbyXref);
   }
 
-  getMembersBinding(memberId: number): Promise<number> {
-    return this.find('memberId', memberId).then(xref => xref?.lobbyId || null);
-  }
-
-  getMemberIdsByLobbyId(lobbyId: number): Promise<number[]> {
-    return this.findMany('lobbyId', lobbyId).then(xrefs =>
-      xrefs.map(xref => xref.memberId)
+  getMembersBinding(member_id: number): Promise<number> {
+    return this.find('member_id', member_id).then(
+      xref => xref?.lobby_id || null
     );
   }
 
-  async bindMember(memberId: number, lobbyId: number): Promise<void> {
-    await this.save({memberId, lobbyId});
+  getMemberIdsByLobbyId(lobby_id: number): Promise<number[]> {
+    return this.findMany('lobby_id', lobby_id).then(xrefs =>
+      xrefs.map(xref => xref.member_id)
+    );
   }
 
-  unbindMember(memberId: number): Promise<void> {
-    return this.delete('memberId', memberId);
+  async bindMember(member_id: number, lobby_id: number): Promise<void> {
+    await this.save({member_id, lobby_id});
   }
 
-  unbindMembers(lobbyId: number): Promise<void> {
-    return this.delete('lobbyId', lobbyId);
+  unbindMember(member_id: number): Promise<void> {
+    return this.delete('member_id', member_id);
   }
 
-  async isMemberBound(memberId: number): Promise<boolean> {
-    return !!(await this.find('memberId', memberId));
+  unbindMembers(lobby_id: number): Promise<void> {
+    return this.delete('lobby_id', lobby_id);
+  }
+
+  async isMemberBound(member_id: number): Promise<boolean> {
+    return !!(await this.find('member_id', member_id));
   }
 }

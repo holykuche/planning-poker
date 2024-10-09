@@ -155,7 +155,7 @@ export default class LobbyServiceImpl implements LobbyService {
       .then(async lobby => {
         await this.lobbyDAO.save({
           ...lobby,
-          currentTheme: theme,
+          current_theme: theme,
           state: LobbyState.Playing,
         });
       });
@@ -175,7 +175,7 @@ export default class LobbyServiceImpl implements LobbyService {
         await Promise.all([
           this.lobbyDAO.save({
             ...lobby,
-            currentTheme: null,
+            current_theme: null,
             state: LobbyState.Waiting,
           }),
           this.memberLobbyXrefDAO
