@@ -72,7 +72,7 @@ export default class DatabaseClientImpl implements DatabaseClient {
   ): Promise<T> {
     return new Promise<Result<Protobuf.Entity<T>>>((resolve, reject) => {
       this.stub.Find(
-        {table_name, key, value},
+        {table_name, key, value: EntitySerializer.serializeValue(value)},
         DatabaseClientImpl.callbackFactory<Result<Protobuf.Entity<T>>>(
           resolve,
           reject
@@ -89,7 +89,7 @@ export default class DatabaseClientImpl implements DatabaseClient {
     return new Promise<Result<Result<Protobuf.Entity<T>>[]>>(
       (resolve, reject) => {
         this.stub.FindMany(
-          {table_name, key, value},
+          {table_name, key, value: EntitySerializer.serializeValue(value)},
           DatabaseClientImpl.callbackFactory<
             Result<Result<Protobuf.Entity<T>>[]>
           >(resolve, reject)
@@ -138,7 +138,7 @@ export default class DatabaseClientImpl implements DatabaseClient {
   ): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       this.stub.Delete(
-        {table_name, key, value},
+        {table_name, key, value: EntitySerializer.serializeValue(value)},
         DatabaseClientImpl.callbackFactory<void>(resolve, reject)
       );
     });
