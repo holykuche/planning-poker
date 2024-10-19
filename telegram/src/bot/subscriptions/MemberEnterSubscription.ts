@@ -96,8 +96,7 @@ export default class MemberEnterSubscription extends AbstractMessageSubscription
     };
 
     await this.subscriptionService
-      .subscribe(lobby_id, memberId)
-      .then(event =>
+      .subscribe(lobby_id, memberId, event =>
         this.resolveLobbyEventHandler(event.type)(eventContext, event.payload)
       )
       .then(() => this.lobbyService.enterMember(memberId, lobby_id))
@@ -124,7 +123,7 @@ export default class MemberEnterSubscription extends AbstractMessageSubscription
     payload: MembersWasChangedLobbyEvent['payload']
   ): Promise<void> {
     const {chat_id, telegramUserId, lobby_id, lobbyName} = eventContext;
-    const {members} = payload;
+    const {members = []} = payload;
 
     const message = await this.telegramMessageService.getMessage(
       lobby_id,

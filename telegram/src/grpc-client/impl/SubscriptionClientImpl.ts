@@ -17,13 +17,24 @@ export default class SubscriptionClientImpl
   subscribe(
     lobby_id: number,
     member_id: number,
-    next: (event: LobbyEvent) => void
+    next: (event: LobbyEvent) => void,
+    handleError: (error: Error) => void
   ): Promise<void> {
-    return super
-      .promiseFactory<unknown>('Subscribe', {lobby_id, member_id})
-      .then(response => {
-        console.log(JSON.stringify(response, null, 2));
-      });
+    return new Promise<void>((resolve, reject) => {
+      try {
+        super
+          .callClientReadableStreamMethod<LobbyEvent>('Subscribe', {
+            lobby_id,
+            member_id,
+          })
+          .on('data', next)
+          .on('error', handleError);
+
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
 
   unsubscribe(member_id: number): Promise<void> {

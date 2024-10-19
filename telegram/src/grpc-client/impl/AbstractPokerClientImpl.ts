@@ -2,6 +2,7 @@ import {
   loadPackageDefinition,
   ServiceClientConstructor,
   credentials,
+  ClientReadableStream,
 } from '@grpc/grpc-js';
 import {loadSync} from '@grpc/proto-loader';
 import {injectable, unmanaged} from 'inversify';
@@ -35,6 +36,13 @@ export default abstract class AbstractPokerClientImpl {
         AbstractPokerClientImpl.callbackFactory<T>(resolve, reject)
       );
     });
+  }
+
+  protected callClientReadableStreamMethod<T>(
+    methodName: string,
+    request: object
+  ): ClientReadableStream<T> {
+    return this.stub[methodName](request);
   }
 
   private static callbackFactory<T>(
