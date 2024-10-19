@@ -96,7 +96,11 @@ export default class DatabaseGrpcServiceImpl implements DatabaseGrpcService {
     try {
       response = {
         result: EntitySerializer.serialize(
-          this.database.find(table_name, key, value)
+          this.database.find(
+            table_name,
+            key,
+            EntitySerializer.deserializeValue(value)
+          )
         ),
       };
     } catch (e) {
@@ -140,7 +144,7 @@ export default class DatabaseGrpcServiceImpl implements DatabaseGrpcService {
     try {
       response = {
         result: this.database
-          .findMany(table_name, key, value)
+          .findMany(table_name, key, EntitySerializer.deserializeValue(value))
           .map(entity => ({result: EntitySerializer.serialize(entity)})),
       };
     } catch (e) {
@@ -181,7 +185,11 @@ export default class DatabaseGrpcServiceImpl implements DatabaseGrpcService {
     let error: Error = null;
 
     try {
-      this.database.delete(table_name, key, value);
+      this.database.delete(
+        table_name,
+        key,
+        EntitySerializer.deserializeValue(value)
+      );
     } catch (e) {
       error = e;
     }
