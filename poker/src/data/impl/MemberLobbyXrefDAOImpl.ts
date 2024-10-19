@@ -21,10 +21,9 @@ export default class MemberLobbyXrefDAOImpl
     );
   }
 
-  getMemberIdsByLobbyId(lobby_id: number): Promise<number[]> {
-    return this.findMany('lobby_id', lobby_id).then(xrefs =>
-      xrefs.map(xref => xref.member_id)
-    );
+  async getMemberIdsByLobbyId(lobby_id: number): Promise<number[]> {
+    const xrefs = await this.findMany('lobby_id', lobby_id);
+    return xrefs.map(xref => xref.member_id);
   }
 
   async bindMember(member_id: number, lobby_id: number): Promise<void> {

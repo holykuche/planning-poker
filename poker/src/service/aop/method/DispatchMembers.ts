@@ -12,13 +12,13 @@ interface Dependencies {
   subscriptionService: SubscriptionService;
 }
 
-const getMembers = (
+const getMembers = async (
   dependencies: Dependencies,
   lobbyId: number
 ): Promise<Member[]> => {
-  return dependencies.memberLobbyXrefDAO
-    .getMemberIdsByLobbyId(lobbyId)
-    .then(memberIds => dependencies.memberDAO.getByIds(memberIds));
+  const memberIds =
+    await dependencies.memberLobbyXrefDAO.getMemberIdsByLobbyId(lobbyId);
+  return await dependencies.memberDAO.getByIds(memberIds);
 };
 
 export default (
@@ -51,7 +51,7 @@ export default (
     );
     const members = await getMembers(dependencies, lobbyId);
 
-    await dependencies.subscriptionService.dispatch(lobbyId, {
+    dependencies.subscriptionService.dispatch(lobbyId, {
       type: EventType.MembersWasChanged,
       payload: {members},
     });
