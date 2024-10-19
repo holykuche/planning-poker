@@ -7,7 +7,8 @@ import {loadSync} from '@grpc/proto-loader';
 import {injectable} from 'inversify';
 
 import {DatabaseClient} from '../api';
-import {TableDefinition, Protobuf} from '../entity';
+import {Protobuf} from '../dto';
+import {TableDefinition} from '../entity';
 import {EntitySerializer} from '../util';
 
 interface Result<T> {
