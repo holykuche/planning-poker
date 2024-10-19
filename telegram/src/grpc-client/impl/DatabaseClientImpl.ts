@@ -40,36 +40,27 @@ export default class DatabaseClientImpl implements DatabaseClient {
     table_name: string,
     definition: TableDefinition<T>
   ): Promise<void> {
-    const methodName = 'CreateTable';
-    const request = {table_name, definition};
-
     return new Promise<void>((resolve, reject) => {
-      this.stub[methodName](
-        request,
+      this.stub.CreateTable(
+        {table_name, definition},
         DatabaseClientImpl.callbackFactory<void>(resolve, reject)
       );
     });
   }
 
   dropTable(table_name: string): Promise<void> {
-    const methodName = 'DropTable';
-    const request = {table_name};
-
     return new Promise<void>((resolve, reject) => {
-      this.stub[methodName](
-        request,
+      this.stub.DropTable(
+        {table_name},
         DatabaseClientImpl.callbackFactory<void>(resolve, reject)
       );
     });
   }
 
   isTableExists(table_name: string): Promise<boolean> {
-    const methodName = 'IsTableExists';
-    const request = {table_name};
-
     return new Promise<Result<boolean>>((resolve, reject) => {
-      this.stub[methodName](
-        request,
+      this.stub.IsTableExists(
+        {table_name},
         DatabaseClientImpl.callbackFactory<Result<boolean>>(resolve, reject)
       );
     }).then(response => response.result);
@@ -80,12 +71,9 @@ export default class DatabaseClientImpl implements DatabaseClient {
     key: K,
     value: T[K]
   ): Promise<T> {
-    const methodName = 'Find';
-    const request = {table_name, key, value};
-
     return new Promise<Result<Protobuf.Entity<T>>>((resolve, reject) => {
-      this.stub[methodName](
-        request,
+      this.stub.Find(
+        {table_name, key, value: EntitySerializer.serializeValue(value)},
         DatabaseClientImpl.callbackFactory<Result<Protobuf.Entity<T>>>(
           resolve,
           reject
@@ -99,13 +87,10 @@ export default class DatabaseClientImpl implements DatabaseClient {
     key: K,
     value: T[K]
   ): Promise<T[]> {
-    const methodName = 'FindMany';
-    const request = {table_name, key, value};
-
     return new Promise<Result<Result<Protobuf.Entity<T>>[]>>(
       (resolve, reject) => {
-        this.stub[methodName](
-          request,
+        this.stub.FindMany(
+          {table_name, key, value: EntitySerializer.serializeValue(value)},
           DatabaseClientImpl.callbackFactory<
             Result<Result<Protobuf.Entity<T>>[]>
           >(resolve, reject)
@@ -119,13 +104,10 @@ export default class DatabaseClientImpl implements DatabaseClient {
   }
 
   findAll<T extends object>(table_name: string): Promise<T[]> {
-    const methodName = 'FindAll';
-    const request = {table_name};
-
     return new Promise<Result<Result<Protobuf.Entity<T>>[]>>(
       (resolve, reject) => {
-        this.stub[methodName](
-          request,
+        this.stub.FindAll(
+          {table_name},
           DatabaseClientImpl.callbackFactory<
             Result<Result<Protobuf.Entity<T>>[]>
           >(resolve, reject)
@@ -139,12 +121,9 @@ export default class DatabaseClientImpl implements DatabaseClient {
   }
 
   save<T extends object>(table_name: string, entity: T): Promise<T> {
-    const methodName = 'Save';
-    const request = {table_name, entity: EntitySerializer.serialize(entity)};
-
     return new Promise<Result<Protobuf.Entity<T>>>((resolve, reject) => {
-      this.stub[methodName](
-        request,
+      this.stub.Save(
+        {table_name, entity: EntitySerializer.serialize(entity)},
         DatabaseClientImpl.callbackFactory<Result<Protobuf.Entity<T>>>(
           resolve,
           reject
@@ -158,12 +137,9 @@ export default class DatabaseClientImpl implements DatabaseClient {
     key: K,
     value: T[K]
   ): Promise<void> {
-    const methodName = 'Delete';
-    const request = {table_name, key, value};
-
     return new Promise<void>((resolve, reject) => {
-      this.stub[methodName](
-        request,
+      this.stub.Delete(
+        {table_name, key, value: EntitySerializer.serializeValue(value)},
         DatabaseClientImpl.callbackFactory<void>(resolve, reject)
       );
     });
