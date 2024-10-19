@@ -19,6 +19,10 @@ export default abstract class AbstractDAOImpl<T extends object> {
     return this.dbClient.findMany(this.tableName, key, value);
   }
 
+  findAll(): Promise<T[]> {
+    return this.dbClient.findAll(this.tableName);
+  }
+
   save(entity: T): Promise<T> {
     return this.dbClient.save(this.tableName, entity);
   }

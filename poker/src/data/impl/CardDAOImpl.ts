@@ -16,10 +16,10 @@ export default class CardDAOImpl
   }
 
   getAll(): Promise<Card[]> {
-    return this.getAll();
+    return super.findAll();
   }
 
   getByCode(cardCode: CardCode): Promise<Card> {
-    return this.find('code', cardCode);
+    return super.find('code', cardCode);
   }
 }
