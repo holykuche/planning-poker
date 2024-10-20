@@ -2,9 +2,9 @@ import {Member, PokerResult} from '../entity';
 
 import EventType from './EventType';
 
-interface EventGeneric<T extends EventType, P = never> {
+interface EventGeneric<T extends EventType, P = undefined> {
   type: T;
-  payload?: P;
+  payload: P;
 }
 
 export type LobbyWasDestroyedLobbyEvent =

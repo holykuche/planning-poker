@@ -6,13 +6,8 @@ import {MemberService, SERVICE_TYPES, TelegramUserService} from '../api';
 import {TelegramMemberDto} from '../dto';
 import {MemberIsAlreadyInLobbyError, UnknownMemberError} from '../error';
 
-import AbstractServiceImpl from './AbstractServiceImpl';
-
 @injectable()
-export default class TelegramUserServiceImpl
-  extends AbstractServiceImpl
-  implements TelegramUserService
-{
+export default class TelegramUserServiceImpl implements TelegramUserService {
   @inject(DAO_TYPES.TelegramUserDAO)
   private readonly telegramUserDAO: TelegramUserDAO;
 
@@ -20,31 +15,29 @@ export default class TelegramUserServiceImpl
   private readonly memberService: MemberService;
 
   getMemberByTelegramUserId(
-    telegramUserId: number
+    telegram_user_id: number
   ): Promise<TelegramMemberDto> {
     return this.telegramUserDAO
-      .getMemberIdByTelegramUserId(telegramUserId)
-      .catch(TelegramUserServiceImpl.handleGrpcError)
-      .then(memberId => {
-        if (!memberId) {
+      .getMemberIdByTelegramUserId(telegram_user_id)
+      .then(member_id => {
+        if (!member_id) {
           throw new UnknownMemberError();
         }
 
-        return this.memberService.getById(memberId);
+        return this.memberService.getById(member_id);
       })
       .then(member => {
         if (!member) {
           throw new UnknownMemberError();
         }
 
-        return {...member, telegramUserId};
+        return {...member, telegram_user_id: telegram_user_id};
       });
   }
 
   createMember(member: TelegramMemberDto): Promise<TelegramMemberDto> {
     return this.telegramUserDAO
-      .getMemberIdByTelegramUserId(member.telegramUserId)
-      .catch(TelegramUserServiceImpl.handleGrpcError)
+      .getMemberIdByTelegramUserId(member.telegram_user_id)
       .then(async existedMemberId => {
         if (existedMemberId) {
           const existedMember =
@@ -55,38 +48,34 @@ export default class TelegramUserServiceImpl
       .then(() => this.memberService.save(member))
       .then(storedMember => ({
         ...storedMember,
-        telegramUserId: member.telegramUserId,
+        telegram_user_id: member.telegram_user_id,
       }))
       .then(storedMember =>
         this.telegramUserDAO
           .bindTelegramUserWithMember(
-            storedMember.telegramUserId,
-            storedMember.id
+            storedMember.telegram_user_id,
+            storedMember.id!
           )
           .then(() => storedMember)
       );
   }
 
-  isMemberExists(telegramUserId: number): Promise<boolean> {
-    return this.telegramUserDAO
-      .isMemberExists(telegramUserId)
-      .catch(TelegramUserServiceImpl.handleGrpcError);
+  isMemberExists(telegram_user_id: number): Promise<boolean> {
+    return this.telegramUserDAO.isMemberExists(telegram_user_id);
   }
 
-  deleteMemberByMemberId(memberId: number): Promise<void> {
+  deleteMemberByMemberId(member_id: number): Promise<void> {
     return this.telegramUserDAO
-      .unbindMemberFromTelegramUser(memberId)
-      .catch(TelegramUserServiceImpl.handleGrpcError)
-      .then(() => this.memberService.deleteById(memberId));
+      .unbindMemberFromTelegramUser(member_id)
+      .then(() => this.memberService.deleteById(member_id));
   }
 
-  deleteMemberByTelegramUserId(telegramUserId: number): Promise<void> {
+  deleteMemberByTelegramUserId(telegram_user_id: number): Promise<void> {
     return this.telegramUserDAO
-      .getMemberIdByTelegramUserId(telegramUserId)
-      .then(memberId => this.memberService.deleteById(memberId))
+      .getMemberIdByTelegramUserId(telegram_user_id)
+      .then(member_id => this.memberService.deleteById(member_id!))
       .then(() =>
-        this.telegramUserDAO.unbindTelegramUserFromMember(telegramUserId)
-      )
-      .catch(TelegramUserServiceImpl.handleGrpcError);
+        this.telegramUserDAO.unbindTelegramUserFromMember(telegram_user_id)
+      );
   }
 }

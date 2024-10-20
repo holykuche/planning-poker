@@ -28,19 +28,19 @@ export default class PutCardSubscription extends AbstractCallbackQuerySubscripti
     super(
       callbackQueries$.pipe(
         filter(callback =>
-          PutCardSubscription.PUT_CARD_COMMAND_REGEXP.test(callback.data)
+          PutCardSubscription.PUT_CARD_COMMAND_REGEXP.test(callback.data!)
         )
       )
     );
   }
 
   protected async handle(callbackQuery: CallbackQuery): Promise<void> {
-    const cardCode = callbackQuery.data.match(
+    const cardCode = callbackQuery.data!.match(
       PutCardSubscription.PUT_CARD_COMMAND_REGEXP
-    )[1] as CardCode;
+    )![1] as CardCode;
     const member = await this.telegramUserService.getMemberByTelegramUserId(
       callbackQuery.from.id
     );
-    await this.memberService.putCard(member.id, cardCode);
+    await this.memberService.putCard(member.id!, cardCode);
   }
 }

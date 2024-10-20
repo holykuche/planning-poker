@@ -19,7 +19,7 @@ export default class TelegramMessageDAOImpl
     lobby_id: number,
     chat_id: number,
     message_type: TelegramMessageType
-  ): Promise<TelegramMessage> {
+  ): Promise<TelegramMessage | null> {
     return this.findMany('lobby_id', lobby_id)
       .then(messages =>
         messages.find(

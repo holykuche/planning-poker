@@ -6,55 +6,36 @@ import {CardCode} from '@/grpc-client/enum';
 
 import {MemberService} from '../api';
 
-import AbstractServiceImpl from './AbstractServiceImpl';
-
 @injectable()
-export default class MemberServiceImpl
-  extends AbstractServiceImpl
-  implements MemberService
-{
+export default class MemberServiceImpl implements MemberService {
   @inject(GRPC_CLIENT_TYPES.MemberClient)
   private readonly memberClient: MemberClient;
 
-  getById(memberId: number): Promise<Member> {
-    return this.memberClient
-      .getById(memberId)
-      .catch(MemberServiceImpl.handleGrpcError);
+  getById(member_id: number): Promise<Member> {
+    return this.memberClient.getById(member_id);
   }
 
-  getMembersLobbyId(memberId: number): Promise<number> {
-    return this.memberClient
-      .getMembersLobbyId(memberId)
-      .catch(MemberServiceImpl.handleGrpcError);
+  getMembersLobbyId(member_id: number): Promise<number> {
+    return this.memberClient.getMembersLobbyId(member_id);
   }
 
-  isMemberInLobby(memberId: number): Promise<boolean> {
-    return this.memberClient
-      .isMemberInLobby(memberId)
-      .catch(MemberServiceImpl.handleGrpcError);
+  isMemberInLobby(member_id: number): Promise<boolean> {
+    return this.memberClient.isMemberInLobby(member_id);
   }
 
-  putCard(memberId: number, cardCode: CardCode): Promise<void> {
-    return this.memberClient
-      .putCard(memberId, cardCode)
-      .catch(MemberServiceImpl.handleGrpcError);
+  putCard(member_id: number, card_code: CardCode): Promise<void> {
+    return this.memberClient.putCard(member_id, card_code);
   }
 
-  removeCard(memberId: number): Promise<void> {
-    return this.memberClient
-      .removeCard(memberId)
-      .catch(MemberServiceImpl.handleGrpcError);
+  removeCard(member_id: number): Promise<void> {
+    return this.memberClient.removeCard(member_id);
   }
 
   save(member: Member): Promise<Member> {
-    return this.memberClient
-      .save(member)
-      .catch(MemberServiceImpl.handleGrpcError);
+    return this.memberClient.save(member);
   }
 
-  deleteById(memberId: number): Promise<void> {
-    return this.memberClient
-      .deleteById(memberId)
-      .catch(MemberServiceImpl.handleGrpcError);
+  deleteById(member_id: number): Promise<void> {
+    return this.memberClient.deleteById(member_id);
   }
 }

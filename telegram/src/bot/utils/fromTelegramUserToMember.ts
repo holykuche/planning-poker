@@ -6,7 +6,7 @@ import formatTelegramUserName from './formatTelegramUserName';
 
 export default function (user: User): TelegramMemberDto {
   return {
-    telegramUserId: user.id,
+    telegram_user_id: user.id,
     name: formatTelegramUserName(user),
   };
 }

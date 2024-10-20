@@ -6,7 +6,7 @@ export default interface TelegramMessageDAO {
     lobbyId: number,
     chatId: number,
     messageType: TelegramMessageType
-  ): Promise<TelegramMessage>;
+  ): Promise<TelegramMessage | null>;
 
   getAllMessages(lobbyId: number): Promise<TelegramMessage[]>;
 

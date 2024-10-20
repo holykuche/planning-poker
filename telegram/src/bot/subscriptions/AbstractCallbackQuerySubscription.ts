@@ -17,6 +17,6 @@ export default abstract class AbstractCallbackQuerySubscription extends Abstract
   }
 
   protected getChatId(callbackQuery: CallbackQuery): number {
-    return callbackQuery.message.chat.id;
+    return callbackQuery.message!.chat.id;
   }
 }

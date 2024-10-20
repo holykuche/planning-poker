@@ -44,9 +44,9 @@ export default class CancelPokerSubscription extends AbstractMessageSubscription
 
   protected async handle(msg: Message): Promise<void> {
     const member = await this.telegramUserService.getMemberByTelegramUserId(
-      msg.from.id
+      msg.from!.id
     );
-    const lobbyId = await this.memberService.getMembersLobbyId(member.id);
+    const lobbyId = await this.memberService.getMembersLobbyId(member.id!);
 
     await this.lobbyService.cancelPoker(lobbyId);
 

@@ -1,9 +1,6 @@
-import {TelegramMemberDto} from '@/service/dto';
+import {Member} from '@/grpc-client/entity';
 
-type MembersComparator = (
-  left: TelegramMemberDto,
-  right: TelegramMemberDto
-) => number;
+type MembersComparator = (left: Member, right: Member) => number;
 
 export default function (memberId: number): MembersComparator {
   return (left, right) => {

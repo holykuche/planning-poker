@@ -61,38 +61,25 @@ export default abstract class AbstractSubscription<T> {
 
   protected abstract getChatId(item: T): number;
 
-  protected async handleError(error: unknown, item?: T): Promise<void> {
-    if (error instanceof ServiceError) {
-      const alertMessage = await this.bot.sendMessage(
-        this.getChatId(item),
-        formatAlert(formatError(error)),
-        {parse_mode: AbstractSubscription.PARSE_MODE}
-      );
-      setTimeout(
-        () =>
-          this.bot.deleteMessage(
-            this.getChatId(item),
-            String(alertMessage.message_id)
-          ),
-        ALERT_DURATION_MS
-      );
-    } else {
-      const alertMessage = await this.bot.sendMessage(
-        this.getChatId(item),
-        'Internal Server Error'
-      );
-      setTimeout(
-        () =>
-          this.bot.deleteMessage(
-            this.getChatId(item),
-            String(alertMessage.message_id)
-          ),
-        ALERT_DURATION_MS
-      );
-    }
-
+  protected async handleError(error: unknown, item: T | number): Promise<void> {
     if (error instanceof Error) {
       console.error(`D ${new Date().toISOString()} | ${error.toString()}`);
     }
+
+    const chatId = typeof item === 'number' ? item : this.getChatId(item);
+
+    if (!chatId) return;
+
+    const alertMessage = await this.bot.sendMessage(
+      chatId,
+      error instanceof ServiceError
+        ? formatAlert(formatError(error))
+        : 'Internal Server Error',
+      {parse_mode: AbstractSubscription.PARSE_MODE}
+    );
+    setTimeout(
+      () => this.bot.deleteMessage(chatId, String(alertMessage.message_id)),
+      ALERT_DURATION_MS
+    );
   }
 }

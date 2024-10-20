@@ -1,7 +1,7 @@
 export default interface TelegramUserDAO {
-  getMemberIdByTelegramUserId(telegramUserId: number): Promise<number>;
+  getMemberIdByTelegramUserId(telegramUserId: number): Promise<number | null>;
 
-  getTelegramUserIdByMemberId(memberId: number): Promise<number>;
+  getTelegramUserIdByMemberId(memberId: number): Promise<number | null>;
 
   isMemberExists(telegramUserId: number): Promise<boolean>;
 

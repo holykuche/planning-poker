@@ -43,19 +43,19 @@ export default class ResetUserSubscription extends AbstractMessageSubscription {
 
   protected async handle(msg: Message): Promise<void> {
     const member = await this.telegramUserService.getMemberByTelegramUserId(
-      msg.from.id
+      msg.from!.id
     );
 
-    if (await this.memberService.isMemberInLobby(member.id)) {
-      const lobbyId = await this.memberService.getMembersLobbyId(member.id);
-      await this.lobbyService.leaveMember(member.id, lobbyId);
+    if (await this.memberService.isMemberInLobby(member.id!)) {
+      const lobbyId = await this.memberService.getMembersLobbyId(member.id!);
+      await this.lobbyService.leaveMember(member.id!, lobbyId);
       await this.telegramMessageService.deleteAllMessagesFromChat(
         lobbyId,
         msg.chat.id
       );
     }
 
-    await this.telegramUserService.deleteMemberByMemberId(member.id);
+    await this.telegramUserService.deleteMemberByMemberId(member.id!);
 
     await this.bot.sendMessage(msg.chat.id, 'Your user was successfully reset');
   }

@@ -1,5 +1,5 @@
 import {injectable, inject} from 'inversify';
-import {CallbackQuery} from 'node-telegram-bot-api';
+import {CallbackQuery, InlineKeyboardMarkup} from 'node-telegram-bot-api';
 import {Observable} from 'rxjs';
 import {filter} from 'rxjs/operators';
 
@@ -46,37 +46,40 @@ export default class MemberLeaveSubscription extends AbstractCallbackQuerySubscr
     const member = await this.telegramUserService.getMemberByTelegramUserId(
       callbackQuery.from.id
     );
-    const lobbyId = await this.memberService.getMembersLobbyId(member.id);
+    const lobbyId = await this.memberService.getMembersLobbyId(member.id!);
 
     const lobbyMessage = await this.telegramMessageService.getMessage(
       lobbyId,
-      callbackQuery.message.chat.id,
+      callbackQuery.message!.chat.id,
       TelegramMessageType.Lobby
     );
-    await this.bot.editMessageReplyMarkup(null, {
-      chat_id: callbackQuery.message.chat.id,
-      message_id: lobbyMessage.message_id,
-    });
+    await this.bot.editMessageReplyMarkup(
+      null as unknown as InlineKeyboardMarkup,
+      {
+        chat_id: callbackQuery.message!.chat.id,
+        message_id: lobbyMessage!.message_id,
+      }
+    );
 
     const resultMessage = await this.telegramMessageService.getMessage(
       lobbyId,
-      callbackQuery.message.chat.id,
+      callbackQuery.message!.chat.id,
       TelegramMessageType.Poker
     );
     if (resultMessage) {
       await this.bot.deleteMessage(
-        callbackQuery.message.chat.id,
+        callbackQuery.message!.chat.id,
         String(resultMessage.message_id)
       );
     }
 
     await this.telegramMessageService.deleteAllMessagesFromChat(
       lobbyId,
-      callbackQuery.message.chat.id
+      callbackQuery.message!.chat.id
     );
-    await this.lobbyService.leaveMember(member.id, lobbyId);
-    await this.telegramUserService.deleteMemberByMemberId(member.id);
+    await this.lobbyService.leaveMember(member.id!, lobbyId);
+    await this.telegramUserService.deleteMemberByMemberId(member.id!);
 
-    await this.bot.sendMessage(callbackQuery.message.chat.id, "You've gone");
+    await this.bot.sendMessage(callbackQuery.message!.chat.id, "You've gone");
   }
 }

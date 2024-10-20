@@ -23,7 +23,7 @@ export default class HelpSubscription extends AbstractMessageSubscription {
   ) {
     super(
       commands$.pipe(
-        filter(msg => HelpSubscription.HELP_COMMAND_REGEXP.test(msg.text))
+        filter(msg => HelpSubscription.HELP_COMMAND_REGEXP.test(msg.text!))
       )
     );
   }

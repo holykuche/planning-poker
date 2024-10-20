@@ -1,5 +1,5 @@
 import {injectable, inject} from 'inversify';
-import {Message} from 'node-telegram-bot-api';
+import {InlineKeyboardMarkup, Message} from 'node-telegram-bot-api';
 import {Observable} from 'rxjs';
 
 import {TelegramMessageType} from '@/data/enum';
@@ -32,10 +32,10 @@ import AbstractMessageSubscription from './AbstractMessageSubscription';
 
 interface LobbyEventContext {
   chat_id: number;
-  telegramUserId: number;
+  telegram_user_id: number;
   lobby_id: number;
-  lobbyName: string;
-  memberId: number;
+  lobby_name: string;
+  member_id: number;
 }
 
 type LobbyEventHandler = (
@@ -70,37 +70,43 @@ export default class MemberEnterSubscription extends AbstractMessageSubscription
   }
 
   protected async handle(msg: Message): Promise<void> {
-    if (await this.telegramUserService.isMemberExists(msg.from.id)) {
-      return;
+    const existingMember =
+      await this.telegramUserService.getMemberByTelegramUserId(msg.from!.id);
+
+    if (existingMember) {
+      if (await this.lobbyService.getMembersLobby(existingMember.id!)) {
+        return;
+      }
     }
 
-    const {
-      chat: {id: chat_id},
-      from: {id: telegramUserId},
-    } = msg;
-    const lobbyName = msg.text.trim().toUpperCase();
+    const chat_id = msg.chat.id;
+    const telegram_user_id = msg.from!.id;
+    const lobby_name = msg.text!.trim().toUpperCase();
 
-    const {id: lobby_id} =
-      (await this.lobbyService.getByName(lobbyName)) ||
-      (await this.lobbyService.createLobby(lobbyName));
-    const {id: memberId} = await this.telegramUserService.createMember(
-      fromTelegramUserToMember(msg.from)
+    const lobby =
+      (await this.lobbyService.getByName(lobby_name)) ||
+      (await this.lobbyService.createLobby(lobby_name));
+    const member = await this.telegramUserService.createMember(
+      fromTelegramUserToMember(msg.from!)
     );
+
+    const lobby_id = lobby.id!;
+    const member_id = member.id!;
 
     const eventContext = {
       chat_id,
-      telegramUserId,
+      telegram_user_id,
       lobby_id,
-      lobbyName,
-      memberId,
+      lobby_name,
+      member_id,
     };
 
     await this.subscriptionService
-      .subscribe(lobby_id, memberId, event =>
+      .subscribe(lobby_id, member_id, event =>
         this.resolveLobbyEventHandler(event.type)(eventContext, event.payload)
       )
-      .then(() => this.lobbyService.enterMember(memberId, lobby_id))
-      .catch(error => this.handleError(error));
+      .then(() => this.lobbyService.enterMember(member_id, lobby_id))
+      .catch(error => this.handleError(error, chat_id));
   }
 
   private resolveLobbyEventHandler(eventType: EventType): LobbyEventHandler {
@@ -122,8 +128,8 @@ export default class MemberEnterSubscription extends AbstractMessageSubscription
     eventContext: LobbyEventContext,
     payload: MembersWasChangedLobbyEvent['payload']
   ): Promise<void> {
-    const {chat_id, telegramUserId, lobby_id, lobbyName} = eventContext;
-    const {members = []} = payload;
+    const {chat_id, telegram_user_id, lobby_id, lobby_name} = eventContext;
+    const {members} = payload;
 
     const message = await this.telegramMessageService.getMessage(
       lobby_id,
@@ -133,7 +139,7 @@ export default class MemberEnterSubscription extends AbstractMessageSubscription
 
     if (message) {
       await this.bot.editMessageText(
-        formatLobby(lobbyName, members, telegramUserId),
+        formatLobby(lobby_name, members, telegram_user_id),
         {
           chat_id: chat_id,
           message_id: message.message_id,
@@ -147,7 +153,7 @@ export default class MemberEnterSubscription extends AbstractMessageSubscription
     } else {
       const lobbyMsg = await this.bot.sendMessage(
         chat_id,
-        formatLobby(lobbyName, members, telegramUserId),
+        formatLobby(lobby_name, members, telegram_user_id),
         {
           parse_mode: MemberEnterSubscription.PARSE_MODE,
           reply_markup: {
@@ -169,7 +175,7 @@ export default class MemberEnterSubscription extends AbstractMessageSubscription
     eventContext: LobbyEventContext,
     payload: PokerResultWasChangedLobbyEvent['payload']
   ): Promise<void> {
-    const {chat_id, memberId, lobby_id} = eventContext;
+    const {chat_id, member_id, lobby_id} = eventContext;
     const {theme, result} = payload;
 
     const message = await this.telegramMessageService.getMessage(
@@ -177,12 +183,12 @@ export default class MemberEnterSubscription extends AbstractMessageSubscription
       chat_id,
       TelegramMessageType.Poker
     );
-    const messageText = formatPoker(theme, result, memberId);
+    const messageText = formatPoker(theme, result, member_id);
 
     if (message) {
       const card = result.find(
-        resultItem => resultItem.member.id === memberId
-      ).card;
+        resultItem => resultItem.member.id === member_id
+      )!.card;
 
       await this.bot.editMessageText(messageText, {
         chat_id: chat_id,
@@ -215,7 +221,7 @@ export default class MemberEnterSubscription extends AbstractMessageSubscription
     eventContext: LobbyEventContext,
     payload: PokerWasFinishedLobbyEvent['payload']
   ): Promise<void> {
-    const {chat_id, telegramUserId, lobby_id} = eventContext;
+    const {chat_id, telegram_user_id, lobby_id} = eventContext;
     const {theme, result} = payload;
 
     const pokerMessage = await this.telegramMessageService.getMessage(
@@ -223,12 +229,13 @@ export default class MemberEnterSubscription extends AbstractMessageSubscription
       chat_id,
       TelegramMessageType.Poker
     );
-    await this.bot.deleteMessage(chat_id, String(pokerMessage.message_id));
-    await this.telegramMessageService.deleteMessageById(pokerMessage.id);
+
+    await this.bot.deleteMessage(chat_id, String(pokerMessage!.message_id));
+    await this.telegramMessageService.deleteMessageById(pokerMessage!.id!);
 
     await this.bot.sendMessage(
       chat_id,
-      formatFinishResult(theme, result, telegramUserId),
+      formatFinishResult(theme, result, telegram_user_id),
       {
         parse_mode: MemberEnterSubscription.PARSE_MODE,
       }
@@ -238,17 +245,20 @@ export default class MemberEnterSubscription extends AbstractMessageSubscription
   private async lobbyWasDestroyedHandler(
     eventContext: LobbyEventContext
   ): Promise<void> {
-    const {chat_id, lobby_id, lobbyName, memberId} = eventContext;
+    const {chat_id, lobby_id, lobby_name, member_id} = eventContext;
 
     const lobbyMessage = await this.telegramMessageService.getMessage(
       lobby_id,
       chat_id,
       TelegramMessageType.Lobby
     );
-    await this.bot.editMessageReplyMarkup(null, {
-      chat_id: chat_id,
-      message_id: lobbyMessage.message_id,
-    });
+    await this.bot.editMessageReplyMarkup(
+      null as unknown as InlineKeyboardMarkup,
+      {
+        chat_id: chat_id,
+        message_id: lobbyMessage!.message_id,
+      }
+    );
 
     const resultMessage = await this.telegramMessageService.getMessage(
       lobby_id,
@@ -263,9 +273,9 @@ export default class MemberEnterSubscription extends AbstractMessageSubscription
       lobby_id,
       chat_id
     );
-    await this.telegramUserService.deleteMemberByMemberId(memberId);
+    await this.telegramUserService.deleteMemberByMemberId(member_id);
 
-    await this.bot.sendMessage(chat_id, formatDestroyedLobby(lobbyName), {
+    await this.bot.sendMessage(chat_id, formatDestroyedLobby(lobby_name), {
       parse_mode: MemberEnterSubscription.PARSE_MODE,
       disable_notification: true,
     });

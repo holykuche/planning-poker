@@ -33,6 +33,6 @@ export default class RemoveCardSubscription extends AbstractCallbackQuerySubscri
     const member = await this.telegramUserService.getMemberByTelegramUserId(
       callbackQuery.from.id
     );
-    await this.memberService.removeCard(member.id);
+    await this.memberService.removeCard(member.id!);
   }
 }

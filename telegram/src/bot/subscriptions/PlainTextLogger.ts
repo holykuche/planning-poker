@@ -20,6 +20,6 @@ export default class PlainTextLogger extends AbstractMessageSubscription {
   }
 
   private static format(msg: Message): string {
-    return `[INFO] ${formatTelegramUserName(msg.from)} [ ${msg.from.id} ] have typed message '${msg.text}'`;
+    return `[INFO] ${formatTelegramUserName(msg.from!)} [ ${msg.from!.id} ] have typed message '${msg.text}'`;
   }
 }

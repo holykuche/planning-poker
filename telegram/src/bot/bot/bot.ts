@@ -1,6 +1,6 @@
 import TelegramBotProxy from './TelegramBotProxy';
 
-const bot = new TelegramBotProxy(process.env.TELEGRAM_BOT_API_TOKEN, {
+const bot = new TelegramBotProxy(process.env.TELEGRAM_BOT_API_TOKEN!, {
   polling: true,
 });
 

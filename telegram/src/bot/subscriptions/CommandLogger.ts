@@ -21,6 +21,6 @@ export default class CommandLogger extends AbstractMessageSubscription {
   }
 
   private static format(msg: Message): string {
-    return `[INFO] ${formatTelegramUserName(msg.from)} [ ${msg.from.id} ] have typed command '${msg.text}'`;
+    return `[INFO] ${formatTelegramUserName(msg.from!)} [ ${msg.from!.id} ] have typed command '${msg.text}'`;
   }
 }

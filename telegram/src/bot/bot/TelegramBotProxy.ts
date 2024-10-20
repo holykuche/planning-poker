@@ -45,7 +45,14 @@ export default class TelegramBotProxy extends TelegramBot {
       reject = promiseReject;
     });
 
-    this.messageQueue.push({chatId, text, options, resolve, reject});
+    this.messageQueue.push({
+      chatId,
+      text,
+      options,
+      resolve: resolve!,
+      reject: reject!,
+    });
+
     process.nextTick(this.sendMessages);
 
     return promise;

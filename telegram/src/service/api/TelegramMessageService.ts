@@ -6,7 +6,7 @@ export default interface TelegramMessageService {
     lobbyId: number,
     chatId: number,
     messageType: TelegramMessageType
-  ): Promise<TelegramMessage>;
+  ): Promise<TelegramMessage | null>;
 
   getMessages(
     lobbyId: number,

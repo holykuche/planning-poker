@@ -1,7 +1,7 @@
+import {Card} from '@/grpc-client/entity';
 import {CardCode} from '@/grpc-client/enum';
-import {CardDto} from '@/service/dto';
 
-export default function (left: CardDto, right: CardDto) {
+export default function (left: Card, right: Card) {
   if (right.code === CardCode.DontKnow) {
     return -1;
   }
@@ -16,5 +16,5 @@ export default function (left: CardDto, right: CardDto) {
     return 1;
   }
 
-  return left.value - right.value;
+  return left.value! - right.value!;
 }

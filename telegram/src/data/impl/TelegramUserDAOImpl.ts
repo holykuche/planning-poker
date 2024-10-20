@@ -15,12 +15,14 @@ export default class TelegramUserDAOImpl
     super(TableName.TelegramUserMemberXref);
   }
 
-  async getMemberIdByTelegramUserId(telegram_user_id: number): Promise<number> {
+  async getMemberIdByTelegramUserId(
+    telegram_user_id: number
+  ): Promise<number | null> {
     const member = await this.find('telegram_user_id', telegram_user_id);
     return member?.member_id || null;
   }
 
-  async getTelegramUserIdByMemberId(member_id: number): Promise<number> {
+  async getTelegramUserIdByMemberId(member_id: number): Promise<number | null> {
     const member = await this.find('member_id', member_id);
     return member?.telegram_user_id || null;
   }

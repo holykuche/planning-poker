@@ -31,15 +31,15 @@ export default class StartPokerSubscription extends AbstractMessageSubscription 
   }
 
   protected async handle(msg: Message): Promise<void> {
-    if (!(await this.telegramUserService.isMemberExists(msg.from.id))) {
+    if (!(await this.telegramUserService.isMemberExists(msg.from!.id))) {
       return;
     }
 
-    const theme = msg.text.trim();
+    const theme = msg.text!.trim();
     const member = await this.telegramUserService.getMemberByTelegramUserId(
-      msg.from.id
+      msg.from!.id
     );
-    const lobbyId = await this.memberService.getMembersLobbyId(member.id);
+    const lobbyId = await this.memberService.getMembersLobbyId(member.id!);
 
     await this.lobbyService.startPoker(lobbyId, theme);
   }

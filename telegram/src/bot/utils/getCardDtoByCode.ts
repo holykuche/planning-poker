@@ -1,8 +1,8 @@
+import {Card} from '@/grpc-client/entity';
 import {CardCode} from '@/grpc-client/enum';
-import {CardDto} from '@/service/dto';
 
 // todo: think about moving that to db
-const VALUES: Map<CardCode, CardDto> = new Map<CardCode, CardDto>([
+const VALUES: Map<CardCode, Card> = new Map<CardCode, Card>([
   [CardCode.Score0, {code: CardCode.Score0, label: '0', value: 0}],
   [CardCode.Score1, {code: CardCode.Score1, label: '1', value: 1}],
   [CardCode.Score2, {code: CardCode.Score2, label: '2', value: 2}],
@@ -17,4 +17,4 @@ const VALUES: Map<CardCode, CardDto> = new Map<CardCode, CardDto>([
   [CardCode.Skip, {code: CardCode.Skip, label: 'Skip'}],
 ]);
 
-export default (cardCode: CardCode) => VALUES.get(cardCode);
+export default (cardCode: CardCode) => VALUES.get(cardCode)!;

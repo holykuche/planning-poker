@@ -1,4 +1,4 @@
-import {Lobby} from '@/service/entity';
+import {Lobby} from '@/grpc-client/entity';
 
 import ServiceError from './ServiceError';
 import ServiceErrorType from './ServiceErrorType';

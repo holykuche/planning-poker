@@ -39,11 +39,7 @@ export default class EntitySerializer {
           : null) as unknown as Protobuf.Value<T, K>;
   }
 
-  static deserialize<T extends object>(protobufEntity?: Protobuf.Entity<T>): T {
-    if (!protobufEntity) {
-      return null;
-    }
-
+  static deserialize<T extends object>(protobufEntity: Protobuf.Entity<T>): T {
     return Object.entries<Protobuf.Entity<T>[keyof Protobuf.Entity<T>]>(
       protobufEntity
     ).reduce((e, [key, value]) => {

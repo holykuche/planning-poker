@@ -1,4 +1,4 @@
-import {Lobby} from '../entity';
+import {Lobby} from '@/grpc-client/entity';
 
 export default interface LobbyService {
   getById(id: number): Promise<Lobby>;
