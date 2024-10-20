@@ -4,7 +4,7 @@ import {PokerResultItemDto} from '../dto';
 
 import EventType from './EventType';
 
-interface EventGeneric<T extends EventType, P = never> {
+interface EventGeneric<T extends EventType, P = undefined> {
   type: T;
   payload?: P;
 }
